@@ -101,27 +101,28 @@ const GameScreen = () => {
     return gameState.terms[0];
   }, [gameState]);
 
-  // Handle correct guess animation
+  // Handle correct guess animation with conveyor belt effect
   const handleCorrectGuess = () => {
-    // Show success notification
+    // First, show success notification and reveal bottom card volume
     setShowResult(true);
     
-    // Start animation after a brief delay
+    // Wait to show bottom card volume
     setTimeout(() => {
+      // Start animation after allowing player to see volumes
       setIsAnimating(true);
       
-      // Hide success notification after 500ms
+      // Hide success notification as animation begins
       setTimeout(() => {
         setShowResult(false);
-      }, 500);
+      }, 300);
       
-      // Complete animation and reset states after 1000ms
+      // Complete animation and reset states after animation completes
       setTimeout(() => {
         setIsAnimating(false);
         setLastGuessCorrect(null);
         setIsGuessing(false);
-      }, 1000);
-    }, 300);
+      }, 1100); // Allow full animation to complete (slightly increased for smoothness)
+    }, 1000); // Show volumes for a moment before animating (increased for better readability)
   };
 
   // Handle player making a guess
@@ -208,6 +209,33 @@ const GameScreen = () => {
     );
   }
 
+  // Define animation variants for conveyor belt effect
+  const containerVariants = {
+    initial: { y: 0 },
+    animate: { 
+      y: "-100%", 
+      transition: {
+        duration: 0.85,
+        ease: [0.25, 0.1, 0.25, 1], // Custom easing for more natural motion
+        delay: 0.3
+      }
+    }
+  };
+
+  // Define variants for the next card
+  const nextCardVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { 
+      opacity: 1,
+      y: 0,
+      transition: { 
+        duration: 0.6,
+        delay: 0.7,
+        ease: "easeOut"
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-game-bg flex flex-col">
       {/* Top bar with score */}
@@ -232,74 +260,187 @@ const GameScreen = () => {
         </div>
       </div>
 
-      {/* Game area */}
-      <div className="flex-1 flex flex-col">
-        {/* Known term - top half */}
-        <div className="flex-1 flex flex-col justify-center items-center p-4 relative overflow-hidden">
-          <div className="w-full max-w-7xl mx-auto relative">
-            {/* Current top card */}
-            <SearchTermCard
-              term={gameState.knownTerm}
-              showVolume={true}
-              position="top"
-            />
-            
-            {/* Next top card (will be visible after animation) */}
-            {isAnimating && getNextTerm && (
-              <SearchTermCard
-                term={gameState.hiddenTerm}
-                showVolume={true}
-                position="top"
-                isNext={true}
-              />
-            )}
+      {/* Game area - conveyor belt effect */}
+      <div className="flex-1 relative overflow-hidden">
+        <motion.div 
+          className="flex flex-col"
+          style={{ height: "200%" }}
+          variants={containerVariants}
+          initial="initial"
+          animate={isAnimating ? "animate" : "initial"}
+        >
+          {/* Known term (top card) */}
+          <div className="h-1/2 flex items-center justify-center px-0">
+            <div className="w-full max-w-7xl">
+              <div 
+                className="w-full rounded-none sm:rounded-2xl overflow-hidden shadow-xl min-h-[280px] relative"
+                style={{
+                  backgroundImage: `url("${gameState.knownTerm.imageUrl}")`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              >
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80"></div>
+                
+                {/* Card pattern overlay */}
+                <div
+                  className="absolute inset-0 opacity-15"
+                  style={{ backgroundImage: `url(/images/card-pattern.svg)` }}
+                ></div>
+                
+                {/* Content */}
+                <div className="relative p-6 sm:p-8 flex flex-col items-center justify-center text-center min-h-[280px]">
+                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 font-game-fallback text-center">
+                    {gameState.knownTerm.term}
+                  </h3>
+                  
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", damping: 15 }}
+                    className="mt-2 text-center"
+                  >
+                    <p className="text-lg text-white/70 font-game-fallback mb-1">
+                      Monthly Search Volume
+                    </p>
+                    <p className="text-3xl sm:text-4xl font-bold text-game-neon-blue font-game-fallback">
+                      {gameState.knownTerm.volume.toLocaleString()}
+                    </p>
+                  </motion.div>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Higher/Lower buttons - middle */}
-        <div className="py-6 flex justify-center items-center gap-6 relative z-10 bg-black/40 border-y border-white/10 backdrop-blur-sm">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => handleGuess(false)}
-            disabled={isGuessing}
-            className="px-8 py-4 bg-black/60 backdrop-blur-sm rounded-xl border-2 border-game-neon-blue/70 text-game-neon-blue font-bold font-game-fallback text-xl hover:bg-black/80 shadow-neon-blue-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            LOWER
-          </motion.button>
+          {/* Higher/Lower buttons - middle section */}
+          <div className="flex justify-center items-center gap-6 relative z-20 bg-black/50 border-y border-white/10 backdrop-blur-sm py-5">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleGuess(false)}
+              disabled={isGuessing}
+              className="px-8 py-4 bg-black/60 backdrop-blur-sm rounded-xl border-2 border-game-neon-blue/70 text-game-neon-blue font-bold font-game-fallback text-xl hover:bg-black/80 shadow-neon-blue-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              LOWER
+            </motion.button>
 
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => handleGuess(true)}
-            disabled={isGuessing}
-            className="px-8 py-4 bg-black/60 backdrop-blur-sm rounded-xl border-2 border-game-neon-green/70 text-game-neon-green font-bold font-game-fallback text-xl hover:bg-black/80 shadow-neon-green-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            HIGHER
-          </motion.button>
-        </div>
-
-        {/* Hidden term - bottom half */}
-        <div className="flex-1 flex flex-col justify-center items-center p-4 relative overflow-hidden">
-          <div className="w-full max-w-7xl mx-auto relative">
-            {/* Current bottom card */}
-            <SearchTermCard
-              term={gameState.hiddenTerm}
-              showVolume={showResult}
-              position="bottom"
-            />
-            
-            {/* Next bottom card (preloaded) */}
-            {!isAnimating && getNextTerm && (
-              <SearchTermCard
-                term={getNextTerm}
-                showVolume={false}
-                position="bottom"
-                isNext={true}
-              />
-            )}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleGuess(true)}
+              disabled={isGuessing}
+              className="px-8 py-4 bg-black/60 backdrop-blur-sm rounded-xl border-2 border-game-neon-green/70 text-game-neon-green font-bold font-game-fallback text-xl hover:bg-black/80 shadow-neon-green-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              HIGHER
+            </motion.button>
           </div>
-        </div>
+
+          {/* Hidden term (bottom card) - becomes top card after animation */}
+          <div className="h-1/2 flex items-center justify-center px-0">
+            <div className="w-full max-w-7xl">
+              <div 
+                className="w-full rounded-none sm:rounded-2xl overflow-hidden shadow-xl min-h-[280px] relative"
+                style={{
+                  backgroundImage: `url("${gameState.hiddenTerm.imageUrl}")`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              >
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80"></div>
+                
+                {/* Card pattern overlay */}
+                <div
+                  className="absolute inset-0 opacity-15"
+                  style={{ backgroundImage: `url(/images/card-pattern.svg)` }}
+                ></div>
+                
+                {/* Content */}
+                <div className="relative p-6 sm:p-8 flex flex-col items-center justify-center text-center min-h-[280px]">
+                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 font-game-fallback text-center">
+                    {gameState.hiddenTerm.term}
+                  </h3>
+                  
+                  {showResult ? (
+                    <motion.div
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ type: "spring", damping: 15 }}
+                      className="mt-2 text-center"
+                    >
+                      <p className="text-lg text-white/70 font-game-fallback mb-1">
+                        Monthly Search Volume
+                      </p>
+                      <p className="text-3xl sm:text-4xl font-bold text-game-neon-blue font-game-fallback">
+                        {gameState.hiddenTerm.volume.toLocaleString()}
+                      </p>
+                    </motion.div>
+                  ) : (
+                    <div className="mt-2 flex flex-col items-center">
+                      <p className="text-lg text-white/70 font-game-fallback mb-1">
+                        Monthly Search Volume
+                      </p>
+                      <div className="w-20 h-20 rounded-full border-4 border-game-neon-yellow flex items-center justify-center">
+                        <span className="text-5xl font-bold text-game-neon-yellow">
+                          ?
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Next card that appears at the bottom after animation */}
+        {isAnimating && getNextTerm && (
+          <motion.div 
+            className="absolute bottom-0 left-0 right-0 flex items-center justify-center h-1/2 px-0"
+            variants={nextCardVariants}
+            initial="initial"
+            animate={isAnimating ? "animate" : "initial"}
+          >
+            <div className="w-full max-w-7xl">
+              <div 
+                className="w-full rounded-none sm:rounded-2xl overflow-hidden shadow-xl min-h-[280px] relative"
+                style={{
+                  backgroundImage: `url("${getNextTerm.imageUrl}")`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              >
+                {/* Gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80"></div>
+                
+                {/* Card pattern overlay */}
+                <div
+                  className="absolute inset-0 opacity-15"
+                  style={{ backgroundImage: `url(/images/card-pattern.svg)` }}
+                ></div>
+                
+                {/* Content */}
+                <div className="relative p-6 sm:p-8 flex flex-col items-center justify-center text-center min-h-[280px]">
+                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 font-game-fallback text-center">
+                    {getNextTerm.term}
+                  </h3>
+                  
+                  <div className="mt-2 flex flex-col items-center">
+                    <p className="text-lg text-white/70 font-game-fallback mb-1">
+                      Monthly Search Volume
+                    </p>
+                    <div className="w-20 h-20 rounded-full border-4 border-game-neon-yellow flex items-center justify-center">
+                      <span className="text-5xl font-bold text-game-neon-yellow">
+                        ?
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
       </div>
 
       {/* Correct guess notification (smaller, less intrusive) */}
@@ -312,7 +453,15 @@ const GameScreen = () => {
             transition={{ duration: 0.3 }}
             className="fixed top-20 left-1/2 transform -translate-x-1/2 px-6 py-4 bg-game-neon-green/20 backdrop-blur-md rounded-xl border border-game-neon-green/50 text-game-neon-green font-bold text-xl shadow-lg z-50"
           >
-            CORRECT!
+            {gameState.hiddenTerm.volume === gameState.knownTerm.volume ? (
+              <span>
+                EQUAL VALUES!
+                <br />
+                <span className="text-sm font-normal">Both answers are correct</span>
+              </span>
+            ) : (
+              "CORRECT!"
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -324,50 +473,105 @@ const GameScreen = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 flex items-center justify-center z-50 bg-black/60 backdrop-blur-sm"
+            className="fixed inset-0 flex items-center justify-center z-50 bg-black/80 backdrop-blur-md"
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ type: "spring", damping: 15 }}
-              className="p-8 rounded-2xl bg-game-neon-red/20 border-2 border-game-neon-red/50 flex flex-col items-center justify-center text-center max-w-md mx-4"
+              className="w-full max-w-2xl mx-4 overflow-hidden"
             >
-              <h2 className="text-4xl font-bold mb-4 text-game-neon-red">
-                GAME OVER!
-              </h2>
-
-              <p className="text-white text-xl mb-6 font-game-fallback">
-                Final score: {currentPlayer?.score || 0}
-              </p>
-
-              <div className="flex flex-col items-center mb-6">
-                <p className="text-white text-lg mb-2 font-game-fallback">
-                  <span className="text-game-neon-blue font-bold">
-                    {gameState.knownTerm.term}:
-                  </span>{" "}
-                  {gameState.knownTerm.volume.toLocaleString()}
-                </p>
-                <p className="text-white text-lg font-game-fallback">
-                  <span className="text-game-neon-yellow font-bold">
-                    {gameState.hiddenTerm.term}:
-                  </span>{" "}
-                  {gameState.hiddenTerm.volume.toLocaleString()}
+              {/* Game over header */}
+              <div className="bg-game-neon-red/30 border-b-2 border-game-neon-red/50 p-6 text-center rounded-t-2xl">
+                <h2 className="text-4xl font-bold text-game-neon-red font-game-fallback">
+                  GAME OVER!
+                </h2>
+                <p className="text-white text-xl mt-2 font-game-fallback">
+                  Final score: {currentPlayer?.score || 0}
                 </p>
               </div>
-
-              <button
-                onClick={() => {
-                  // Reset the game and go back to game selection
-                  endGame().then(() => {
-                    resetGame();
-                    router.push("/game");
-                  });
-                }}
-                className="px-8 py-3 bg-black/60 rounded-xl border border-white/30 text-white font-game-fallback hover:bg-black/80 hover:scale-105 transition-all duration-300"
-              >
-                Play Again
-              </button>
+              
+              {/* Card comparison section - matches game layout */}
+              <div className="bg-black/60 flex flex-col gap-3 p-6">
+                {/* Known term card */}
+                <div 
+                  className="rounded-xl overflow-hidden shadow-xl relative"
+                  style={{
+                    backgroundImage: `url("${gameState.knownTerm.imageUrl}")`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80"></div>
+                  <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url(/images/card-pattern.svg)' }}></div>
+                  
+                  <div className="relative p-5 flex flex-col md:flex-row items-center justify-between">
+                    <h3 className="text-xl font-bold text-white font-game-fallback md:text-left text-center mb-3 md:mb-0">
+                      {gameState.knownTerm.term}
+                    </h3>
+                    <div className="bg-black/40 backdrop-blur-sm px-4 py-2 rounded-lg">
+                      <p className="text-sm text-white/70 font-game-fallback">Search Volume</p>
+                      <p className="text-xl font-bold text-game-neon-blue font-game-fallback text-center">
+                        {gameState.knownTerm.volume.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Comparison indicator */}
+                <div className="flex items-center justify-center gap-8 my-1">
+                  <div className="flex-1 h-px bg-white/20"></div>
+                  <div className="bg-game-neon-red/20 border border-game-neon-red/40 rounded-full px-5 py-2 font-bold text-white flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                    {gameState.hiddenTerm.volume > gameState.knownTerm.volume ? "HIGHER" : 
+                     gameState.hiddenTerm.volume < gameState.knownTerm.volume ? "LOWER" : "EQUAL"}
+                  </div>
+                  <div className="flex-1 h-px bg-white/20"></div>
+                </div>
+                
+                {/* Hidden term card */}
+                <div 
+                  className="rounded-xl overflow-hidden shadow-xl relative"
+                  style={{
+                    backgroundImage: `url("${gameState.hiddenTerm.imageUrl}")`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center'
+                  }}
+                >
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80"></div>
+                  <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'url(/images/card-pattern.svg)' }}></div>
+                  
+                  <div className="relative p-5 flex flex-col md:flex-row items-center justify-between">
+                    <h3 className="text-xl font-bold text-white font-game-fallback md:text-left text-center mb-3 md:mb-0">
+                      {gameState.hiddenTerm.term}
+                    </h3>
+                    <div className="bg-black/40 backdrop-blur-sm px-4 py-2 rounded-lg">
+                      <p className="text-sm text-white/70 font-game-fallback">Search Volume</p>
+                      <p className="text-xl font-bold text-game-neon-yellow font-game-fallback text-center">
+                        {gameState.hiddenTerm.volume.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Play again button */}
+              <div className="p-6 bg-black/40 flex justify-center rounded-b-2xl border-t border-white/10">
+                <button
+                  onClick={() => {
+                    endGame().then(() => {
+                      resetGame();
+                      router.push("/game");
+                    });
+                  }}
+                  className="px-8 py-3 bg-black/60 rounded-xl border border-white/30 text-white font-game-fallback hover:bg-black/80 hover:scale-105 transition-all duration-300"
+                >
+                  Play Again
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}

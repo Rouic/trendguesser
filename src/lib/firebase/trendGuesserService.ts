@@ -288,9 +288,32 @@ export class TrendGuesserService {
           }
           
           // Check if the guess is correct
-          const isCorrect = isHigher 
-            ? gameState.hiddenTerm.volume > gameState.knownTerm.volume
-            : gameState.hiddenTerm.volume < gameState.knownTerm.volume;
+          // Log volumes for debugging
+          console.log('Guess evaluation:', {
+            isHigher,
+            knownTermVolume: gameState.knownTerm.volume,
+            hiddenTermVolume: gameState.hiddenTerm.volume,
+            knownTerm: gameState.knownTerm.term,
+            hiddenTerm: gameState.hiddenTerm.term
+          });
+          
+          // Determine if the guess is correct
+          let isCorrect;
+          
+          // EDGE CASE: If volumes are exactly equal, the guess is ALWAYS correct
+          // regardless of whether the player chose "higher" or "lower"
+          if (gameState.hiddenTerm.volume === gameState.knownTerm.volume) {
+            console.log('Equal volumes detected! ALWAYS counting guess as correct!');
+            isCorrect = true;
+          } else {
+            isCorrect = isHigher 
+              ? gameState.hiddenTerm.volume > gameState.knownTerm.volume
+              : gameState.hiddenTerm.volume < gameState.knownTerm.volume;
+          }
+          
+          // Log the result for debugging
+          console.log(`Guess result: ${isCorrect ? 'CORRECT' : 'INCORRECT'} (${isHigher ? 'HIGHER' : 'LOWER'})`);
+          
           
           if (isCorrect) {
             // Correct guess - prepare next round
@@ -357,9 +380,31 @@ export class TrendGuesserService {
       }
       
       // Check if the guess is correct
-      const isCorrect = isHigher 
-        ? gameState.hiddenTerm.volume > gameState.knownTerm.volume
-        : gameState.hiddenTerm.volume < gameState.knownTerm.volume;
+      // Log volumes for debugging
+      console.log('Guess evaluation (Firestore):', {
+        isHigher,
+        knownTermVolume: gameState.knownTerm.volume,
+        hiddenTermVolume: gameState.hiddenTerm.volume,
+        knownTerm: gameState.knownTerm.term,
+        hiddenTerm: gameState.hiddenTerm.term
+      });
+      
+      // Determine if the guess is correct
+      let isCorrect;
+      
+      // EDGE CASE: If volumes are exactly equal, the guess is ALWAYS correct
+      // regardless of whether the player chose "higher" or "lower"
+      if (gameState.hiddenTerm.volume === gameState.knownTerm.volume) {
+        console.log('Equal volumes detected! ALWAYS counting guess as correct!');
+        isCorrect = true;
+      } else {
+        isCorrect = isHigher 
+          ? gameState.hiddenTerm.volume > gameState.knownTerm.volume
+          : gameState.hiddenTerm.volume < gameState.knownTerm.volume;
+      }
+      
+      // Log the result for debugging
+      console.log(`Guess result (Firestore): ${isCorrect ? 'CORRECT' : 'INCORRECT'} (${isHigher ? 'HIGHER' : 'LOWER'})`);
       
       if (isCorrect) {
         // Correct guess - prepare next round

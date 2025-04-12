@@ -6,7 +6,8 @@ interface SearchTermCardProps {
   term: SearchTerm;
   showVolume: boolean;
   position: "top" | "bottom";
-  isNext?: boolean; // Flag to indicate if this is the preloaded "next" card
+  isNext?: boolean;
+  isAnimating?: boolean;
 }
 
 const SearchTermCard: React.FC<SearchTermCardProps> = ({
@@ -14,6 +15,7 @@ const SearchTermCard: React.FC<SearchTermCardProps> = ({
   showVolume,
   position,
   isNext = false,
+  isAnimating = false,
 }) => {
   // Format the search volume nicely
   const formattedVolume = term.volume.toLocaleString();
@@ -23,17 +25,80 @@ const SearchTermCard: React.FC<SearchTermCardProps> = ({
     ? `url("${term.imageUrl}")`
     : `linear-gradient(45deg, rgba(0,0,0,0.7), rgba(20,20,30,0.8))`;
 
-  // Determine opacity and transform based on whether this is the current or next card
-  const opacity = isNext ? 0 : 1;
-  const y = isNext 
-    ? (position === "top" ? -200 : 200) 
-    : 0;
+  // Define animation variants based on position and whether this is the next card
+  const variants = {
+    // Starting state for normal cards
+    initial: {
+      y: position === "top" ? -20 : 20,
+      opacity: 0,
+    },
+    
+    // Animation states for current cards during transitions
+    exitTop: {
+      y: -300, 
+      opacity: 0,
+      transition: { 
+        duration: 0.5,
+        ease: "easeInOut"
+      }
+    },
+    exitBottom: {
+      y: 300, 
+      opacity: 0,
+      transition: { 
+        duration: 0.5,
+        ease: "easeInOut"
+      }
+    },
+    
+    // Standard visible state for normal cards
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        duration: 0.5,
+        bounce: 0.3
+      }
+    },
+    
+    // Starting state for next cards
+    nextTop: {
+      y: -300,
+      opacity: 0
+    },
+    nextBottom: {
+      y: 300,
+      opacity: 0
+    },
+    
+    // Animation for next cards becoming current
+    nextVisible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring", 
+        duration: 0.5,
+        bounce: 0.3,
+        delay: 0.2
+      }
+    }
+  };
+  
+  // Determine which animation state to use
+  const getAnimationState = () => {
+    if (isNext) {
+      return isAnimating ? 'nextVisible' : (position === 'top' ? 'nextTop' : 'nextBottom');
+    } else {
+      return isAnimating ? (position === 'top' ? 'exitTop' : 'exitBottom') : 'visible';
+    }
+  };
   
   return (
     <motion.div
-      initial={{ y: position === "top" ? -20 : 20, opacity: 0 }}
-      animate={{ y, opacity }}
-      transition={{ type: "spring", damping: 15 }}
+      variants={variants}
+      initial="initial"
+      animate={getAnimationState()}
       className={`w-full max-w-7xl rounded-2xl overflow-hidden shadow-xl relative ${
         isNext ? "absolute top-0 left-0 right-0 mx-auto" : ""
       }`}
