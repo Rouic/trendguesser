@@ -5,15 +5,17 @@ import { motion } from 'framer-motion';
 
 const GameOver = () => {
   const router = useRouter();
-  const { gameState, currentPlayer } = useGame();
+  const { gameState, currentPlayer, resetGame } = useGame();
   
   // Handle return to category selection
   const handlePlayAgain = () => {
+    resetGame();
     router.push('/game');
   };
   
   // Handle return to home
   const handleReturnHome = () => {
+    resetGame();
     router.push('/');
   };
   

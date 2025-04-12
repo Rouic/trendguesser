@@ -6,43 +6,101 @@ import SearchTermCard from './SearchTermCard';
 
 const GameScreen = () => {
   const router = useRouter();
-  const { gameState, currentPlayer, makeGuess, endGame } = useGame();
+  const { gameState, currentPlayer, gameId, makeGuess, endGame, resetGame, error: gameError } = useGame();
   
   const [showResult, setShowResult] = useState(false);
   const [lastGuessCorrect, setLastGuessCorrect] = useState<boolean | null>(null);
   const [isGuessing, setIsGuessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Display any errors from the game context
+  useEffect(() => {
+    if (gameError) {
+      setError(gameError);
+    }
+  }, [gameError]);
+  
+  // Log current game state when it changes
+  useEffect(() => {
+    if (gameState) {
+      console.log('GameScreen: Current game state:', 
+        { 
+          gameId, 
+          started: gameState.started,
+          round: gameState.currentRound,
+          category: gameState.category,
+          knownTerm: gameState.knownTerm.term,
+          hiddenTerm: gameState.hiddenTerm.term
+        }
+      );
+    }
+  }, [gameState, gameId]);
   
   // Handle player making a guess
   const handleGuess = async (isHigher: boolean) => {
     if (!gameState || isGuessing) return;
     
     setIsGuessing(true);
+    setError(null);
     
-    // Process the guess
-    const result = await makeGuess(isHigher);
-    setLastGuessCorrect(result);
-    
-    // Show the result animation
-    setShowResult(true);
-    
-    // Hide result after 2 seconds if guess was correct
-    if (result) {
-      setTimeout(() => {
-        setShowResult(false);
-        setLastGuessCorrect(null);
-        setIsGuessing(false);
-      }, 2000);
+    try {
+      console.log(`Making ${isHigher ? 'HIGHER' : 'LOWER'} guess...`);
+      
+      // Process the guess
+      const result = await makeGuess(isHigher);
+      console.log('Guess result:', result);
+      setLastGuessCorrect(result);
+      
+      // Show the result animation
+      setShowResult(true);
+      
+      // Hide result after 2 seconds if guess was correct
+      if (result) {
+        setTimeout(() => {
+          setShowResult(false);
+          setLastGuessCorrect(null);
+          setIsGuessing(false);
+        }, 2000);
+      }
+    } catch (err) {
+      console.error('Error in handleGuess:', err);
+      setError('Error processing guess. Please try again.');
+      setIsGuessing(false);
     }
   };
   
   // Handle player quitting the game
   const handleQuit = async () => {
     await endGame();
+    resetGame();
     router.push('/game');
   };
   
   if (!gameState) {
-    return null;
+    return (
+      <div className="min-h-screen bg-game-bg flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md bg-black/40 rounded-xl border border-white/20 p-6 text-center">
+          <h2 className="text-2xl font-display text-game-neon-blue mb-4">Game Not Found</h2>
+          <p className="text-white mb-4">
+            Unable to load the game state. Please return to the categories and try again.
+          </p>
+          {error && (
+            <div className="mb-4 p-3 bg-game-neon-red/20 border border-game-neon-red/40 rounded-lg text-white text-sm overflow-auto">
+              {error}
+            </div>
+          )}
+          <button
+            onClick={() => {
+              resetGame();
+              router.push('/game');
+            }}
+            className="px-6 py-2 bg-black/30 backdrop-blur-sm rounded-full border border-game-neon-blue/30 text-game-neon-blue font-game-fallback hover:bg-black/50 hover:scale-105 transition-all duration-300"
+          >
+            Back to Categories
+          </button>
+        </div>
+      </div>
+    );
   }
   
   return (
@@ -141,7 +199,13 @@ const GameScreen = () => {
               
               {!lastGuessCorrect && (
                 <button
-                  onClick={() => router.push('/game')}
+                  onClick={() => {
+                    // Reset the game and go back to game selection
+                    endGame().then(() => {
+                      resetGame();
+                      router.push('/game');
+                    });
+                  }}
                   className="px-8 py-3 bg-black/60 rounded-xl border border-white/30 text-white font-game-fallback hover:bg-black/80 hover:scale-105 transition-all duration-300"
                 >
                   Play Again
@@ -151,6 +215,13 @@ const GameScreen = () => {
           </motion.div>
         )}
       </AnimatePresence>
+      
+      {/* Error message */}
+      {error && !showResult && (
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 px-6 py-3 bg-game-neon-red/20 border border-game-neon-red/50 rounded-lg text-white text-center max-w-xs">
+          {error}
+        </div>
+      )}
     </div>
   );
 };

@@ -34,18 +34,10 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <Link
-                  href="/join"
+                  href="/game"
                   className="text-white/40 hover:text-white transition duration-200"
                 >
-                  Join Game
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/host"
-                  className="text-white/40 hover:text-white transition duration-200"
-                >
-                  Host Game
+                  Start Game
                 </Link>
               </li>
             </ul>

@@ -43,23 +43,20 @@ git clone https://github.com/yourusername/trendguesser.git
 cd trendguesser
 ```
 
-2. Run the Turbo setup script (first time only):
-```bash
-./setup-turbo.sh
-```
-
-3. Install dependencies:
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-4. Configure Firebase:
-   - Create a Firebase project
-   - Enable Authentication (Anonymous)
-   - Set up Firestore
-   - Configure Firebase Functions
+3. Configure local environment:
+   Create a `.env.local` file with the following variables:
+   ```
+   NEXT_PUBLIC_USE_FIREBASE_EMULATOR=true
+   NEXT_PUBLIC_SKIP_AUTH=true
+   NEXT_PUBLIC_USE_MOCK_DATA=true
+   ```
 
-5. Start all development servers at once:
+4. Start all development servers with emulators:
 ```bash
 npm run dev
 ```
@@ -73,14 +70,23 @@ This will start:
 
 ### Development
 
-You can also run each service separately:
+You can also run different configurations:
 
 ```bash
+# Run without emulators (using mock data only)
+npm run dev:no-emulator
+
 # Just the Next.js app
-cd web && npm run dev
+npm run dev:web
 
 # Just the Firebase Functions
-cd functions && npm run dev
+cd functions && npm run serve
+
+# Start emulators manually
+npm run emulators
+
+# Populate emulators with sample data
+npm run emulators:setup
 ```
 
 ## Firebase Functions

@@ -21,98 +21,129 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [userUid, setUserUid] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Initialize Firebase
+  // We don't need to initialize Firebase in AuthContext
+  // as it's already initialized in _app.tsx
   useEffect(() => {
-    // Initialize Firebase with default consent settings
-    const { auth } = initializeFirebase(true, false);
-    console.log("Firebase initialized in AuthContext");
+    console.log("AuthContext mounted");
   }, []);
 
   // Listen for auth state changes
   useEffect(() => {
-    // Use the auth instance from the initialized Firebase
-    // Fall back to getAuth() if firebaseAuth is not available
-    const auth = firebaseAuth || getAuth();
-    
-    if (!auth) {
-      console.error("Firebase auth is not initialized");
-      return;
-    }
-    
-    console.log("Setting up auth state listener");
-    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
-      console.log("Auth state changed:", authUser ? `User: ${authUser.uid}` : "No user");
+    // If mock mode is enabled, skip Firebase auth
+    if (process.env.NEXT_PUBLIC_SKIP_AUTH === 'true') {
+      console.log("Skipping Firebase auth in mock mode");
+      // Set a mock user and mark as loaded
+      const mockUid = 'mock-' + Math.random().toString(36).substring(2, 11);
       
-      if (authUser) {
-        setUser(authUser);
-        setUserUid(authUser.uid);
-        
-        try {
-          // Initialize Firebase
-          const { db } = initializeFirebase(true, false);
-          
-          // Check if user exists in Firestore, create if not
-          if (db) {
-            const { doc, getDoc, setDoc } = await import('firebase/firestore');
-            const userRef = doc(db, 'players', authUser.uid);
-            const userDoc = await getDoc(userRef);
-            
-            if (!userDoc.exists()) {
-              // Create new user document
-              await setDoc(userRef, {
-                uid: authUser.uid,
-                name: `Player_${authUser.uid.substring(0, 5)}`,
-                createdAt: new Date(),
-                highScores: {}
-              });
-              console.log("Created new user document in Firestore");
-            }
-          }
-        } catch (error) {
-          console.error('Error checking/creating user document:', error);
-        }
-      } else {
-        setUser(null);
-        setUserUid(null);
+      // Store the mock user ID in sessionStorage for use across components
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('mock_user_uid', mockUid);
+        console.log('Stored mock user ID in session storage:', mockUid);
       }
       
+      setUser({ uid: mockUid } as User);
+      setUserUid(mockUid);
       setLoading(false);
-    });
-
-    // Cleanup subscription
-    return () => unsubscribe();
-  }, []);
-
-  // Sign in anonymously
-  const signInAnonymously = async () => {
+      return () => {};
+    }
+    
     try {
-      // Use the auth instance from the initialized Firebase or get auth directly
-      const auth = firebaseAuth || getAuth();
+      // Make sure Firebase is initialized
+      const firebaseApp = initializeFirebase(true, false);
+      // Use the auth instance from the initialized Firebase
+      const auth = firebaseApp.auth;
+      
       if (!auth) {
         console.error("Firebase auth is not initialized");
         return;
       }
       
-      console.log("Attempting anonymous sign in");
+      console.log("Setting up auth state listener");
+      const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+        console.log("Auth state changed:", authUser ? `User: ${authUser.uid}` : "No user");
+        
+        if (authUser) {
+          setUser(authUser);
+          setUserUid(authUser.uid);
+        
+          try {
+            // Initialize Firebase
+            const { db } = initializeFirebase(true, false);
+            
+            // Check if user exists in Firestore, create if not
+            if (db) {
+              const { doc, getDoc, setDoc } = await import('firebase/firestore');
+              const userRef = doc(db, 'players', authUser.uid);
+              const userDoc = await getDoc(userRef);
+              
+              if (!userDoc.exists()) {
+                // Create new user document
+                await setDoc(userRef, {
+                  uid: authUser.uid,
+                  name: `Player_${authUser.uid.substring(0, 5)}`,
+                  createdAt: new Date(),
+                  highScores: {}
+                });
+                console.log("Created new user document in Firestore");
+              }
+            }
+          } catch (error) {
+            console.error('Error checking/creating user document:', error);
+          }
+        } else {
+          setUser(null);
+          setUserUid(null);
+        }
+        
+        setLoading(false);
+      });
+
+      // Cleanup subscription
+      return () => unsubscribe();
+    } catch (error) {
+      console.error("Error setting up auth state listener:", error);
       
+      // Fallback to mock user if Firebase auth fails
+      const mockUid = 'error-' + Math.random().toString(36).substring(2, 11);
+      setUser({ uid: mockUid } as User);
+      setUserUid(mockUid);
+      setLoading(false);
+      return () => {};
+    }
+  }, []);
+
+  // Sign in anonymously
+  const signInAnonymously = async () => {
+    try {
       // Skip anonymous auth if it's not setup correctly to avoid errors
       if (process.env.NEXT_PUBLIC_SKIP_AUTH === 'true') {
         console.log("Skipping anonymous auth (NEXT_PUBLIC_SKIP_AUTH=true)");
         // Mock a user instead
-        setUser({ uid: 'temp-' + Math.random().toString(36).substring(2, 11) } as User);
-        setUserUid('temp-' + Math.random().toString(36).substring(2, 11));
+        const mockUid = 'temp-' + Math.random().toString(36).substring(2, 11);
+        setUser({ uid: mockUid } as User);
+        setUserUid(mockUid);
         setLoading(false);
         return;
       }
       
+      // Make sure Firebase is initialized
+      const firebaseApp = initializeFirebase(true, false);
+      const auth = firebaseApp.auth;
+      
+      if (!auth) {
+        throw new Error("Firebase auth is not initialized");
+      }
+      
+      console.log("Attempting anonymous sign in");
       await firebaseSignInAnonymously(auth);
     } catch (error) {
       console.error("Error signing in anonymously:", error);
       
       // If anonymous auth fails, mock a user to allow the app to function
       console.log("Auth failed, creating temporary user");
-      setUser({ uid: 'temp-' + Math.random().toString(36).substring(2, 11) } as User);
-      setUserUid('temp-' + Math.random().toString(36).substring(2, 11));
+      const mockUid = 'temp-' + Math.random().toString(36).substring(2, 11);
+      setUser({ uid: mockUid } as User);
+      setUserUid(mockUid);
       setLoading(false);
     }
   };
@@ -120,16 +151,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // Sign out
   const signOut = async () => {
     try {
-      // Use the auth instance from the initialized Firebase or get auth directly
-      const auth = firebaseAuth || getAuth();
-      if (!auth) {
-        console.error("Firebase auth is not initialized");
+      // If in mock mode, just clear the user state
+      if (process.env.NEXT_PUBLIC_SKIP_AUTH === 'true') {
+        setUser(null);
+        setUserUid(null);
         return;
+      }
+      
+      // Make sure Firebase is initialized
+      const firebaseApp = initializeFirebase(true, false);
+      const auth = firebaseApp.auth;
+      
+      if (!auth) {
+        throw new Error("Firebase auth is not initialized");
       }
       
       await firebaseSignOut(auth);
     } catch (error) {
       console.error("Error signing out:", error);
+      // Reset user state regardless of error
+      setUser(null);
+      setUserUid(null);
     }
   };
 

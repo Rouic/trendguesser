@@ -35,7 +35,7 @@ const Header: React.FC = () => {
           {!isGamePage && (
             <>
               <Link
-                href="/join"
+                href="/game"
                 className="btn-neon px-6 py-3 text-white bg-game-neon-blue rounded-lg transition-all hover:shadow-neon-blue hover:scale-105 flex items-center font-game-fallback tracking-wide"
               >
                 <svg
@@ -50,7 +50,7 @@ const Header: React.FC = () => {
                     clipRule="evenodd"
                   />
                 </svg>
-                JOIN GAME
+                START GAME
               </Link>
 
               <Link
@@ -151,19 +151,11 @@ const Header: React.FC = () => {
       {menuOpen && !isGamePage && (
         <div className="md:hidden pt-4 pb-6 px-4 mt-3 bg-game-card rounded-lg shadow-lg border border-game-neon-purple border-opacity-20">
           <Link
-            href="/join"
+            href="/game"
             className="block px-5 py-3 mb-3 text-white bg-game-neon-blue rounded-lg transition-all font-game-fallback text-center touch-target"
             onClick={() => setMenuOpen(false)}
           >
-            JOIN GAME
-          </Link>
-
-          <Link
-            href="/host"
-            className="block px-5 py-3 mb-3 text-white bg-game-neon-red rounded-lg transition-all font-game-fallback text-center touch-target"
-            onClick={() => setMenuOpen(false)}
-          >
-            HOST GAME
+            START GAME
           </Link>
 
           <Link

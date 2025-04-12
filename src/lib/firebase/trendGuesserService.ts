@@ -84,15 +84,74 @@ export class TrendGuesserService {
         
         // Store the game state in sessionStorage for mock mode
         if (typeof window !== 'undefined') {
-          sessionStorage.setItem(`game_${gameId}`, JSON.stringify({
-            status: 'active',
-            '__trendguesser.state': gameState,
-            [sessionStorage.getItem('mock_user_uid') || 'mock_user']: {
-              uid: sessionStorage.getItem('mock_user_uid') || 'mock_user',
-              name: 'Mock Player',
-              score: 0
+          // Get the user ID from session storage
+          const mockUserUid = sessionStorage.getItem('mock_user_uid') || 'mock_user';
+          console.log('Using mock user ID for game data:', mockUserUid);
+          
+          // Double-check that this game ID matches the current_game_id
+          const currentGameId = sessionStorage.getItem('current_game_id');
+          if (currentGameId !== gameId) {
+            console.warn('WARNING: current_game_id mismatch in trendGuesserService. Current:', currentGameId, 'Using:', gameId);
+            // Update to ensure consistency
+            sessionStorage.setItem('current_game_id', gameId);
+          }
+          
+          // Get existing data if available
+          const existingData = sessionStorage.getItem(`game_${gameId}`);
+          let mockGameData;
+          
+          if (existingData) {
+            // Update existing game data
+            mockGameData = JSON.parse(existingData);
+            mockGameData.status = 'active';
+            mockGameData['__trendguesser.state'] = gameState;
+          } else {
+            // Create new game data
+            mockGameData = {
+              id: gameId,
+              status: 'active',
+              createdBy: mockUserUid,
+              gameType: 'trendguesser',
+              '__trendguesser.state': gameState,
+              [mockUserUid]: {
+                uid: mockUserUid,
+                name: 'Mock Player',
+                score: 0
+              }
+            };
+          }
+          
+          // Save to session storage
+          sessionStorage.setItem(`game_${gameId}`, JSON.stringify(mockGameData));
+          console.log('Stored mock game data:', mockGameData);
+          
+          // IMPORTANT FIX: We need to store the current game ID in a special key
+          // This ensures we can access it across page refreshes
+          sessionStorage.setItem('current_game_id', gameId);
+          console.log('Set current game ID in session storage:', gameId);
+          
+          // Force the game state to be loaded immediately
+          // Deactivate any other active games to avoid conflicts
+          const gameKeys = [];
+          for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            if (key && key.startsWith('game_') && key !== `game_${gameId}`) {
+              try {
+                const data = JSON.parse(sessionStorage.getItem(key) || '{}');
+                if (data.status === 'active') {
+                  data.status = 'inactive';
+                  sessionStorage.setItem(key, JSON.stringify(data));
+                  console.log('Deactivated other game to avoid conflicts:', key);
+                }
+              } catch (e) {
+                // Ignore parsing errors
+              }
+              gameKeys.push(key);
             }
-          }));
+          }
+          
+          // Add a small delay to ensure data is available
+          await new Promise(resolve => setTimeout(resolve, 300));
         }
       }
       
@@ -112,6 +171,138 @@ export class TrendGuesserService {
   // Make a guess (higher or lower)
   static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Promise<boolean> {
     try {
+      // Handle mock mode
+      if (USE_MOCK_DATA) {
+        console.log('Using mock data for guess:', { gameId, playerUid, isHigher });
+        
+        // Get game data from session storage
+        if (typeof window !== 'undefined') {
+          // Check if we need to use the current_game_id instead
+          const currentGameId = sessionStorage.getItem('current_game_id');
+          if (currentGameId && currentGameId !== gameId) {
+            console.warn('WARNING: gameId mismatch in makeGuess. Using current_game_id:', currentGameId, 'instead of:', gameId);
+            gameId = currentGameId;
+          }
+          
+          const storedGameData = sessionStorage.getItem(`game_${gameId}`);
+          if (!storedGameData) {
+            console.error('Mock game not found:', gameId);
+            // Try to find any game in session storage as a fallback
+            const allKeys = [];
+            for (let i = 0; i < sessionStorage.length; i++) {
+              const key = sessionStorage.key(i);
+              if (key && key.startsWith('game_')) {
+                allKeys.push(key);
+                try {
+                  const data = JSON.parse(sessionStorage.getItem(key) || '{}');
+                  if (data['__trendguesser.state']?.started) {
+                    console.log('Found alternative active game:', key);
+                    // Update current_game_id and use this game instead
+                    const alternativeGameId = key.replace('game_', '');
+                    sessionStorage.setItem('current_game_id', alternativeGameId);
+                    gameId = alternativeGameId;
+                    const altData = sessionStorage.getItem(key);
+                    if (altData) {
+                      console.log('Using alternative game data');
+                      return this.makeGuess(alternativeGameId, playerUid, isHigher);
+                    }
+                  }
+                } catch (e) {
+                  // Ignore parsing errors
+                }
+              }
+            }
+            
+            // If we get here, we couldn't find any active games
+            if (allKeys.length > 0) {
+              console.log('Found game keys but none are active:', allKeys);
+            }
+            throw new Error('No active game found');
+          }
+          
+          const gameData = JSON.parse(storedGameData);
+          const gameState = gameData['__trendguesser.state'] as TrendGuesserGameState;
+          const mockUserUid = sessionStorage.getItem('mock_user_uid') || playerUid || 'mock_user';
+          
+          // Create player data if it doesn't exist
+          let player = gameData[mockUserUid] as TrendGuesserPlayer;
+          if (!player) {
+            console.log('Player data not found, creating new player data');
+            player = {
+              uid: mockUserUid,
+              name: 'Player',
+              score: 0
+            };
+            gameData[mockUserUid] = player;
+          }
+          
+          if (!gameState) {
+            console.error('No game state found in game data:', gameData);
+            throw new Error('Game state not found');
+          }
+          
+          if (!gameState.started || gameState.finished) {
+            console.error('Game is not in active state:', 
+              gameState.started ? 'started' : 'not started', 
+              gameState.finished ? 'finished' : 'not finished'
+            );
+            throw new Error('Game is not active');
+          }
+          
+          // Check if the guess is correct
+          const isCorrect = isHigher 
+            ? gameState.hiddenTerm.volume > gameState.knownTerm.volume
+            : gameState.hiddenTerm.volume < gameState.knownTerm.volume;
+          
+          if (isCorrect) {
+            // Correct guess - prepare next round
+            const nextRound = gameState.currentRound + 1;
+            const newPlayerScore = (player.score || 0) + 1;
+            
+            // Update player score
+            player.score = newPlayerScore;
+            gameData[mockUserUid] = player;
+            
+            if (gameState.terms.length > 0) {
+              // If we have more terms, set up next round
+              const nextTerm = gameState.terms[0];
+              const remainingTerms = gameState.terms.slice(1);
+              
+              // Update game state
+              gameState.currentRound = nextRound;
+              gameState.knownTerm = gameState.hiddenTerm;
+              gameState.hiddenTerm = nextTerm;
+              gameState.usedTerms = [...gameState.usedTerms, nextTerm.id];
+              gameState.terms = remainingTerms;
+            } else {
+              // No more terms - player wins
+              gameState.finished = true;
+              gameState.winner = mockUserUid;
+              gameData.status = 'finished';
+            }
+            
+            // Save updated game data
+            sessionStorage.setItem(`game_${gameId}`, JSON.stringify(gameData));
+            console.log('Updated mock game data after correct guess:', gameData);
+            
+            return true;
+          } else {
+            // Wrong guess - game over
+            gameState.finished = true;
+            gameData.status = 'finished';
+            
+            // Save updated game data
+            sessionStorage.setItem(`game_${gameId}`, JSON.stringify(gameData));
+            console.log('Updated mock game data after wrong guess:', gameData);
+            
+            return false;
+          }
+        }
+        
+        return Math.random() > 0.5; // Fallback if no session storage
+      }
+      
+      // Regular Firestore implementation
       const gameRef = doc(db, 'games', gameId.toUpperCase());
       const gameDoc = await getDoc(gameRef);
       
@@ -247,8 +438,31 @@ export class TrendGuesserService {
       
       if (USE_MOCK_DATA) {
         console.log('Using mock data for game creation');
-        // Return the game ID without actually writing to Firestore
-        return gameId;
+        
+        // Create an empty initial game state in sessionStorage for immediate access
+        if (typeof window !== 'undefined') {
+          const mockUserUid = sessionStorage.getItem('mock_user_uid') || 'mock_user';
+          const initialGameData = {
+            id: gameId,
+            status: 'waiting',
+            createdBy: mockUserUid,
+            gameType: 'trendguesser',
+            [mockUserUid]: {
+              uid: mockUserUid,
+              name: playerName || 'Player',
+              score: 0
+            }
+          };
+          sessionStorage.setItem(`game_${gameId}`, JSON.stringify(initialGameData));
+          console.log('Created initial mock game data:', initialGameData);
+        }
+        
+        // Artificial delay to simulate network request
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve(gameId);
+          }, 300);
+        });
       }
       
       const gameRef = doc(db, 'games', gameId);

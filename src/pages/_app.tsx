@@ -12,12 +12,12 @@ function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const canonicalUrl = `https://trendguesser.com${router.asPath === "/" ? "" : router.asPath}`;
   
-  // Initialize Firebase
-  useEffect(() => {
-    // Initialize Firebase before anything else
-    initializeFirebase(true, false);
+  // Initialize Firebase immediately, not in useEffect
+  // This ensures Firebase is available before any components mount
+  if (typeof window !== 'undefined') {
+    const { app, auth, db } = initializeFirebase(true, false);
     console.log("Firebase initialized in _app.tsx");
-  }, []);
+  }
   
   // Load fonts
   useEffect(() => {

@@ -5,9 +5,10 @@
   "private": true,
   "packageManager": "npm@10.9.2",
   "scripts": {
-    "dev": "npm run dev:web & npm run dev:functions",
+    "dev": "npm run dev:emulator",
     "dev:web": "next dev",
     "dev:functions": "cd functions && npm run serve",
+    "dev:no-emulator": "npm run dev:web & npm run dev:functions",
     "dev:emulator": "./dev.sh",
     "build": "npm run build:web && npm run build:functions",
     "build:web": "next build",
@@ -19,7 +20,7 @@
     "clean": "npm run clean:web && npm run clean:functions && rm -rf node_modules",
     "clean:web": "rm -rf .next",
     "clean:functions": "cd functions && npm run clean",
-    "emulators": "firebase emulators:start",
+    "emulators": "firebase emulators:start --only auth,firestore --project trendguesser-332d4",
     "emulators:setup": "node emulator-setup.js",
     "emulators:export": "firebase emulators:export ./emulator-data",
     "emulators:import": "firebase emulators:start --import=./emulator-data"

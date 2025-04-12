@@ -27,6 +27,10 @@ export type SearchCategory =
   | 'everything' 
   | 'latest' 
   | 'games' 
+  | 'gaming'
+  | 'sports'
+  | 'entertainment'
+  | 'news'
   | 'technology' 
   | 'questions' 
   | 'custom';

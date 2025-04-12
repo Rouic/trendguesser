@@ -1,7 +1,7 @@
 // src/lib/firebase.ts
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
-import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { getAuth, Auth, connectAuthEmulator } from 'firebase/auth';
+import { getFirestore, Firestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
 import { getPerformance, FirebasePerformance } from 'firebase/performance';
 
@@ -16,41 +16,77 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase based on consent
-let app: FirebaseApp;
-let auth: Auth;
-let db: Firestore;
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let db: Firestore | null = null;
 let analytics: Analytics | null = null;
-const performance: FirebasePerformance | null = null;
+let performance: FirebasePerformance | null = null;
+let isInitialized = false;
 
 // Lazy initialization function to be called after consent is given
 export const initializeFirebase = (firebaseConsent = false, analyticsConsent = false) => {
-  // Initialize core Firebase if not already done
-  if (!getApps().length) {
-    app = initializeApp(firebaseConfig);
-    auth = getAuth(app);
-    
-    // Connect to emulators if in development mode
-    if (typeof window !== 'undefined' && 
-        window.location.hostname === 'localhost' && 
-        process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true') {
-      console.log("Connecting to Firebase Auth emulator");
-      const { connectAuthEmulator } = require('firebase/auth');
-      connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
-      
-      const { connectFirestoreEmulator } = require('firebase/firestore');
-      db = getFirestore(app);
-      connectFirestoreEmulator(db, 'localhost', 8080);
+  // Return existing Firebase instance if already initialized
+  if (isInitialized && app) {
+    return {
+      app,
+      auth,
+      db,
+      analytics,
+      performance
+    };
+  }
+  
+  // Initialize core Firebase
+  try {
+    if (!getApps().length) {
+      app = initializeApp(firebaseConfig);
     } else {
-      db = getFirestore(app);
+      app = getApps()[0];
     }
-  } else {
-    app = getApps()[0];
-    auth = getAuth(app);
-    db = getFirestore(app);
+    
+    // Get Auth and Firestore instances
+    if (app) {
+      auth = getAuth(app);
+      db = getFirestore(app);
+      
+      // Connect to emulators if in development mode
+      if (typeof window !== 'undefined' && 
+          (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') && 
+          process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true') {
+        
+        // Add a global flag to indicate we're using emulators
+        if (typeof window !== 'undefined') {
+          window.__USING_FIREBASE_EMULATOR = true;
+        }
+        
+        try {
+          if (auth) {
+            console.log("Connecting to Firebase Auth emulator");
+            connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+          }
+          
+          if (db) {
+            console.log("Connecting to Firestore emulator");
+            connectFirestoreEmulator(db, 'localhost', 8080);
+          }
+          
+          console.log("✓ Successfully connected to Firebase emulators");
+        } catch (err) {
+          console.error("Failed to connect to Firebase emulators:", err);
+          console.log("⚠️ Fallback to mock data mode");
+        }
+      } else if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true') {
+        console.log("Using mock data mode (Firebase emulators not enabled)");
+      }
+    }
+    
+    isInitialized = true;
+  } catch (error) {
+    console.error("Failed to initialize Firebase:", error);
   }
 
   // Only initialize analytics if consent is given and we're in browser
-  if (analyticsConsent && typeof window !== 'undefined') {
+  if (analyticsConsent && typeof window !== 'undefined' && app) {
     isSupported().then(yes => {
       if (yes) {
         analytics = getAnalytics(app);
