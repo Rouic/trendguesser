@@ -22,8 +22,12 @@ import { sampleSearchTerms, sampleLeaderboard } from './mockData';
 import { ImageConfig } from '@/utils/imageUtils';
 
 // Development mode flag
-const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || 
-                       process.env.NODE_ENV === 'development';
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+
+// Add some debug logging to help diagnose:
+console.log(`[TrendGuesserService] Environment: ${process.env.NODE_ENV}`);
+console.log(`[TrendGuesserService] USE_MOCK_DATA: ${USE_MOCK_DATA}`);
+console.log(`[TrendGuesserService] NEXT_PUBLIC_USE_MOCK_DATA: ${process.env.NEXT_PUBLIC_USE_MOCK_DATA}`);
 
 export class TrendGuesserService {
   // Start a new game with selected category
