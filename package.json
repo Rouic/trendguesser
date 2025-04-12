@@ -53,7 +53,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
-    "firebase-admin": "^11.11.0",
+    "firebase-admin": "^13.2.0",
     "postcss-import": "^16.1.0",
     "tailwindcss": "^4.1.1",
     "turbo": "^2.0.0",
