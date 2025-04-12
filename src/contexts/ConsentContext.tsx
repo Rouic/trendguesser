@@ -17,8 +17,8 @@ interface ConsentContextType {
 const defaultConsentState: ConsentState = {
   analytics: false,
   necessary: true, // Always true, required for app functionality
-  localStorage: false,
-  firebase: false,
+  localStorage: true, // Default to true for TrendGuesser as it's needed for score tracking
+  firebase: true, // Default to true for TrendGuesser as it's needed for game functionality
 };
 
 const defaultContext: ConsentContextType = {

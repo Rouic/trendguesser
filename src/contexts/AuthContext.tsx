@@ -40,10 +40,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     
     console.log("Setting up auth state listener");
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log("Auth state changed:", user ? `User: ${user.uid}` : "No user");
-      setUser(user);
-      setUserUid(user ? user.uid : null);
+    const unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+      console.log("Auth state changed:", authUser ? `User: ${authUser.uid}` : "No user");
+      
+      if (authUser) {
+        setUser(authUser);
+        setUserUid(authUser.uid);
+        
+        try {
+          // Initialize Firebase
+          const { db } = initializeFirebase(true, false);
+          
+          // Check if user exists in Firestore, create if not
+          if (db) {
+            const { doc, getDoc, setDoc } = await import('firebase/firestore');
+            const userRef = doc(db, 'players', authUser.uid);
+            const userDoc = await getDoc(userRef);
+            
+            if (!userDoc.exists()) {
+              // Create new user document
+              await setDoc(userRef, {
+                uid: authUser.uid,
+                name: `Player_${authUser.uid.substring(0, 5)}`,
+                createdAt: new Date(),
+                highScores: {}
+              });
+              console.log("Created new user document in Firestore");
+            }
+          }
+        } catch (error) {
+          console.error('Error checking/creating user document:', error);
+        }
+      } else {
+        setUser(null);
+        setUserUid(null);
+      }
+      
       setLoading(false);
     });
 

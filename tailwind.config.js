@@ -36,21 +36,36 @@ module.exports = {
         ]
       },
       colors: {
-        // Balatro-inspired colors with rose theme
+        // Updated colors for TrendGuesser
         'game': {
-          'bg': '#26101a',
-          'card': '#301219',
-          'felt': '#471827',
+          'bg': '#121218',
+          'card': '#1a1a23',
+          'felt': '#202030',
           'accent': '#ff5722',
           'highlight': '#ffc107',
           'neon': {
-            'blue': '#3287fc',
-            'red': '#ff2158',
-            'green': '#32fc58',
+            'blue': '#00DDFF',
+            'red': '#FF3366',
+            'green': '#00FF99',
+            'pink': '#FF00CC',
             'purple': '#9932fc',
-            'yellow': '#fcde32'
+            'yellow': '#FFCC00',
+            'gold': '#FFD700',
+            'silver': '#C0C0C0',
+            'bronze': '#CD7F32'
           }
-        }
+        },
+        // Separate direct access colors
+        'game-bg': '#121218',
+        'game-card': '#1a1a23',
+        'game-neon-blue': '#00DDFF',
+        'game-neon-green': '#00FF99',
+        'game-neon-red': '#FF3366',
+        'game-neon-pink': '#FF00CC',
+        'game-neon-yellow': '#FFCC00',
+        'game-neon-gold': '#FFD700',
+        'game-neon-silver': '#C0C0C0',
+        'game-neon-bronze': '#CD7F32'
       },
       animation: {
         'spin-slow': 'spin 3s linear infinite',
@@ -61,16 +76,21 @@ module.exports = {
         'float': 'float 3s ease-in-out infinite',
         'float-slow': 'float 6s ease-in-out infinite',
         'float-slow-reverse': 'floatReverse 7s ease-in-out infinite',
-        'move-stripes': 'moveStripes 1s linear infinite'
+        'move-stripes': 'moveStripes 1s linear infinite',
+        'spin-reverse': 'spinReverse 3s linear infinite'
       },
       keyframes: {
         glow: {
           '0%': { 
-            'text-shadow': '0 0 5px rgba(255,255,255,0.7), 0 0 10px rgba(255,255,255,0.5), 0 0 15px rgba(255,179,0,0.5), 0 0 20px rgba(255,179,0,0.3)'
+            'text-shadow': '0 0 5px rgba(0, 221, 255, 0.7), 0 0 10px rgba(0, 221, 255, 0.5), 0 0 15px rgba(0, 221, 255, 0.5), 0 0 20px rgba(0, 221, 255, 0.3)'
           },
           '100%': { 
-            'text-shadow': '0 0 10px rgba(255,255,255,0.9), 0 0 20px rgba(255,255,255,0.7), 0 0 30px rgba(255,179,0,0.7), 0 0 40px rgba(255,179,0,0.5)'
+            'text-shadow': '0 0 10px rgba(0, 221, 255, 0.9), 0 0 20px rgba(0, 221, 255, 0.7), 0 0 30px rgba(0, 221, 255, 0.7), 0 0 40px rgba(0, 221, 255, 0.5)'
           }
+        },
+        spinReverse: {
+          '0%': { transform: 'rotate(0deg)' },
+          '100%': { transform: 'rotate(-360deg)' }
         },
         float: {
           '0%': { transform: 'translateY(0px)' },

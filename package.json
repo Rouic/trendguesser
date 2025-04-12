@@ -4,10 +4,19 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "turbo run dev",
+    "dev:web": "next dev",
+    "dev:functions": "cd functions && npm run serve",
+    "build": "turbo run build",
+    "build:web": "next build",
+    "build:functions": "cd functions && npm run build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "turbo run lint",
+    "lint:web": "next lint",
+    "lint:functions": "cd functions && npm run lint",
+    "clean": "turbo run clean && rm -rf node_modules",
+    "clean:web": "rm -rf .next",
+    "clean:functions": "cd functions && npm run clean"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
@@ -38,6 +47,7 @@
     "eslint-config-next": "15.2.4",
     "postcss-import": "^16.1.0",
     "tailwindcss": "^4.1.1",
+    "turbo": "^1.10.16",
     "typescript": "^5"
   }
 }

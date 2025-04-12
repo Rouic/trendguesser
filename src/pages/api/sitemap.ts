@@ -5,12 +5,10 @@ const sitemap = async (req: NextApiRequest, res: NextApiResponse) => {
   res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate');
   
   // URLs that should be in the sitemap
-  const baseUrl = 'https://pyramid.ninja';
+  const baseUrl = 'https://trendguesser.com';
   const pages = [
     '',            // Home page
     '/about',      // About page
-    '/host',       // Host page
-    '/join',       // Join page
   ];
 
   // Current date in ISO format for lastmod

@@ -6,14 +6,13 @@ import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
 import { getPerformance, FirebasePerformance } from 'firebase/performance';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDyk-FE8w0yd82WduMP6KVmvRPt0-4miS8",
-  authDomain: "pyramid-ninja.firebaseapp.com",
-  databaseURL: "https://pyramid-ninja.firebaseio.com",
-  projectId: "pyramid-ninja",
-  storageBucket: "pyramid-ninja.appspot.com",
-  messagingSenderId: "668178102663",
-  appId: "1:668178102663:web:bc247d167d2cab96adfb22",
-  measurementId: "G-VCPEBG1XK7"
+  apiKey: "AIzaSyC18HxW9nK5aYz0BMPTEsRQUl8FvGwRGJM",
+  authDomain: "trendguesser-app.firebaseapp.com",
+  projectId: "trendguesser-app",
+  storageBucket: "trendguesser-app.appspot.com",
+  messagingSenderId: "276589395759",
+  appId: "1:276589395759:web:3a95fc5e71178a86c34825",
+  measurementId: "G-TNLY6X1TBG"
 };
 
 // Initialize Firebase based on consent
