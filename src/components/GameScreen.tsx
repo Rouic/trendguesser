@@ -124,6 +124,20 @@ const GameScreen = () => {
         hiddenVolume: hiddenTermVolume,
       });
 
+      // Determine if the guess should be correct for verification
+      const actuallyHigher = hiddenTermVolume > knownTermVolume;
+      const actuallyEqual = hiddenTermVolume === knownTermVolume;
+      const shouldBeCorrect = actuallyEqual
+        ? true
+        : isHigher === actuallyHigher;
+
+      console.log(`[handleGuess] Expected result:`, {
+        actuallyHigher,
+        actuallyEqual,
+        userGuessedHigher: isHigher,
+        shouldBeCorrect,
+      });
+
       // Process the guess
       const result = await makeGuess(isHigher);
 
@@ -134,31 +148,20 @@ const GameScreen = () => {
         gameFinished: gameState?.finished,
       });
 
-      // Manually track whether the guess was correct based on the volumes
-      const actuallyHigher = hiddenTermVolume > knownTermVolume;
-      const actuallyEqual = hiddenTermVolume === knownTermVolume;
-      const isActuallyCorrect = actuallyEqual
-        ? true
-        : isHigher === actuallyHigher;
-
-      console.log(`[handleGuess] Manual verification:`, {
-        actuallyHigher,
-        actuallyEqual,
-        isHigher,
-        isActuallyCorrect,
-        serviceResultCorrect: result === isActuallyCorrect,
-      });
-
-      if (result) {
+      // Use the determined correct/incorrect status rather than trusting result directly
+      if (result && shouldBeCorrect) {
         // Correct guess
         setLastGuessCorrect(true);
         setShowResult(true);
 
         // Simple delay before showing the next round
         setTimeout(() => {
-          setShowResult(false);
-          setLastGuessCorrect(null);
-          setIsGuessing(false);
+          // First verify we still have a valid game state before hiding result
+          if (gameState && !gameState.finished) {
+            setShowResult(false);
+            setLastGuessCorrect(null);
+            setIsGuessing(false);
+          }
         }, 1500);
       } else {
         // Wrong guess - game over

@@ -25,14 +25,17 @@ const SearchTermCard: React.FC<SearchTermCardProps> = ({
 
   // Define animation variants based on position
   const variants = {
-    // Initial states
+    // Initial states - keeping card still until animation starts
     initial: {
       opacity: position === "next" ? 0 : 1,
-      y: position === "next" ? 40 : 0,
+      y: 0,
       scale: position === "next" ? 0.95 : 1,
+      transition: {
+        duration: 0, // No initial animation
+      },
     },
 
-    // Animated states during transitions
+    // Animated states during transitions - improved to reduce flickering
     animate: {
       opacity: 1,
       y: position === "top" ? "-100%" : position === "bottom" ? "-100%" : 0,
@@ -41,6 +44,7 @@ const SearchTermCard: React.FC<SearchTermCardProps> = ({
         y: {
           duration: 0.8,
           ease: [0.2, 0.9, 0.3, 1], // Custom easing for smooth movement
+          delay: 0.1, // Small delay to ensure state is fully updated
         },
         opacity: {
           duration: 0.5,
@@ -53,14 +57,14 @@ const SearchTermCard: React.FC<SearchTermCardProps> = ({
       },
     },
 
-    // State when moving to next position
+    // State when moving to next position - improved timing
     next: {
       opacity: 1,
       y: 0,
       scale: 1,
       transition: {
         duration: 0.5,
-        delay: 0.2,
+        delay: 0.3, // Increased delay to ensure previous animations complete
         ease: "easeOut",
       },
     },
@@ -80,8 +84,12 @@ const SearchTermCard: React.FC<SearchTermCardProps> = ({
       position === "top" ? "mb-8" : position === "bottom" ? "mt-8" : ""
     }`;
 
+  // Use key prop to ensure complete re-render when term changes
+  const cardKey = `card-${term.id}-${position}`;
+
   return (
     <motion.div
+      key={cardKey}
       variants={variants}
       initial="initial"
       animate={getAnimationState()}

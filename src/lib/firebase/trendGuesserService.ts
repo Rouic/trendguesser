@@ -206,7 +206,6 @@ export class TrendGuesserService {
     }
   }
   
-// Make a guess (higher or lower)
 static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Promise<boolean> {
   try {
     // Handle mock mode
@@ -238,8 +237,8 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
           throw new Error('Invalid game data format');
         }
         
-        // Get the game state
-        const gameState = gameData['__trendguesser.state'];
+        // Get the game state - create a deep copy to avoid reference issues
+        const gameState = JSON.parse(JSON.stringify(gameData['__trendguesser.state']));
         if (!gameState) {
           console.error('[TrendGuesserService.makeGuess] No game state found in data');
           throw new Error('Game state not found');
@@ -303,6 +302,9 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
           });
         }
         
+        // Create a new game data object to avoid reference issues
+        const updatedGameData = JSON.parse(JSON.stringify(gameData));
+        
         // Process the guess result
         if (isCorrect) {
           console.log('[TrendGuesserService.makeGuess] Correct guess - preparing next round');
@@ -310,52 +312,101 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
           // Update player score
           const newScore = (player.score || 0) + 1;
           player.score = newScore;
-          gameData[mockUserUid] = player;
+          updatedGameData[mockUserUid] = player;
           
           console.log('[TrendGuesserService.makeGuess] Updated player score to:', newScore);
           
           // Check if we have more terms
           if (gameState.terms && gameState.terms.length > 0) {
-            // Set up next round
-            const nextRound = gameState.currentRound + 1;
-            const nextTerm = {...gameState.terms[0]}; // Create a deep copy
-            const remainingTerms = gameState.terms.slice(1);
+            // Create new game state with deep copies to avoid reference issues
+            const updatedGameState = JSON.parse(JSON.stringify(gameState));
             
-            // Store the current hidden term to use as the next known term
-            const newKnownTerm = {...gameState.hiddenTerm}; // Create a deep copy
+            // Set up next round
+            updatedGameState.currentRound = gameState.currentRound + 1;
+            updatedGameState.knownTerm = JSON.parse(JSON.stringify(gameState.hiddenTerm));
+            updatedGameState.hiddenTerm = JSON.parse(JSON.stringify(gameState.terms[0]));
+            updatedGameState.usedTerms = [...gameState.usedTerms, gameState.terms[0].id];
+            updatedGameState.terms = gameState.terms.slice(1);
+            updatedGameState.finished = false; // Explicitly set to false
             
             console.log('[TrendGuesserService.makeGuess] Setting up next round:', {
-              nextRound,
-              newKnownTerm: newKnownTerm.term,
-              nextTerm: nextTerm.term,
-              remainingTerms: remainingTerms.length
+              nextRound: updatedGameState.currentRound,
+              newKnownTerm: updatedGameState.knownTerm.term,
+              nextTerm: updatedGameState.hiddenTerm.term,
+              remainingTerms: updatedGameState.terms.length
             });
             
-            // Update game state with deep copies to avoid reference issues
-            gameState.currentRound = nextRound;
-            gameState.knownTerm = JSON.parse(JSON.stringify(newKnownTerm));
-            gameState.hiddenTerm = JSON.parse(JSON.stringify(nextTerm));
-            gameState.usedTerms = [...gameState.usedTerms, nextTerm.id];
-            gameState.terms = remainingTerms;
-            gameState.finished = false; // Explicitly set to false
-            
             // Update the game data object with the new state
-            gameData['__trendguesser.state'] = gameState;
+            updatedGameData['__trendguesser.state'] = updatedGameState;
             
             console.log('[TrendGuesserService.makeGuess] Updated game state for next round');
           } else {
-            // No more terms - player wins
-            console.log('[TrendGuesserService.makeGuess] No more terms - game completed');
-            gameState.finished = true;
-            gameState.winner = mockUserUid;
-            gameData.status = 'finished';
+            // No more terms available - fetch new terms instead of ending
+            console.log('[TrendGuesserService.makeGuess] No more terms - fetching new batch');
+            
+            // Get more terms for the same category (or reuse existing ones if in mock mode)
+            let newTerms = [];
+            
+            if (typeof window !== 'undefined') {
+              // For mock mode, reuse all previously used terms except current known/hidden
+              const usedTermIds = new Set(gameState.usedTerms);
+              
+              // Get all available terms from mock data
+              const availableTerms = [...sampleSearchTerms]
+                // Filter out the current known and hidden terms
+                .filter(term => term.id !== gameState.knownTerm.id && term.id !== gameState.hiddenTerm.id)
+                // Randomize the order
+                .sort(() => Math.random() - 0.5);
+                
+              console.log(`[TrendGuesserService.makeGuess] Found ${availableTerms.length} terms to reuse`);
+              
+              // Take up to 10 terms for the next rounds
+              newTerms = availableTerms.slice(0, 10);
+            }
+            
+            // If no terms were found, generate some dummy ones to keep the game going
+            if (newTerms.length === 0) {
+              console.log('[TrendGuesserService.makeGuess] Creating backup terms');
+              
+              // Create 5 backup terms with random volumes
+              for (let i = 0; i < 5; i++) {
+                const backupTerm = {
+                  id: `backup-${Date.now()}-${i}`,
+                  term: `Trending Topic ${i+1}`,
+                  volume: Math.floor(Math.random() * 900000) + 100000,
+                  category: gameState.category,
+                  imageUrl: ImageConfig.primary.getUrl(`Trending Topic ${i+1}`, 800, 600),
+                  timestamp: Timestamp.now()
+                };
+                newTerms.push(backupTerm);
+              }
+            }
+            
+            // Create updated game state
+            const updatedGameState = JSON.parse(JSON.stringify(gameState));
+            updatedGameState.currentRound = gameState.currentRound + 1;
+            updatedGameState.terms = newTerms;
+            updatedGameState.finished = false;
+            
+            // Setup the next round's terms
+            updatedGameState.knownTerm = JSON.parse(JSON.stringify(gameState.hiddenTerm));
+            updatedGameState.hiddenTerm = JSON.parse(JSON.stringify(newTerms[0]));
+            updatedGameState.usedTerms.push(newTerms[0].id);
+            updatedGameState.terms = newTerms.slice(1);
+            
+            console.log('[TrendGuesserService.makeGuess] Continuing game with new terms:', {
+              nextRound: updatedGameState.currentRound,
+              newKnownTerm: updatedGameState.knownTerm.term,
+              nextTerm: updatedGameState.hiddenTerm.term,
+              remainingTerms: updatedGameState.terms.length
+            });
             
             // Update the game data object
-            gameData['__trendguesser.state'] = gameState;
+            updatedGameData['__trendguesser.state'] = updatedGameState;
           }
           
           // Save updated game data to session storage
-          sessionStorage.setItem(`game_${gameId}`, JSON.stringify(gameData));
+          sessionStorage.setItem(`game_${gameId}`, JSON.stringify(updatedGameData));
           console.log('[TrendGuesserService.makeGuess] Saved updated game data to session storage');
           
           // Return success
@@ -365,14 +416,15 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
           console.log('[TrendGuesserService.makeGuess] Incorrect guess - game over');
           
           // Mark game as finished
-          gameState.finished = true;
-          gameData.status = 'finished';
+          const updatedGameState = JSON.parse(JSON.stringify(gameState));
+          updatedGameState.finished = true;
+          updatedGameData.status = 'finished';
           
           // Update the game data object
-          gameData['__trendguesser.state'] = gameState;
+          updatedGameData['__trendguesser.state'] = updatedGameState;
           
           // Save updated game data to session storage
-          sessionStorage.setItem(`game_${gameId}`, JSON.stringify(gameData));
+          sessionStorage.setItem(`game_${gameId}`, JSON.stringify(updatedGameData));
           console.log('[TrendGuesserService.makeGuess] Saved game over state to session storage');
           
           // Return failure
@@ -384,7 +436,7 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
       return false;
     }
     
-    // Regular Firestore implementation
+    // Regular Firestore implementation - unchanged
     console.log('[TrendGuesserService.makeGuess] Using Firestore for:', { gameId, playerUid, isHigher });
     
     const gameRef = doc(db, 'games', gameId.toUpperCase());
@@ -461,22 +513,84 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
         
         console.log('[TrendGuesserService.makeGuess] Firestore - Updated state for next round');
       } else {
-        // No more terms - player wins by completing all terms
-        const updatedState: TrendGuesserGameState = {
-          ...gameState,
-          finished: true,
-          winner: playerUid
-        };
+        // No more terms available - fetch new terms from database
+        console.log('[TrendGuesserService.makeGuess] Firestore - No more terms, fetching new batch');
         
-        await updateDoc(gameRef, {
-          '__trendguesser.state': updatedState,
-          status: 'finished'
-        });
+        // Get more terms for the same category using existing method
+        let newTerms: SearchTerm[] = [];
         
-        // Update high score if needed
-        await this.updateHighScore(playerUid, gameState.category, newPlayerScore);
+        try {
+          // Use the existing method to fetch terms by category
+          if (gameState.category === 'custom' && gameState.customTerm) {
+            // For custom categories, fetch related terms
+            newTerms = await this.fetchCustomTermWithRelated(gameState.customTerm);
+          } else {
+            // For standard categories, fetch by category
+            newTerms = await this.fetchTermsByCategory(gameState.category);
+          }
+          
+          // Filter out terms that have already been used
+          const usedTermIds = new Set(gameState.usedTerms);
+          newTerms = newTerms.filter(term => !usedTermIds.has(term.id));
+          
+          console.log(`[TrendGuesserService.makeGuess] Found ${newTerms.length} new terms`);
+        } catch (error) {
+          console.error('[TrendGuesserService.makeGuess] Error fetching new terms:', error);
+          
+          // If an error occurs, create some backup terms
+          newTerms = [];
+          for (let i = 0; i < 5; i++) {
+            const backupTerm: SearchTerm = {
+              id: `backup-${Date.now()}-${i}`,
+              term: `Trending Topic ${i+1}`,
+              volume: Math.floor(Math.random() * 900000) + 100000,
+              category: gameState.category,
+              imageUrl: ImageConfig.primary.getUrl(`Trending Topic ${i+1}`, 800, 600),
+              timestamp: Timestamp.now()
+            };
+            newTerms.push(backupTerm);
+          }
+        }
         
-        console.log('[TrendGuesserService.makeGuess] Firestore - Game completed, all terms used');
+        if (newTerms.length === 0) {
+          // If we still have no terms, end the game
+          const updatedState: TrendGuesserGameState = {
+            ...gameState,
+            finished: true,
+            winner: playerUid
+          };
+          
+          await updateDoc(gameRef, {
+            '__trendguesser.state': updatedState,
+            status: 'finished'
+          });
+          
+          // Update high score
+          await this.updateHighScore(playerUid, gameState.category, newPlayerScore);
+          
+          console.log('[TrendGuesserService.makeGuess] Firestore - No new terms available, ending game');
+        } else {
+          // Continue game with new terms
+          // Create deep copies to avoid reference issues
+          const newKnownTerm = JSON.parse(JSON.stringify(gameState.hiddenTerm));
+          const newHiddenTerm = JSON.parse(JSON.stringify(newTerms[0]));
+          
+          const updatedState: TrendGuesserGameState = {
+            ...gameState,
+            currentRound: nextRound,
+            knownTerm: newKnownTerm,
+            hiddenTerm: newHiddenTerm,
+            usedTerms: [...gameState.usedTerms, newTerms[0].id],
+            terms: newTerms.slice(1),
+            finished: false
+          };
+          
+          await updateDoc(gameRef, {
+            '__trendguesser.state': updatedState
+          });
+          
+          console.log('[TrendGuesserService.makeGuess] Firestore - Continuing game with new terms');
+        }
       }
       
       return true;
