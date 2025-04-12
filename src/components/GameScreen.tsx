@@ -104,26 +104,25 @@ const GameScreen = () => {
   }, [gameState]);
 
   // Handle correct guess animation with conveyor belt effect
-  const handleCorrectGuess = () => {
-    // First, show success notification and reveal volume
+  const handleCorrectGuess = useCallback(() => {
+    // First, show volume of hidden card
     setShowResult(true);
 
-    // Start animation after a brief moment
+    // Start animation after revealing the volume
     setTimeout(() => {
-      // Hide success notification right before animation starts
-      setShowResult(false);
-
-      // Start the animation immediately
       setIsAnimating(true);
 
-      // Reset states after animation completes
+      // Transition to next state after animation completes
       setTimeout(() => {
+        // Reset states after animation finishes - this needs to happen
+        // in the right order to avoid jumpy transitions
         setIsAnimating(false);
+        setShowResult(false);
         setLastGuessCorrect(null);
         setIsGuessing(false);
-      }, 900); // Just enough time for animation to complete
-    }, 800); // Show volumes for a moment before animating
-  };
+      }, 800); // Match animation duration
+    }, 800); // Time to show the result before animation
+  }, []);
 
   // Handle player making a guess
   const handleGuess = async (isHigher: boolean) => {
@@ -141,7 +140,7 @@ const GameScreen = () => {
       setLastGuessCorrect(result);
 
       if (result) {
-        // Handle successful guess with new animation
+        // Handle successful guess with animation
         handleCorrectGuess();
       } else {
         // For incorrect guess, show the game over screen
@@ -213,24 +212,23 @@ const GameScreen = () => {
   const containerVariants = {
     initial: { y: 0 },
     animate: {
-      y: "-100%",
+      y: "-33.33%", // Move up exactly one card's height
       transition: {
-        duration: 0.75,
-        ease: [0.2, 0.9, 0.3, 1], // Custom easing curve for more natural movement
-        delay: 0.1,
+        duration: 0.8,
+        ease: [0.2, 0.9, 0.3, 1], // Custom easing curve for smooth conveyor movement
       },
     },
   };
 
-  // Define variants for the next card
+  // Define variants for the next card that will appear at bottom
   const nextCardVariants = {
-    initial: { opacity: 0, y: 40 },
+    initial: { opacity: 0, y: 80 },
     animate: {
       opacity: 1,
       y: 0,
       transition: {
-        duration: 0.6,
-        delay: 0.2, // Shorter delay so it appears as part of the same animation
+        duration: 0.3,
+        delay: 0.1, // Slightly delayed to create a cascading effect
         ease: "easeOut",
       },
     },
@@ -260,44 +258,21 @@ const GameScreen = () => {
         </div>
       </div>
 
-      {/* Game area - conveyor belt effect with proper spacing for middle bar */}
+      {/* Game area with conveyor belt animation */}
       <div className="flex-1 relative overflow-hidden">
-        {/* Higher/Lower buttons - middle section - fixed on top of everything */}
-        <div className="absolute left-0 right-0 top-1/2 transform -translate-y-1/2 z-30 flex justify-center items-center gap-6 bg-black/70 border-y border-white/10 backdrop-blur-md py-5">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => handleGuess(false)}
-            disabled={isGuessing}
-            className="px-8 py-4 bg-black/60 backdrop-blur-sm rounded-xl border-2 border-game-neon-blue/70 text-game-neon-blue font-bold font-game-fallback text-xl hover:bg-black/80 shadow-neon-blue-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            LOWER
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => handleGuess(true)}
-            disabled={isGuessing}
-            className="px-8 py-4 bg-black/60 backdrop-blur-sm rounded-xl border-2 border-game-neon-green/70 text-game-neon-green font-bold font-game-fallback text-xl hover:bg-black/80 shadow-neon-green-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            HIGHER
-          </motion.button>
-        </div>
-
-        {/* Cards container with spacing for middle bar */}
+        {/* Cards container - using a triple-card system for conveyor belt effect */}
         <motion.div
           className="flex flex-col"
-          style={{ height: "220%" }} // Extra height to account for spacing
+          style={{ height: "300%" }} // Height for 3 full cards
           variants={containerVariants}
           initial="initial"
           animate={isAnimating ? "animate" : "initial"}
         >
-          {/* Known term (top card) - moved up to create space for middle bar */}
-          <div className="h-[40%] flex items-center justify-center px-0 pb-8">
+          {/* Known term (top card) - will slide off the top */}
+          <div className="h-[33.33%] flex items-center justify-center px-4 py-8">
             <div className="w-full max-w-7xl">
               <div
-                className="w-full rounded-none sm:rounded-2xl overflow-hidden shadow-xl min-h-[280px] relative"
+                className="w-full rounded-xl overflow-hidden shadow-xl min-h-[280px] relative"
                 style={{
                   backgroundImage: `url("${gameState.knownTerm.imageUrl}")`,
                   backgroundSize: "cover",
@@ -337,14 +312,11 @@ const GameScreen = () => {
             </div>
           </div>
 
-          {/* Empty middle spacing for the buttons */}
-          <div className="h-[40%]"></div>
-
-          {/* Hidden term (bottom card) - with space from the middle bar */}
-          <div className="h-[40%] flex items-center justify-center px-0 pt-8">
+          {/* Hidden term (will become the top card) */}
+          <div className="h-[33.33%] flex items-center justify-center px-4 py-8">
             <div className="w-full max-w-7xl">
               <div
-                className="w-full rounded-none sm:rounded-2xl overflow-hidden shadow-xl min-h-[280px] relative"
+                className="w-full rounded-xl overflow-hidden shadow-xl min-h-[280px] relative"
                 style={{
                   backgroundImage: `url("${gameState.hiddenTerm.imageUrl}")`,
                   backgroundSize: "cover",
@@ -397,60 +369,77 @@ const GameScreen = () => {
             </div>
           </div>
 
-          {/* Empty spacing for next card to appear after animation */}
-          <div className="h-[20%]"></div>
-        </motion.div>
-
-        {/* Next card that appears at the bottom after animation */}
-        {isAnimating && getNextTerm && (
-          <motion.div
-            className="absolute bottom-[10%] left-0 right-0 flex items-center justify-center h-[40%] px-0 pt-8"
-            variants={nextCardVariants}
-            initial="initial"
-            animate={isAnimating ? "animate" : "initial"}
-          >
-            <div className="w-full max-w-7xl">
-              <div
-                className="w-full rounded-none sm:rounded-2xl overflow-hidden shadow-xl min-h-[280px] relative"
-                style={{
-                  backgroundImage: `url("${getNextTerm.imageUrl}")`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
-              >
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80"></div>
-
-                {/* Card pattern overlay */}
+          {/* Next card (will slide up from below) */}
+          {getNextTerm && (
+            <div className="h-[33.33%] flex items-center justify-center px-4 py-8">
+              <div className="w-full max-w-7xl">
                 <div
-                  className="absolute inset-0 opacity-15"
-                  style={{ backgroundImage: `url(/images/card-pattern.svg)` }}
-                ></div>
+                  className={`w-full rounded-xl overflow-hidden shadow-xl min-h-[280px] relative ${
+                    !isAnimating && "opacity-0"
+                  }`}
+                  style={{
+                    backgroundImage: `url("${getNextTerm.imageUrl}")`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                  }}
+                >
+                  {/* Gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80"></div>
 
-                {/* Content */}
-                <div className="relative p-6 sm:p-8 flex flex-col items-center justify-center text-center min-h-[280px]">
-                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 font-game-fallback text-center">
-                    {getNextTerm.term}
-                  </h3>
+                  {/* Card pattern overlay */}
+                  <div
+                    className="absolute inset-0 opacity-15"
+                    style={{ backgroundImage: `url(/images/card-pattern.svg)` }}
+                  ></div>
 
-                  <div className="mt-2 flex flex-col items-center">
-                    <p className="text-lg text-white/70 font-game-fallback mb-1">
-                      Monthly Search Volume
-                    </p>
-                    <div className="w-20 h-20 rounded-full border-4 border-game-neon-yellow flex items-center justify-center">
-                      <span className="text-5xl font-bold text-game-neon-yellow">
-                        ?
-                      </span>
+                  {/* Content */}
+                  <div className="relative p-6 sm:p-8 flex flex-col items-center justify-center text-center min-h-[280px]">
+                    <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 font-game-fallback text-center">
+                      {getNextTerm.term}
+                    </h3>
+
+                    <div className="mt-2 flex flex-col items-center">
+                      <p className="text-lg text-white/70 font-game-fallback mb-1">
+                        Monthly Search Volume
+                      </p>
+                      <div className="w-20 h-20 rounded-full border-4 border-game-neon-yellow flex items-center justify-center">
+                        <span className="text-5xl font-bold text-game-neon-yellow">
+                          ?
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
-          </motion.div>
-        )}
+          )}
+        </motion.div>
+
+        {/* Higher/Lower buttons - fixed in the middle on top of everything */}
+        <div className="absolute left-0 right-0 top-1/2 transform -translate-y-1/2 z-30 flex justify-center items-center gap-6 bg-black/70 border-y border-white/10 backdrop-blur-md py-5">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleGuess(false)}
+            disabled={isGuessing}
+            className="px-8 py-4 bg-black/60 backdrop-blur-sm rounded-xl border-2 border-game-neon-blue/70 text-game-neon-blue font-bold font-game-fallback text-xl hover:bg-black/80 shadow-neon-blue-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            LOWER
+          </motion.button>
+
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => handleGuess(true)}
+            disabled={isGuessing}
+            className="px-8 py-4 bg-black/60 backdrop-blur-sm rounded-xl border-2 border-game-neon-green/70 text-game-neon-green font-bold font-game-fallback text-xl hover:bg-black/80 shadow-neon-green-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            HIGHER
+          </motion.button>
+        </div>
       </div>
 
-      {/* Correct guess notification (smaller, less intrusive) */}
+      {/* Correct guess notification */}
       <AnimatePresence>
         {showResult && lastGuessCorrect && (
           <motion.div
@@ -610,7 +599,7 @@ const GameScreen = () => {
 
       {/* Error message */}
       {error && !showResult && (
-        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 px-6 py-3 bg-game-neon-red/20 border border-game-neon-red/50 rounded-lg text-white text-center max-w-xs">
+        <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 px-6 py-3 bg-game-neon-red/20 border border-game-neon-red/50 rounded-lg text-white text-center max-w-xs z-50">
           {error}
         </div>
       )}

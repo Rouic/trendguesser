@@ -55,6 +55,76 @@
 
 }
 
+.cards-container {
+  /* Establish 3D space for smoother animations */
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+/* Ensure fixed elements stay on top */
+.fixed-overlay {
+  z-index: 30;
+  position: relative;
+}
+
+/* Card transition enhancements */
+.card-transition {
+  transition: transform 0.8s cubic-bezier(0.2, 0.9, 0.3, 1),
+              opacity 0.5s ease;
+}
+
+/* Smooth fade transitions */
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.fade-out {
+  animation: fadeOut 0.5s ease forwards;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Ensure proper spacing between cards and control bar */
+.card-spacing-top {
+  padding-bottom: 3rem; /* Space above the control bar */
+}
+
+.card-spacing-bottom {
+  padding-top: 3rem; /* Space below the control bar */
+}
+
+/* Shadow effect for better card depth perception during animation */
+.card-shadow {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3),
+              0 8px 10px -6px rgba(0, 0, 0, 0.2);
+  transition: box-shadow 0.3s ease;
+}
+
+.card-shadow:hover {
+  box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.4),
+              0 10px 15px -5px rgba(0, 0, 0, 0.3);
+}
+
+/* Fixed middle control bar styling */
+.control-bar {
+  background: linear-gradient(to bottom,
+              rgba(0, 0, 0, 0.8) 0%,
+              rgba(0, 0, 0, 0.7) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
 /* Custom font-family fallbacks */
 .font-game-fallback {
   font-family: 'Oswald', 'Arial Black', 'Impact', Arial, sans-serif !important;
