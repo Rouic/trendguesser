@@ -9,7 +9,21 @@ NC='\033[0m' # No Color
 echo -e "${YELLOW}TrendGuesser Deployment Script${NC}"
 echo "============================="
 
-# First build the functions
+# First build the Next.js application
+echo -e "${YELLOW}Building Next.js application...${NC}"
+echo "Installing dependencies if needed..."
+npm install
+echo "Building Next.js app..."
+npm run build:web
+echo "Exporting static files to 'out' directory..."
+npx next export
+if [ $? -ne 0 ]; then
+  echo "Next.js build failed! Aborting deployment."
+  exit 1
+fi
+echo -e "${GREEN}Next.js application built successfully!${NC}"
+
+# Then build the functions
 echo -e "${YELLOW}Building Firebase Functions...${NC}"
 cd functions
 echo "Cleaning lib directory..."

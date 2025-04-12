@@ -6,6 +6,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 });
 
 const nextConfig = {
+  output: 'export',
   reactStrictMode: false,
   eslint: {
     dirs: ['src'],
