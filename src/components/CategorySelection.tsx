@@ -1,11 +1,78 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { SearchCategory } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface CategorySelectionProps {
   onSelect: (category: SearchCategory) => void;
 }
 
+interface CategoryScores {
+  [category: string]: number;
+}
+
 const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect }) => {
+  const { userUid } = useAuth();
+  const [highScores, setHighScores] = useState<CategoryScores>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Load high scores from localStorage or sessionStorage
+    const loadHighScores = () => {
+      if (typeof window !== 'undefined' && userUid) {
+        try {
+          // Try to load high scores from localStorage
+          const scoresData = localStorage.getItem(`tg_highscores_${userUid}`);
+          if (scoresData) {
+            const scores = JSON.parse(scoresData) as CategoryScores;
+            setHighScores(scores);
+          } else {
+            // If no localStorage data, try to gather from completed games in sessionStorage
+            const scores: CategoryScores = {};
+            
+            if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true') {
+              // In mock mode, collect scores from session storage
+              for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                if (key && key.startsWith('game_')) {
+                  try {
+                    const gameData = JSON.parse(sessionStorage.getItem(key) || '{}');
+                    const gameState = gameData['__trendguesser.state'];
+                    const playerData = gameData[userUid];
+                    
+                    if (gameState?.finished && gameState?.category && playerData?.score) {
+                      const category = gameState.category;
+                      const score = playerData.score;
+                      
+                      // Update high score if better than existing
+                      if (!scores[category] || score > scores[category]) {
+                        scores[category] = score;
+                      }
+                    }
+                  } catch (e) {
+                    console.error('Error parsing game data for high scores:', e);
+                  }
+                }
+              }
+              
+              // Save collected scores
+              if (Object.keys(scores).length > 0) {
+                setHighScores(scores);
+                localStorage.setItem(`tg_highscores_${userUid}`, JSON.stringify(scores));
+              }
+            }
+          }
+        } catch (e) {
+          console.error('Error loading high scores:', e);
+        }
+        
+        setLoading(false);
+      }
+    };
+    
+    loadHighScores();
+  }, [userUid]);
+
+  // Add playCount with each category to track which ones have been played
   const categories: { id: SearchCategory; name: string; description: string; color: string }[] = [
     {
       id: 'gaming',
@@ -63,10 +130,26 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect }) => {
         <button
           key={category.id}
           onClick={() => onSelect(category.id)}
-          className={`p-4 bg-black/40 backdrop-blur-sm rounded-xl border ${category.color} hover:bg-black/60 hover:scale-105 transition-all duration-300 flex flex-col items-center justify-center text-center h-32`}
+          className={`p-4 bg-black/40 backdrop-blur-sm rounded-xl border ${category.color} hover:bg-black/60 hover:scale-105 transition-all duration-300 flex flex-col items-center justify-center text-center h-32 relative`}
         >
           <h3 className="text-xl font-bold mb-1">{category.name}</h3>
           <p className="text-sm opacity-80">{category.description}</p>
+          
+          {/* High score badge */}
+          {!loading && (
+            highScores[category.id] ? (
+              <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full border border-white/20 text-xs flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span>High: {highScores[category.id]}</span>
+              </div>
+            ) : (
+              <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm px-2 py-1 rounded-full border border-white/20 text-xs text-gray-400">
+                New
+              </div>
+            )
+          )}
         </button>
       ))}
       

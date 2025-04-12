@@ -541,6 +541,36 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 
               // Update game data
               setGameData(parsedData);
+              
+              // Save high score if applicable
+              if (
+                typeof window !== "undefined" &&
+                parsedData["__trendguesser.state"].category &&
+                currentPlayer.score > 0
+              ) {
+                try {
+                  const category = parsedData["__trendguesser.state"].category;
+                  const score = currentPlayer.score;
+                  
+                  // Load existing high scores
+                  const highScoresKey = `tg_highscores_${userUid}`;
+                  let highScores = {};
+                  
+                  const existingScores = localStorage.getItem(highScoresKey);
+                  if (existingScores) {
+                    highScores = JSON.parse(existingScores);
+                  }
+                  
+                  // Update high score if better than existing
+                  if (!highScores[category] || score > highScores[category]) {
+                    highScores[category] = score;
+                    localStorage.setItem(highScoresKey, JSON.stringify(highScores));
+                    console.log(`New high score saved for ${category}: ${score}`);
+                  }
+                } catch (err) {
+                  console.error("Error saving high score:", err);
+                }
+              }
             }
           } catch (e) {
             console.error("Error updating state after ending game:", e);

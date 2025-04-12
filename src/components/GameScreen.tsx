@@ -13,6 +13,7 @@ const GameScreen = () => {
     makeGuess,
     endGame,
     resetGame,
+    startGame,
     error: gameError,
   } = useGame();
 
@@ -105,21 +106,24 @@ const GameScreen = () => {
 
   // Handle correct guess animation with conveyor belt effect
   const handleCorrectGuess = useCallback(() => {
-    // First, show volume of hidden card
+    // First, ensure we mark this as a correct guess and show volume of hidden card
+    setLastGuessCorrect(true);
     setShowResult(true);
 
     // Start animation after revealing the volume
-    setTimeout(() => {
+    const animationTimer = setTimeout(() => {
       setIsAnimating(true);
 
       // Transition to next state after animation completes
-      setTimeout(() => {
-        // Reset states after animation finishes - this needs to happen
-        // in the right order to avoid jumpy transitions
+      const resetTimer = setTimeout(() => {
+        // Use a batch update to ensure state changes happen together
+        // and in the correct sequence
         setIsAnimating(false);
+        setIsGuessing(false);
+
+        // These need to happen last to avoid showing game over
         setShowResult(false);
         setLastGuessCorrect(null);
-        setIsGuessing(false);
       }, 800); // Match animation duration
     }, 800); // Time to show the result before animation
   }, []);
@@ -137,9 +141,13 @@ const GameScreen = () => {
       // Process the guess
       const result = await makeGuess(isHigher);
       console.log("Guess result:", result);
-      setLastGuessCorrect(result);
 
-      if (result) {
+      // Explicitly set if the guess was correct or not
+      // This ensures we have a definite true/false value
+      const wasCorrect = result === true;
+      setLastGuessCorrect(wasCorrect);
+
+      if (wasCorrect) {
         // Handle successful guess with animation
         handleCorrectGuess();
       } else {
@@ -150,6 +158,10 @@ const GameScreen = () => {
       console.error("Error in handleGuess:", err);
       setError("Error processing guess. Please try again.");
       setIsGuessing(false);
+      // Ensure we're not showing any animations or result screens
+      setIsAnimating(false);
+      setShowResult(false);
+      setLastGuessCorrect(null);
     }
   };
 
@@ -262,8 +274,7 @@ const GameScreen = () => {
       <div className="flex-1 relative overflow-hidden">
         {/* Cards container - using a triple-card system for conveyor belt effect */}
         <motion.div
-          className="flex flex-col"
-          style={{ height: "300%" }} // Height for 3 full cards
+          className="flex flex-col h-[calc(100vh-64px)]"
           variants={containerVariants}
           initial="initial"
           animate={isAnimating ? "animate" : "initial"}
@@ -441,7 +452,7 @@ const GameScreen = () => {
 
       {/* Correct guess notification */}
       <AnimatePresence>
-        {showResult && lastGuessCorrect && (
+        {showResult && lastGuessCorrect === true && (
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -578,8 +589,25 @@ const GameScreen = () => {
                 </div>
               </div>
 
-              {/* Play again button */}
-              <div className="p-6 bg-black/40 flex justify-center rounded-b-2xl border-t border-white/10">
+              {/* Play again and category buttons */}
+              <div className="p-6 bg-black/40 flex justify-center gap-4 rounded-b-2xl border-t border-white/10">
+                <button
+                  onClick={() => {
+                    endGame().then(() => {
+                      // Restart the same category instead of going back to category selection
+                      const currentCategory = gameState.category;
+                      resetGame();
+                      // Small delay to ensure state is reset properly
+                      setTimeout(() => {
+                        startGame(currentCategory);
+                      }, 100);
+                    });
+                  }}
+                  className="px-8 py-3 bg-black/60 rounded-xl border-2 border-game-neon-green/40 text-game-neon-green font-game-fallback hover:bg-black/80 hover:scale-105 transition-all duration-300"
+                >
+                  Play Again
+                </button>
+
                 <button
                   onClick={() => {
                     endGame().then(() => {
@@ -587,9 +615,9 @@ const GameScreen = () => {
                       router.push("/game");
                     });
                   }}
-                  className="px-8 py-3 bg-black/60 rounded-xl border border-white/30 text-white font-game-fallback hover:bg-black/80 hover:scale-105 transition-all duration-300"
+                  className="px-6 py-3 bg-black/40 rounded-xl border border-white/30 text-white font-game-fallback hover:bg-black/80 hover:scale-105 transition-all duration-300"
                 >
-                  Play Again
+                  Change Category
                 </button>
               </div>
             </motion.div>
