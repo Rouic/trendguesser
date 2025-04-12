@@ -3,20 +3,26 @@
   "description": "A game where you guess the trend of search terms over time.",
   "version": "1.0.0",
   "private": true,
+  "packageManager": "npm@10.9.2",
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "npm run dev:web & npm run dev:functions",
     "dev:web": "next dev",
     "dev:functions": "cd functions && npm run serve",
-    "build": "turbo run build",
+    "dev:emulator": "./dev.sh",
+    "build": "npm run build:web && npm run build:functions",
     "build:web": "next build",
     "build:functions": "cd functions && npm run build",
     "start": "next start",
-    "lint": "turbo run lint",
+    "lint": "npm run lint:web && npm run lint:functions",
     "lint:web": "next lint",
     "lint:functions": "cd functions && npm run lint",
-    "clean": "turbo run clean && rm -rf node_modules",
+    "clean": "npm run clean:web && npm run clean:functions && rm -rf node_modules",
     "clean:web": "rm -rf .next",
-    "clean:functions": "cd functions && npm run clean"
+    "clean:functions": "cd functions && npm run clean",
+    "emulators": "firebase emulators:start",
+    "emulators:setup": "node emulator-setup.js",
+    "emulators:export": "firebase emulators:export ./emulator-data",
+    "emulators:import": "firebase emulators:start --import=./emulator-data"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
@@ -45,9 +51,10 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "15.2.4",
+    "firebase-admin": "^11.11.0",
     "postcss-import": "^16.1.0",
     "tailwindcss": "^4.1.1",
-    "turbo": "^1.10.16",
+    "turbo": "^2.0.0",
     "typescript": "^5"
   }
 }

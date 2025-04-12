@@ -6,13 +6,13 @@ import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
 import { getPerformance, FirebasePerformance } from 'firebase/performance';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC18HxW9nK5aYz0BMPTEsRQUl8FvGwRGJM",
-  authDomain: "trendguesser-app.firebaseapp.com",
-  projectId: "trendguesser-app",
-  storageBucket: "trendguesser-app.appspot.com",
-  messagingSenderId: "276589395759",
-  appId: "1:276589395759:web:3a95fc5e71178a86c34825",
-  measurementId: "G-TNLY6X1TBG"
+  apiKey: "AIzaSyAbIQ8B30KkE3CiVZ-6nNGAwiAz2Q5url8",
+  authDomain: "trendguesser-332d4.firebaseapp.com",
+  projectId: "trendguesser-332d4",
+  storageBucket: "trendguesser-332d4.firebasestorage.app",
+  messagingSenderId: "748886157474",
+  appId: "1:748886157474:web:08ba697d25f6ec0b228ffb",
+  measurementId: "G-BEQ3HXTMS3"
 };
 
 // Initialize Firebase based on consent
@@ -28,7 +28,21 @@ export const initializeFirebase = (firebaseConsent = false, analyticsConsent = f
   if (!getApps().length) {
     app = initializeApp(firebaseConfig);
     auth = getAuth(app);
-    db = getFirestore(app);
+    
+    // Connect to emulators if in development mode
+    if (typeof window !== 'undefined' && 
+        window.location.hostname === 'localhost' && 
+        process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true') {
+      console.log("Connecting to Firebase Auth emulator");
+      const { connectAuthEmulator } = require('firebase/auth');
+      connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+      
+      const { connectFirestoreEmulator } = require('firebase/firestore');
+      db = getFirestore(app);
+      connectFirestoreEmulator(db, 'localhost', 8080);
+    } else {
+      db = getFirestore(app);
+    }
   } else {
     app = getApps()[0];
     auth = getAuth(app);

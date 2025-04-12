@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { ConsentProvider } from "../contexts/ConsentContext";
 import { AuthProvider } from "../contexts/AuthContext";
+import { GameProvider } from "../contexts/GameContext";
 import { initializeFirebase } from "../lib/firebase/firebase";
 
 function MyApp({ Component, pageProps }: AppProps) {
@@ -41,21 +42,22 @@ function MyApp({ Component, pageProps }: AppProps) {
   return (
     <ConsentProvider>
       <AuthProvider>
-        <Head>
-          {/* Primary Meta Tags */}
-          <title>TrendGuesser - the higher or lower game</title>
-          <meta
-            name="description"
-            content="TrendGuesser - the higher or lower game"
-          />
-          <meta
-            name="keywords"
-            content="trendguesser, higher or lower, game, single player, trending, search, game"
-          />
-          <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1, maximum-scale=5"
-          />
+        <GameProvider>
+          <Head>
+            {/* Primary Meta Tags */}
+            <title>TrendGuesser - the higher or lower game</title>
+            <meta
+              name="description"
+              content="TrendGuesser - the higher or lower game"
+            />
+            <meta
+              name="keywords"
+              content="trendguesser, higher or lower, game, single player, trending, search, game"
+            />
+            <meta
+              name="viewport"
+              content="width=device-width, initial-scale=1, maximum-scale=5"
+            />
 
           {/* Canonical URL */}
           <link rel="canonical" href={canonicalUrl} />
@@ -112,6 +114,7 @@ function MyApp({ Component, pageProps }: AppProps) {
           />
         </Head>
         <Component {...pageProps} />
+        </GameProvider>
       </AuthProvider>
     </ConsentProvider>
   );

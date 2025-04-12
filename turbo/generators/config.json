@@ -1,0 +1,24 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "generators": {
+    "component": {
+      "description": "Create a new React component",
+      "attributes": [
+        {
+          "name": "name",
+          "required": true,
+          "type": "string",
+          "description": "The name of the component"
+        }
+      ],
+      "examples": [
+        {
+          "attributes": {
+            "name": "Button"
+          },
+          "description": "Creates a Button component"
+        }
+      ]
+    }
+  }
+}

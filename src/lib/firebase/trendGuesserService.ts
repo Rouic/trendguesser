@@ -18,16 +18,26 @@ import {
 import { db } from './firebase';
 import { v4 as uuidv4 } from 'uuid';
 import { SearchCategory, SearchTerm, TrendGuesserGameState, TrendGuesserPlayer } from '@/types';
+import { sampleSearchTerms, sampleLeaderboard } from './mockData';
+
+// Development mode flag
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || 
+                       process.env.NODE_ENV === 'development';
 
 export class TrendGuesserService {
   // Start a new game with selected category
   static async startGame(gameId: string, category: SearchCategory, customTerm?: string): Promise<void> {
     try {
-      const gameRef = doc(db, 'games', gameId.toUpperCase());
-      const gameDoc = await getDoc(gameRef);
-      
-      if (!gameDoc.exists()) {
-        throw new Error('Game does not exist');
+      // In mock mode, we don't need to check if the game exists
+      if (!USE_MOCK_DATA) {
+        const gameRef = doc(db, 'games', gameId.toUpperCase());
+        const gameDoc = await getDoc(gameRef);
+        
+        if (!gameDoc.exists()) {
+          throw new Error('Game does not exist');
+        }
+      } else {
+        console.log('Using mock data for game start');
       }
       
       // Get terms for the selected category
@@ -61,14 +71,40 @@ export class TrendGuesserService {
         customTerm: category === 'custom' ? customTerm : undefined
       };
       
-      // Update the game document with new game state
-      await updateDoc(gameRef, {
-        status: 'active',
-        '__trendguesser.state': gameState
-      });
+      if (!USE_MOCK_DATA) {
+        // Update the game document with new game state
+        const gameRef = doc(db, 'games', gameId.toUpperCase());
+        await updateDoc(gameRef, {
+          status: 'active',
+          '__trendguesser.state': gameState
+        });
+      } else {
+        // In mock mode, we just log what would have happened
+        console.log('Mock: Game started with category:', category);
+        
+        // Store the game state in sessionStorage for mock mode
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem(`game_${gameId}`, JSON.stringify({
+            status: 'active',
+            '__trendguesser.state': gameState,
+            [sessionStorage.getItem('mock_user_uid') || 'mock_user']: {
+              uid: sessionStorage.getItem('mock_user_uid') || 'mock_user',
+              name: 'Mock Player',
+              score: 0
+            }
+          }));
+        }
+      }
       
     } catch (error) {
       console.error('Error starting game:', error);
+      
+      if (USE_MOCK_DATA) {
+        console.log('Falling back to mock game state due to error');
+        // Create a basic mock game state
+        return;
+      }
+      
       throw error;
     }
   }
@@ -208,6 +244,13 @@ export class TrendGuesserService {
     try {
       // Generate a short 6-character game ID (uppercase)
       const gameId = this.generateGameId();
+      
+      if (USE_MOCK_DATA) {
+        console.log('Using mock data for game creation');
+        // Return the game ID without actually writing to Firestore
+        return gameId;
+      }
+      
       const gameRef = doc(db, 'games', gameId);
       
       // Initialize player data
@@ -232,6 +275,12 @@ export class TrendGuesserService {
       
     } catch (error) {
       console.error('Error creating game:', error);
+      
+      if (USE_MOCK_DATA) {
+        console.log('Falling back to mock data due to error');
+        return this.generateGameId();
+      }
+      
       throw error;
     }
   }
@@ -239,6 +288,19 @@ export class TrendGuesserService {
   // Fetch leaderboard for a category
   static async getLeaderboard(category: SearchCategory): Promise<TrendGuesserPlayer[]> {
     try {
+      if (USE_MOCK_DATA) {
+        console.log('Using mock data for leaderboard');
+        // Sort and filter the mock leaderboard based on the requested category
+        return sampleLeaderboard
+          .filter(player => player.highScores && player.highScores[category])
+          .sort((a, b) => {
+            const scoreA = a.highScores?.[category] || 0;
+            const scoreB = b.highScores?.[category] || 0;
+            return scoreB - scoreA;
+          })
+          .slice(0, 10);
+      }
+      
       const leaderboardRef = collection(db, 'leaderboard');
       const q = query(
         leaderboardRef,
@@ -264,6 +326,12 @@ export class TrendGuesserService {
       
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
+      
+      if (USE_MOCK_DATA) {
+        console.log('Falling back to mock data due to error');
+        return sampleLeaderboard.slice(0, 10);
+      }
+      
       throw error;
     }
   }
@@ -310,6 +378,22 @@ export class TrendGuesserService {
   
   private static async fetchTermsByCategory(category: SearchCategory): Promise<SearchTerm[]> {
     try {
+      if (USE_MOCK_DATA) {
+        console.log('Using mock data for search terms');
+        
+        if (category === 'everything') {
+          // Return all sample terms
+          return sampleSearchTerms;
+        } else if (category === 'latest') {
+          // Return terms sorted by timestamp
+          return [...sampleSearchTerms].sort(() => Math.random() - 0.5);
+        } else {
+          // Filter by category
+          const filteredTerms = sampleSearchTerms.filter(term => term.category === category);
+          return filteredTerms.length > 0 ? filteredTerms : sampleSearchTerms;
+        }
+      }
+      
       const termsRef = collection(db, 'searchTerms');
       let q;
       
@@ -339,6 +423,12 @@ export class TrendGuesserService {
       
     } catch (error) {
       console.error('Error fetching terms:', error);
+      
+      if (USE_MOCK_DATA) {
+        console.log('Falling back to mock data due to error');
+        return sampleSearchTerms;
+      }
+      
       throw error;
     }
   }
