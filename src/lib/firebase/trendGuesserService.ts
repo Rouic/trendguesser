@@ -26,8 +26,10 @@ const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' ||
 
 export class TrendGuesserService {
   // Start a new game with selected category
-  static async startGame(gameId: string, category: SearchCategory, customTerm?: string): Promise<void> {
+  static async startGame(gameId: string, category: SearchCategory, customTerm?: string): Promise<TrendGuesserGameState | null> {
     try {
+      console.log(`TrendGuesserService.startGame: Starting game ${gameId} with category ${category}`);
+      
       // In mock mode, we don't need to check if the game exists
       if (!USE_MOCK_DATA) {
         const gameRef = doc(db, 'games', gameId.toUpperCase());
@@ -52,6 +54,7 @@ export class TrendGuesserService {
       }
       
       if (terms.length < 2) {
+        console.error('Not enough terms available for category:', category);
         throw new Error('Not enough terms available');
       }
       
@@ -78,6 +81,8 @@ export class TrendGuesserService {
           status: 'active',
           '__trendguesser.state': gameState
         });
+        
+        console.log(`Updated Firestore with game state for game ${gameId}`);
       } else {
         // In mock mode, we just log what would have happened
         console.log('Mock: Game started with category:', category);
@@ -130,7 +135,6 @@ export class TrendGuesserService {
           sessionStorage.setItem('current_game_id', gameId);
           console.log('Set current game ID in session storage:', gameId);
           
-          // Force the game state to be loaded immediately
           // Deactivate any other active games to avoid conflicts
           const gameKeys = [];
           for (let i = 0; i < sessionStorage.length; i++) {
@@ -149,19 +153,52 @@ export class TrendGuesserService {
               gameKeys.push(key);
             }
           }
-          
-          // Add a small delay to ensure data is available
-          await new Promise(resolve => setTimeout(resolve, 300));
         }
       }
+      
+      // Return the created game state for immediate use
+      return gameState;
       
     } catch (error) {
       console.error('Error starting game:', error);
       
       if (USE_MOCK_DATA) {
-        console.log('Falling back to mock game state due to error');
-        // Create a basic mock game state
-        return;
+        console.log('Falling back to basic mock game state due to error');
+        // Create and return a basic mock game state
+        const fallbackState: TrendGuesserGameState = {
+          currentRound: 1,
+          knownTerm: sampleSearchTerms[0],
+          hiddenTerm: sampleSearchTerms[1],
+          category: category || 'everything',
+          started: true,
+          finished: false,
+          usedTerms: [sampleSearchTerms[0].id, sampleSearchTerms[1].id],
+          terms: sampleSearchTerms.slice(2),
+          customTerm: category === 'custom' ? customTerm : undefined
+        };
+        
+        // Store the fallback state in session storage
+        if (typeof window !== 'undefined') {
+          const mockUserUid = sessionStorage.getItem('mock_user_uid') || 'mock_user';
+          const mockGameData = {
+            id: gameId,
+            status: 'active',
+            createdBy: mockUserUid,
+            gameType: 'trendguesser',
+            '__trendguesser.state': fallbackState,
+            [mockUserUid]: {
+              uid: mockUserUid,
+              name: 'Mock Player',
+              score: 0
+            }
+          };
+          
+          sessionStorage.setItem(`game_${gameId}`, JSON.stringify(mockGameData));
+          sessionStorage.setItem('current_game_id', gameId);
+          console.log('Created fallback game state in session storage:', fallbackState);
+        }
+        
+        return fallbackState;
       }
       
       throw error;
@@ -395,6 +432,37 @@ export class TrendGuesserService {
   // End the game and update high scores
   static async endGame(gameId: string, playerUid: string, finalScore: number): Promise<void> {
     try {
+      // Handle mock mode
+      if (USE_MOCK_DATA && typeof window !== 'undefined') {
+        console.log('Using mock data for ending game:', gameId);
+        
+        // Get current game ID from session storage if needed
+        const currentGameId = sessionStorage.getItem('current_game_id');
+        if (currentGameId && currentGameId !== gameId) {
+          console.warn('WARNING: gameId mismatch in endGame. Using current_game_id:', currentGameId);
+          gameId = currentGameId;
+        }
+        
+        // Get game data from session storage
+        const storedGameData = sessionStorage.getItem(`game_${gameId}`);
+        if (storedGameData) {
+          const gameData = JSON.parse(storedGameData);
+          const gameState = gameData['__trendguesser.state'] as TrendGuesserGameState;
+          
+          if (gameState && gameState.started) {
+            // Mark game as finished
+            gameState.finished = true;
+            gameData.status = 'finished';
+            
+            // Save updated game data
+            sessionStorage.setItem(`game_${gameId}`, JSON.stringify(gameData));
+            console.log('Updated mock game data as finished:', gameData);
+          }
+        }
+        
+        return;
+      }
+    
       const gameRef = doc(db, 'games', gameId.toUpperCase());
       const gameDoc = await getDoc(gameRef);
       
@@ -441,7 +509,7 @@ export class TrendGuesserService {
         
         // Create an empty initial game state in sessionStorage for immediate access
         if (typeof window !== 'undefined') {
-          const mockUserUid = sessionStorage.getItem('mock_user_uid') || 'mock_user';
+          const mockUserUid = sessionStorage.getItem('mock_user_uid') || createdBy || 'mock_user';
           const initialGameData = {
             id: gameId,
             status: 'waiting',
@@ -455,6 +523,9 @@ export class TrendGuesserService {
           };
           sessionStorage.setItem(`game_${gameId}`, JSON.stringify(initialGameData));
           console.log('Created initial mock game data:', initialGameData);
+          
+          // Make sure current_game_id is set to this new game
+          sessionStorage.setItem('current_game_id', gameId);
         }
         
         // Artificial delay to simulate network request
@@ -557,6 +628,27 @@ export class TrendGuesserService {
     score: number
   ): Promise<void> {
     try {
+      // In mock mode, store high score in sessionStorage
+      if (USE_MOCK_DATA && typeof window !== 'undefined') {
+        const highScoresData = sessionStorage.getItem('highScores');
+        let highScores = highScoresData ? JSON.parse(highScoresData) : {};
+        
+        // Initialize user's high scores if they don't exist
+        if (!highScores[playerUid]) {
+          highScores[playerUid] = {};
+        }
+        
+        // Update high score if the new score is higher
+        const currentHighScore = highScores[playerUid][category] || 0;
+        if (score > currentHighScore) {
+          highScores[playerUid][category] = score;
+          sessionStorage.setItem('highScores', JSON.stringify(highScores));
+          console.log(`Updated high score for ${playerUid} in category ${category}: ${score}`);
+        }
+        
+        return;
+      }
+    
       const playerRef = doc(db, 'players', playerUid);
       const playerDoc = await getDoc(playerRef);
       
@@ -662,6 +754,15 @@ export class TrendGuesserService {
         timestamp: Timestamp.now()
       };
       
+      // For mock mode, just get some random terms from the sample data
+      if (USE_MOCK_DATA) {
+        const randomTerms = [...sampleSearchTerms]
+          .sort(() => Math.random() - 0.5)
+          .slice(0, 10);
+        
+        return [customSearchTerm, ...randomTerms];
+      }
+      
       // Then get some related terms from the database (random for now)
       const termsRef = collection(db, 'searchTerms');
       const q = query(termsRef, limit(20));
@@ -681,6 +782,26 @@ export class TrendGuesserService {
       
     } catch (error) {
       console.error('Error fetching custom term:', error);
+      
+      // Fallback to mock data for custom term
+      if (USE_MOCK_DATA) {
+        console.log('Falling back to mock data for custom term');
+        
+        const customSearchTerm: SearchTerm = {
+          id: uuidv4(),
+          term: customTerm,
+          volume: Math.floor(Math.random() * 100) + 1,
+          category: 'custom',
+          imageUrl: `https://source.unsplash.com/featured/?${encodeURIComponent(customTerm)}`,
+          timestamp: Timestamp.now()
+        };
+        
+        return [
+          customSearchTerm,
+          ...sampleSearchTerms.slice(0, 10)
+        ];
+      }
+      
       throw error;
     }
   }
