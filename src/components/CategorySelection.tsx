@@ -15,62 +15,89 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect }) => {
   const [highScores, setHighScores] = useState<CategoryScores>({});
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Load high scores from localStorage or sessionStorage
-    const loadHighScores = () => {
-      if (typeof window !== 'undefined' && userUid) {
-        try {
-          // Try to load high scores from localStorage
-          const scoresData = localStorage.getItem(`tg_highscores_${userUid}`);
-          if (scoresData) {
-            const scores = JSON.parse(scoresData) as CategoryScores;
-            setHighScores(scores);
-          } else {
-            // If no localStorage data, try to gather from completed games in sessionStorage
-            const scores: CategoryScores = {};
-            
-            if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true') {
-              // In mock mode, collect scores from session storage
-              for (let i = 0; i < sessionStorage.length; i++) {
-                const key = sessionStorage.key(i);
-                if (key && key.startsWith('game_')) {
-                  try {
-                    const gameData = JSON.parse(sessionStorage.getItem(key) || '{}');
-                    const gameState = gameData['__trendguesser.state'];
-                    const playerData = gameData[userUid];
-                    
-                    if (gameState?.finished && gameState?.category && playerData?.score) {
-                      const category = gameState.category;
-                      const score = playerData.score;
-                      
-                      // Update high score if better than existing
-                      if (!scores[category] || score > scores[category]) {
-                        scores[category] = score;
-                      }
-                    }
-                  } catch (e) {
-                    console.error('Error parsing game data for high scores:', e);
-                  }
-                }
-              }
-              
-              // Save collected scores
-              if (Object.keys(scores).length > 0) {
-                setHighScores(scores);
-                localStorage.setItem(`tg_highscores_${userUid}`, JSON.stringify(scores));
-              }
-            }
-          }
-        } catch (e) {
-          console.error('Error loading high scores:', e);
-        }
-        
-        setLoading(false);
-      }
-    };
-    
-    loadHighScores();
-  }, [userUid]);
+ useEffect(() => {
+   // Load high scores from localStorage or sessionStorage
+   const loadHighScores = () => {
+     if (typeof window !== "undefined" && userUid) {
+       try {
+         console.log("Attempting to load high scores for user:", userUid);
+
+         // Try to load high scores from localStorage
+         const scoresData = localStorage.getItem(`tg_highscores_${userUid}`);
+         if (scoresData) {
+           try {
+             const scores = JSON.parse(scoresData) as CategoryScores;
+             console.log("Loaded high scores:", scores);
+             setHighScores(scores);
+           } catch (parseErr) {
+             console.error("Error parsing high scores:", parseErr);
+             setHighScores({});
+           }
+         } else {
+           console.log("No high scores found in localStorage");
+
+           // If no localStorage data, try to gather from completed games in sessionStorage
+           const scores: CategoryScores = {};
+
+           if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true") {
+             console.log(
+               "Checking session storage for game scores in mock mode"
+             );
+             // In mock mode, collect scores from session storage
+             for (let i = 0; i < sessionStorage.length; i++) {
+               const key = sessionStorage.key(i);
+               if (key && key.startsWith("game_")) {
+                 try {
+                   const gameData = JSON.parse(
+                     sessionStorage.getItem(key) || "{}"
+                   );
+                   const gameState = gameData["__trendguesser.state"];
+                   const playerData = gameData[userUid];
+
+                   if (
+                     gameState?.finished &&
+                     gameState?.category &&
+                     playerData?.score
+                   ) {
+                     const category = gameState.category;
+                     const score = playerData.score;
+
+                     console.log(
+                       `Found game data - Category: ${category}, Score: ${score}`
+                     );
+
+                     // Update high score if better than existing
+                     if (!scores[category] || score > scores[category]) {
+                       scores[category] = score;
+                     }
+                   }
+                 } catch (e) {
+                   console.error("Error parsing game data for high scores:", e);
+                 }
+               }
+             }
+
+             // Save collected scores
+             if (Object.keys(scores).length > 0) {
+               console.log("Saving collected scores to localStorage:", scores);
+               setHighScores(scores);
+               localStorage.setItem(
+                 `tg_highscores_${userUid}`,
+                 JSON.stringify(scores)
+               );
+             }
+           }
+         }
+       } catch (e) {
+         console.error("Error loading high scores:", e);
+       }
+
+       setLoading(false);
+     }
+   };
+
+   loadHighScores();
+ }, [userUid]);
 
   // Add playCount with each category to track which ones have been played
   const categories: { id: SearchCategory; name: string; description: string; color: string }[] = [

@@ -541,7 +541,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 
               // Update game data
               setGameData(parsedData);
-              
+
+              // Save high score if applicable
               // Save high score if applicable
               if (
                 typeof window !== "undefined" &&
@@ -551,21 +552,53 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
                 try {
                   const category = parsedData["__trendguesser.state"].category;
                   const score = currentPlayer.score;
-                  
+
+                  console.log(
+                    `Trying to save high score - Category: ${category}, Score: ${score}`
+                  );
+
                   // Load existing high scores
                   const highScoresKey = `tg_highscores_${userUid}`;
                   let highScores = {};
-                  
+
                   const existingScores = localStorage.getItem(highScoresKey);
                   if (existingScores) {
-                    highScores = JSON.parse(existingScores);
+                    try {
+                      highScores = JSON.parse(existingScores);
+                      console.log("Existing high scores found:", highScores);
+                    } catch (parseErr) {
+                      console.error(
+                        "Error parsing existing high scores:",
+                        parseErr
+                      );
+                      // Initialize with empty object if parsing fails
+                      highScores = {};
+                    }
+                  } else {
+                    console.log(
+                      "No existing high scores found, creating new record"
+                    );
                   }
-                  
-                  // Update high score if better than existing
-                  if (!highScores[category] || score > highScores[category]) {
+
+                  // Check if there's an existing score
+                  const existingScore = highScores[category] || 0;
+                  console.log(
+                    `Existing score for ${category}: ${existingScore}`
+                  );
+
+                  // Update high score if better than or equal to existing
+                  // Changed: store the score even if it equals the current high score
+                  if (score >= existingScore) {
                     highScores[category] = score;
-                    localStorage.setItem(highScoresKey, JSON.stringify(highScores));
-                    console.log(`New high score saved for ${category}: ${score}`);
+                    localStorage.setItem(
+                      highScoresKey,
+                      JSON.stringify(highScores)
+                    );
+                    console.log(`High score saved for ${category}: ${score}`);
+                  } else {
+                    console.log(
+                      `Score ${score} not higher than existing ${existingScore}, not saving`
+                    );
                   }
                 } catch (err) {
                   console.error("Error saving high score:", err);

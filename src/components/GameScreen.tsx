@@ -158,9 +158,14 @@ const GameScreen = () => {
         setTimeout(() => {
           // First verify we still have a valid game state before hiding result
           if (gameState && !gameState.finished) {
+            // Important: Reset showResult first to ensure the next hidden term's volume is never shown
             setShowResult(false);
-            setLastGuessCorrect(null);
-            setIsGuessing(false);
+
+            // Add a small delay before allowing new guesses to ensure UI updates completely
+            setTimeout(() => {
+              setLastGuessCorrect(null);
+              setIsGuessing(false);
+            }, 150);
           }
         }, 1500);
       } else {
