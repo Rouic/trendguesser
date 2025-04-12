@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+} from "react";
 import { useRouter } from "next/router";
 import { useGame } from "@/contexts/GameContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,6 +24,10 @@ const GameScreen = () => {
     startGame,
     error: gameError,
   } = useGame();
+
+  // Added refs to keep track of timers for cleanup
+  const animationTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const resetTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const [showResult, setShowResult] = useState(false);
   const [lastGuessCorrect, setLastGuessCorrect] = useState<boolean | null>(
@@ -57,6 +67,14 @@ const GameScreen = () => {
       });
     }
   }, [gameState, gameId]);
+
+  // Clean up timers on unmount
+  useEffect(() => {
+    return () => {
+      if (animationTimerRef.current) clearTimeout(animationTimerRef.current);
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
 
   // Attempt to recover from missing game state
   useEffect(() => {
@@ -117,31 +135,36 @@ const GameScreen = () => {
 
   // Handle correct guess animation with conveyor belt effect
   const handleCorrectGuess = useCallback(() => {
+    // Clear any existing timers first
+    if (animationTimerRef.current) clearTimeout(animationTimerRef.current);
+    if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+
     // First, ensure we mark this as a correct guess and show volume of hidden card
     setLastGuessCorrect(true);
     setShowResult(true);
 
     // Start animation after revealing the volume
-    const animationTimer = setTimeout(() => {
+    animationTimerRef.current = setTimeout(() => {
       setIsAnimating(true);
 
       // Transition to next state after animation completes
-      const resetTimer = setTimeout(() => {
-        // Use a batch update to ensure state changes happen together
-        // and in the correct sequence
+      resetTimerRef.current = setTimeout(() => {
+        // Use a sequential approach to state updates to avoid race conditions
         setIsAnimating(false);
-        setIsGuessing(false);
 
-        // These need to happen last to avoid showing game over
-        setShowResult(false);
-        setLastGuessCorrect(null);
+        // Short delay before resetting other states to ensure smooth transition
+        setTimeout(() => {
+          setIsGuessing(false);
+          setShowResult(false);
+          setLastGuessCorrect(null);
 
-        // Animation is complete, now we can stop using the frozen values
-        setAnimationState((prev) => ({
-          ...prev,
-          isTransitioning: false,
-        }));
-      }, 1000); // Match animation duration (slightly increased)
+          // Animation is complete, now we can stop using the frozen values
+          setAnimationState((prev) => ({
+            ...prev,
+            isTransitioning: false,
+          }));
+        }, 50);
+      }, 1200); // Increased animation duration for smoother transition
     }, 1000); // Time to show the result before animation
   }, []);
 
@@ -153,7 +176,7 @@ const GameScreen = () => {
     setError(null);
 
     try {
-      // IMPORTANT FIX: Capture the current terms BEFORE making any changes
+      // IMPORTANT: Capture the current terms BEFORE making any changes
       // This ensures we use the correct state for comparison and animation
       const currentKnownTerm = { ...gameState.knownTerm };
       const currentHiddenTerm = { ...gameState.hiddenTerm };
@@ -166,13 +189,12 @@ const GameScreen = () => {
         hiddenVolume: currentHiddenTerm.volume,
       });
 
-      // Process the guess
+      // Process the guess - this will update the game state if correct
       const result = await makeGuess(isHigher);
       console.log("Guess result:", result);
 
       // Check the actual comparison using the CAPTURED terms, not the potentially updated game state
       const actuallyHigher = currentHiddenTerm.volume > currentKnownTerm.volume;
-      const actuallyLower = currentHiddenTerm.volume < currentKnownTerm.volume;
       const actuallyEqual =
         currentHiddenTerm.volume === currentKnownTerm.volume;
 
@@ -185,25 +207,20 @@ const GameScreen = () => {
       } known term. Player guessed ${isHigher ? "HIGHER" : "LOWER"}. 
     Service said guess was ${result ? "CORRECT" : "INCORRECT"}.`);
 
-      // Explicitly set if the guess was correct or not
-      const wasCorrect = result === true;
-
-      // FIX: Save the CAPTURED state for animations, not the potentially updated game state
+      // Save the CAPTURED state for animations, so we can show what the user was guessing against
       setAnimationState({
         knownTerm: currentKnownTerm,
         hiddenTerm: currentHiddenTerm,
         isTransitioning: true,
       });
 
-      // Only after capturing state, update lastGuessCorrect which triggers UI changes
-      setLastGuessCorrect(wasCorrect);
-
-      if (wasCorrect) {
+      // Now that we've captured the state, handle the result
+      if (result) {
         // Handle successful guess with animation
         handleCorrectGuess();
       } else {
         // For incorrect guess, show the game over screen
-        // but keep the animation state frozen to show what happened
+        setLastGuessCorrect(false);
         setShowResult(true);
       }
     } catch (err) {
@@ -286,6 +303,17 @@ const GameScreen = () => {
 
   const isDesktop = windowSize.width >= 768;
 
+  // Determine which term data to use for rendering
+  const displayKnownTerm =
+    animationState.isTransitioning && isAnimating && animationState.knownTerm
+      ? animationState.knownTerm
+      : gameState.knownTerm;
+
+  const displayHiddenTerm =
+    animationState.isTransitioning && animationState.hiddenTerm
+      ? animationState.hiddenTerm
+      : gameState.hiddenTerm;
+
   return (
     <div className="min-h-screen bg-game-bg flex flex-col">
       {/* Top bar with score */}
@@ -318,13 +346,7 @@ const GameScreen = () => {
             <div
               className="w-full rounded-xl overflow-hidden shadow-xl relative h-full max-h-60 md:max-h-80"
               style={{
-                backgroundImage: `url("${
-                  animationState.isTransitioning &&
-                  isAnimating &&
-                  animationState.knownTerm
-                    ? animationState.knownTerm.imageUrl
-                    : gameState.knownTerm.imageUrl
-                }")`,
+                backgroundImage: `url("${displayKnownTerm.imageUrl}")`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
@@ -341,11 +363,7 @@ const GameScreen = () => {
               {/* Content */}
               <div className="relative p-4 md:p-6 flex flex-col items-center justify-center text-center h-full">
                 <h3 className="text-xl md:text-3xl font-bold text-white mb-2 md:mb-4 font-game-fallback text-center">
-                  {animationState.isTransitioning &&
-                  isAnimating &&
-                  animationState.knownTerm
-                    ? animationState.knownTerm.term
-                    : gameState.knownTerm.term}
+                  {displayKnownTerm.term}
                 </h3>
 
                 <motion.div
@@ -358,12 +376,7 @@ const GameScreen = () => {
                     Monthly Search Volume
                   </p>
                   <p className="text-xl md:text-3xl font-bold text-game-neon-blue font-game-fallback">
-                    {(animationState.isTransitioning &&
-                    isAnimating &&
-                    animationState.knownTerm
-                      ? animationState.knownTerm.volume
-                      : gameState.knownTerm.volume
-                    ).toLocaleString()}
+                    {displayKnownTerm.volume.toLocaleString()}
                   </p>
                 </motion.div>
               </div>
@@ -402,13 +415,7 @@ const GameScreen = () => {
             <div
               className="w-full rounded-xl overflow-hidden shadow-xl relative h-full max-h-60 md:max-h-80"
               style={{
-                backgroundImage: `url("${
-                  animationState.isTransitioning &&
-                  isAnimating &&
-                  animationState.hiddenTerm
-                    ? animationState.hiddenTerm.imageUrl
-                    : gameState.hiddenTerm.imageUrl
-                }")`,
+                backgroundImage: `url("${displayHiddenTerm.imageUrl}")`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
@@ -425,11 +432,7 @@ const GameScreen = () => {
               {/* Content */}
               <div className="relative p-4 md:p-6 flex flex-col items-center justify-center text-center h-full">
                 <h3 className="text-xl md:text-3xl font-bold text-white mb-2 md:mb-4 font-game-fallback text-center">
-                  {animationState.isTransitioning &&
-                  isAnimating &&
-                  animationState.hiddenTerm
-                    ? animationState.hiddenTerm.term
-                    : gameState.hiddenTerm.term}
+                  {displayHiddenTerm.term}
                 </h3>
 
                 {showResult ? (
@@ -443,11 +446,7 @@ const GameScreen = () => {
                       Monthly Search Volume
                     </p>
                     <p className="text-xl md:text-3xl font-bold text-game-neon-blue font-game-fallback">
-                      {(animationState.isTransitioning &&
-                      animationState.hiddenTerm
-                        ? animationState.hiddenTerm.volume
-                        : gameState.hiddenTerm.volume
-                      ).toLocaleString()}
+                      {displayHiddenTerm.volume.toLocaleString()}
                     </p>
                   </motion.div>
                 ) : (
@@ -526,7 +525,7 @@ const GameScreen = () => {
             transition={{ duration: 0.3 }}
             className="fixed top-20 left-1/2 transform -translate-x-1/2 px-6 py-4 bg-game-neon-green/20 backdrop-blur-md rounded-xl border border-game-neon-green/50 text-game-neon-green font-bold text-xl shadow-lg z-50"
           >
-            {gameState.hiddenTerm.volume === gameState.knownTerm.volume ? (
+            {displayHiddenTerm.volume === displayKnownTerm.volume ? (
               <span>
                 EQUAL VALUES!
                 <br />
@@ -573,11 +572,7 @@ const GameScreen = () => {
                 <div
                   className="rounded-xl overflow-hidden shadow-xl relative"
                   style={{
-                    backgroundImage: `url("${
-                      animationState.isTransitioning && animationState.knownTerm
-                        ? animationState.knownTerm.imageUrl
-                        : gameState.knownTerm.imageUrl
-                    }")`,
+                    backgroundImage: `url("${displayKnownTerm.imageUrl}")`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }}
@@ -590,21 +585,14 @@ const GameScreen = () => {
 
                   <div className="relative p-5 flex flex-col md:flex-row items-center justify-between">
                     <h3 className="text-xl font-bold text-white font-game-fallback md:text-left text-center mb-3 md:mb-0">
-                      {animationState.isTransitioning &&
-                      animationState.knownTerm
-                        ? animationState.knownTerm.term
-                        : gameState.knownTerm.term}
+                      {displayKnownTerm.term}
                     </h3>
                     <div className="bg-black/40 backdrop-blur-sm px-4 py-2 rounded-lg">
                       <p className="text-sm text-white/70 font-game-fallback">
                         Search Volume
                       </p>
                       <p className="text-xl font-bold text-game-neon-blue font-game-fallback text-center">
-                        {(animationState.isTransitioning &&
-                        animationState.knownTerm
-                          ? animationState.knownTerm.volume
-                          : gameState.knownTerm.volume
-                        ).toLocaleString()}
+                        {displayKnownTerm.volume.toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -628,18 +616,9 @@ const GameScreen = () => {
                     </svg>
                     {/* Show what the correct answer would have been */}
                     {(() => {
-                      // Use animation state if transitioning, otherwise use game state
-                      const knownVolume =
-                        animationState.isTransitioning &&
-                        animationState.knownTerm
-                          ? animationState.knownTerm.volume
-                          : gameState.knownTerm.volume;
-
-                      const hiddenVolume =
-                        animationState.isTransitioning &&
-                        animationState.hiddenTerm
-                          ? animationState.hiddenTerm.volume
-                          : gameState.hiddenTerm.volume;
+                      // Use captured terms for comparison
+                      const knownVolume = displayKnownTerm.volume;
+                      const hiddenVolume = displayHiddenTerm.volume;
 
                       if (hiddenVolume === knownVolume) {
                         return "EQUAL (either choice is correct)";
@@ -657,12 +636,7 @@ const GameScreen = () => {
                 <div
                   className="rounded-xl overflow-hidden shadow-xl relative"
                   style={{
-                    backgroundImage: `url("${
-                      animationState.isTransitioning &&
-                      animationState.hiddenTerm
-                        ? animationState.hiddenTerm.imageUrl
-                        : gameState.hiddenTerm.imageUrl
-                    }")`,
+                    backgroundImage: `url("${displayHiddenTerm.imageUrl}")`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }}
@@ -675,21 +649,14 @@ const GameScreen = () => {
 
                   <div className="relative p-5 flex flex-col md:flex-row items-center justify-between">
                     <h3 className="text-xl font-bold text-white font-game-fallback md:text-left text-center mb-3 md:mb-0">
-                      {animationState.isTransitioning &&
-                      animationState.hiddenTerm
-                        ? animationState.hiddenTerm.term
-                        : gameState.hiddenTerm.term}
+                      {displayHiddenTerm.term}
                     </h3>
                     <div className="bg-black/40 backdrop-blur-sm px-4 py-2 rounded-lg">
                       <p className="text-sm text-white/70 font-game-fallback">
                         Search Volume
                       </p>
                       <p className="text-xl font-bold text-game-neon-yellow font-game-fallback text-center">
-                        {(animationState.isTransitioning &&
-                        animationState.hiddenTerm
-                          ? animationState.hiddenTerm.volume
-                          : gameState.hiddenTerm.volume
-                        ).toLocaleString()}
+                        {displayHiddenTerm.volume.toLocaleString()}
                       </p>
                     </div>
                   </div>

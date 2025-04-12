@@ -207,269 +207,279 @@ export class TrendGuesserService {
   }
   
   // Make a guess (higher or lower)
-  static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Promise<boolean> {
-    try {
-      // Handle mock mode
-      if (USE_MOCK_DATA) {
-        console.log('Using mock data for guess:', { gameId, playerUid, isHigher });
+  // Make a guess (higher or lower)
+static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Promise<boolean> {
+  try {
+    // Handle mock mode
+    if (USE_MOCK_DATA) {
+      console.log('Using mock data for guess:', { gameId, playerUid, isHigher });
+      
+      // Get game data from session storage
+      if (typeof window !== 'undefined') {
+        // Check if we need to use the current_game_id instead
+        const currentGameId = sessionStorage.getItem('current_game_id');
+        if (currentGameId && currentGameId !== gameId) {
+          console.warn('WARNING: gameId mismatch in makeGuess. Using current_game_id:', currentGameId, 'instead of:', gameId);
+          gameId = currentGameId;
+        }
         
-        // Get game data from session storage
-        if (typeof window !== 'undefined') {
-          // Check if we need to use the current_game_id instead
-          const currentGameId = sessionStorage.getItem('current_game_id');
-          if (currentGameId && currentGameId !== gameId) {
-            console.warn('WARNING: gameId mismatch in makeGuess. Using current_game_id:', currentGameId, 'instead of:', gameId);
-            gameId = currentGameId;
-          }
-          
-          const storedGameData = sessionStorage.getItem(`game_${gameId}`);
-          if (!storedGameData) {
-            console.error('Mock game not found:', gameId);
-            // Try to find any game in session storage as a fallback
-            const allKeys = [];
-            for (let i = 0; i < sessionStorage.length; i++) {
-              const key = sessionStorage.key(i);
-              if (key && key.startsWith('game_')) {
-                allKeys.push(key);
-                try {
-                  const data = JSON.parse(sessionStorage.getItem(key) || '{}');
-                  if (data['__trendguesser.state']?.started) {
-                    console.log('Found alternative active game:', key);
-                    // Update current_game_id and use this game instead
-                    const alternativeGameId = key.replace('game_', '');
-                    sessionStorage.setItem('current_game_id', alternativeGameId);
-                    gameId = alternativeGameId;
-                    const altData = sessionStorage.getItem(key);
-                    if (altData) {
-                      console.log('Using alternative game data');
-                      return this.makeGuess(alternativeGameId, playerUid, isHigher);
-                    }
+        const storedGameData = sessionStorage.getItem(`game_${gameId}`);
+        if (!storedGameData) {
+          console.error('Mock game not found:', gameId);
+          // Try to find any game in session storage as a fallback
+          const allKeys = [];
+          for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            if (key && key.startsWith('game_')) {
+              allKeys.push(key);
+              try {
+                const data = JSON.parse(sessionStorage.getItem(key) || '{}');
+                if (data['__trendguesser.state']?.started) {
+                  console.log('Found alternative active game:', key);
+                  // Update current_game_id and use this game instead
+                  const alternativeGameId = key.replace('game_', '');
+                  sessionStorage.setItem('current_game_id', alternativeGameId);
+                  gameId = alternativeGameId;
+                  const altData = sessionStorage.getItem(key);
+                  if (altData) {
+                    console.log('Using alternative game data');
+                    return this.makeGuess(alternativeGameId, playerUid, isHigher);
                   }
-                } catch (e) {
-                  // Ignore parsing errors
                 }
+              } catch (e) {
+                // Ignore parsing errors
               }
             }
-            
-            // If we get here, we couldn't find any active games
-            if (allKeys.length > 0) {
-              console.log('Found game keys but none are active:', allKeys);
-            }
-            throw new Error('No active game found');
           }
           
-          const gameData = JSON.parse(storedGameData);
-          const gameState = gameData['__trendguesser.state'] as TrendGuesserGameState;
-          const mockUserUid = sessionStorage.getItem('mock_user_uid') || playerUid || 'mock_user';
-          
-          // Create player data if it doesn't exist
-          let player = gameData[mockUserUid] as TrendGuesserPlayer;
-          if (!player) {
-            console.log('Player data not found, creating new player data');
-            player = {
-              uid: mockUserUid,
-              name: 'Player',
-              score: 0
-            };
-            gameData[mockUserUid] = player;
+          // If we get here, we couldn't find any active games
+          if (allKeys.length > 0) {
+            console.log('Found game keys but none are active:', allKeys);
           }
-          
-          if (!gameState) {
-            console.error('No game state found in game data:', gameData);
-            throw new Error('Game state not found');
-          }
-          
-          if (!gameState.started || gameState.finished) {
-            console.error('Game is not in active state:', 
-              gameState.started ? 'started' : 'not started', 
-              gameState.finished ? 'finished' : 'not finished'
-            );
-            throw new Error('Game is not active');
-          }
-          
-          // Check if the guess is correct
-          // Log volumes for debugging
-          console.log('Guess evaluation:', {
-            isHigher,
-            knownTermVolume: gameState.knownTerm.volume,
-            hiddenTermVolume: gameState.hiddenTerm.volume,
-            knownTerm: gameState.knownTerm.term,
-            hiddenTerm: gameState.hiddenTerm.term
-          });
-          
-          // Determine if the guess is correct
-          let isCorrect;
-          
-          // Store volumes for clarity
-          const knownVolume = gameState.knownTerm.volume;
-          const hiddenVolume = gameState.hiddenTerm.volume;
-          
-          // EDGE CASE: If volumes are exactly equal, the guess is ALWAYS correct
-          // regardless of whether the player chose "higher" or "lower"
-          if (hiddenVolume === knownVolume) {
-            console.log('Equal volumes detected! ALWAYS counting guess as correct!');
-            isCorrect = true;
-          } else {
-            // Clear logic for determining correctness:
-            // - If player guessed higher, it's correct when hidden volume > known volume
-            // - If player guessed lower, it's correct when hidden volume < known volume
-            const actuallyHigher = hiddenVolume > knownVolume;
-            isCorrect = isHigher ? actuallyHigher : !actuallyHigher;
-          }
-          
-          // Log the result for debugging with very clear information
-          console.log(`
-            --------- GUESS EVALUATION ---------
-            Known term: ${gameState.knownTerm.term} (${knownVolume})
-            Hidden term: ${gameState.hiddenTerm.term} (${hiddenVolume})
-            Player guessed: ${isHigher ? 'HIGHER' : 'LOWER'}
-            Actual relation: Hidden term is ${hiddenVolume > knownVolume ? 'HIGHER' : hiddenVolume < knownVolume ? 'LOWER' : 'EQUAL'} than known term
-            Guess result: ${isCorrect ? 'CORRECT' : 'INCORRECT'}
-            -------------------------------------
-          `);
-          
-          
-          if (isCorrect) {
-            // Correct guess - prepare next round
-            const nextRound = gameState.currentRound + 1;
-            const newPlayerScore = (player.score || 0) + 1;
-            
-            // Update player score
-            player.score = newPlayerScore;
-            gameData[mockUserUid] = player;
-            
-            if (gameState.terms.length > 0) {
-              // If we have more terms, set up next round
-              const nextTerm = gameState.terms[0];
-              const remainingTerms = gameState.terms.slice(1);
-              
-              // Update game state
-              gameState.currentRound = nextRound;
-              gameState.knownTerm = gameState.hiddenTerm;
-              gameState.hiddenTerm = nextTerm;
-              gameState.usedTerms = [...gameState.usedTerms, nextTerm.id];
-              gameState.terms = remainingTerms;
-            } else {
-              // No more terms - player wins
-              gameState.finished = true;
-              gameState.winner = mockUserUid;
-              gameData.status = 'finished';
-            }
-            
-            // Save updated game data
-            sessionStorage.setItem(`game_${gameId}`, JSON.stringify(gameData));
-            console.log('Updated mock game data after correct guess:', gameData);
-            
-            return true;
-          } else {
-            // Wrong guess - game over
-            gameState.finished = true;
-            gameData.status = 'finished';
-            
-            // Save updated game data
-            sessionStorage.setItem(`game_${gameId}`, JSON.stringify(gameData));
-            console.log('Updated mock game data after wrong guess:', gameData);
-            
-            return false;
-          }
+          throw new Error('No active game found');
         }
         
-        return Math.random() > 0.5; // Fallback if no session storage
-      }
-      
-      // Regular Firestore implementation
-      const gameRef = doc(db, 'games', gameId.toUpperCase());
-      const gameDoc = await getDoc(gameRef);
-      
-      if (!gameDoc.exists()) {
-        throw new Error('Game does not exist');
-      }
-      
-      const gameData = gameDoc.data();
-      const gameState = gameData['__trendguesser.state'] as TrendGuesserGameState;
-      const player = gameData[playerUid] as TrendGuesserPlayer;
-      
-      if (!gameState || !gameState.started || gameState.finished) {
-        throw new Error('Game is not active');
-      }
-      
-      // Check if the guess is correct
-      // Log volumes for debugging
-      console.log('Guess evaluation (Firestore):', {
-        isHigher,
-        knownTermVolume: gameState.knownTerm.volume,
-        hiddenTermVolume: gameState.hiddenTerm.volume,
-        knownTerm: gameState.knownTerm.term,
-        hiddenTerm: gameState.hiddenTerm.term
-      });
-      
-      // Determine if the guess is correct
-      let isCorrect;
-      
-      // EDGE CASE: If volumes are exactly equal, the guess is ALWAYS correct
-      // regardless of whether the player chose "higher" or "lower"
-      if (gameState.hiddenTerm.volume === gameState.knownTerm.volume) {
-        console.log('Equal volumes detected! ALWAYS counting guess as correct!');
-        isCorrect = true;
-      } else {
-        isCorrect = isHigher 
-          ? gameState.hiddenTerm.volume > gameState.knownTerm.volume
-          : gameState.hiddenTerm.volume < gameState.knownTerm.volume;
-      }
-      
-      // Log the result for debugging
-      console.log(`Guess result (Firestore): ${isCorrect ? 'CORRECT' : 'INCORRECT'} (${isHigher ? 'HIGHER' : 'LOWER'})`);
-      
-      if (isCorrect) {
-        // Correct guess - prepare next round
-        const nextRound = gameState.currentRound + 1;
-        const newPlayerScore = (player.score || 0) + 1;
+        const gameData = JSON.parse(storedGameData);
+        const gameState = gameData['__trendguesser.state'];
+        const mockUserUid = sessionStorage.getItem('mock_user_uid') || playerUid || 'mock_user';
         
-        // Update player score
-        await updateDoc(gameRef, {
-          [`${playerUid}.score`]: newPlayerScore
+        // Create player data if it doesn't exist
+        let player = gameData[mockUserUid];
+        if (!player) {
+          console.log('Player data not found, creating new player data');
+          player = {
+            uid: mockUserUid,
+            name: 'Player',
+            score: 0
+          };
+          gameData[mockUserUid] = player;
+        }
+        
+        if (!gameState) {
+          console.error('No game state found in game data:', gameData);
+          throw new Error('Game state not found');
+        }
+        
+        if (!gameState.started || gameState.finished) {
+          console.error('Game is not in active state:', 
+            gameState.started ? 'started' : 'not started', 
+            gameState.finished ? 'finished' : 'not finished'
+          );
+          throw new Error('Game is not active');
+        }
+        
+        // Check if the guess is correct
+        // Log volumes for debugging
+        console.log('Guess evaluation:', {
+          isHigher,
+          knownTermVolume: gameState.knownTerm.volume,
+          hiddenTermVolume: gameState.hiddenTerm.volume,
+          knownTerm: gameState.knownTerm.term,
+          hiddenTerm: gameState.hiddenTerm.term
         });
         
-        // If we have more terms, set up next round
-        if (gameState.terms.length > 0) {
-          const nextTerm = gameState.terms[0];
-          const remainingTerms = gameState.terms.slice(1);
-          
-          const updatedState: TrendGuesserGameState = {
-            ...gameState,
-            currentRound: nextRound,
-            knownTerm: gameState.hiddenTerm,
-            hiddenTerm: nextTerm,
-            usedTerms: [...gameState.usedTerms, nextTerm.id],
-            terms: remainingTerms
-          };
-          
-          await updateDoc(gameRef, {
-            '__trendguesser.state': updatedState
-          });
+        // Determine if the guess is correct
+        let isCorrect;
+        
+        // Store volumes for clarity
+        const knownVolume = gameState.knownTerm.volume;
+        const hiddenVolume = gameState.hiddenTerm.volume;
+        
+        // EDGE CASE: If volumes are exactly equal, the guess is ALWAYS correct
+        // regardless of whether the player chose "higher" or "lower"
+        if (hiddenVolume === knownVolume) {
+          console.log('Equal volumes detected! ALWAYS counting guess as correct!');
+          isCorrect = true;
         } else {
-          // No more terms - player wins by completing all terms
-          const updatedState: TrendGuesserGameState = {
-            ...gameState,
-            finished: true,
-            winner: playerUid
-          };
-          
-          await updateDoc(gameRef, {
-            '__trendguesser.state': updatedState,
-            status: 'finished'
-          });
-          
-          // Update high score if needed
-          await this.updateHighScore(playerUid, gameState.category, newPlayerScore);
+          // Clear logic for determining correctness:
+          // - If player guessed higher, it's correct when hidden volume > known volume
+          // - If player guessed lower, it's correct when hidden volume < known volume
+          const actuallyHigher = hiddenVolume > knownVolume;
+          isCorrect = isHigher ? actuallyHigher : !actuallyHigher;
         }
         
-        return true;
-      } else {
-        // Incorrect guess - game over
+        // Log the result for debugging with very clear information
+        console.log(`
+          --------- GUESS EVALUATION ---------
+          Known term: ${gameState.knownTerm.term} (${knownVolume})
+          Hidden term: ${gameState.hiddenTerm.term} (${hiddenVolume})
+          Player guessed: ${isHigher ? 'HIGHER' : 'LOWER'}
+          Actual relation: Hidden term is ${hiddenVolume > knownVolume ? 'HIGHER' : hiddenVolume < knownVolume ? 'LOWER' : 'EQUAL'} than known term
+          Guess result: ${isCorrect ? 'CORRECT' : 'INCORRECT'}
+          -------------------------------------
+        `);
+        
+        
+        if (isCorrect) {
+          // Correct guess - prepare next round
+          const nextRound = gameState.currentRound + 1;
+          const newPlayerScore = (player.score || 0) + 1;
+          
+          // Update player score
+          player.score = newPlayerScore;
+          gameData[mockUserUid] = player;
+          
+          if (gameState.terms && gameState.terms.length > 0) {
+            // If we have more terms, set up next round
+            const nextTerm = gameState.terms[0];
+            const remainingTerms = gameState.terms.slice(1);
+            
+            // Create a copy of the current hiddenTerm to use as the next knownTerm
+            const newKnownTerm = { ...gameState.hiddenTerm };
+            
+            // Update game state - IMPORTANT: make sure to create a new object for each term
+            // to avoid reference issues
+            gameState.currentRound = nextRound;
+            gameState.knownTerm = newKnownTerm; 
+            gameState.hiddenTerm = { ...nextTerm };
+            gameState.usedTerms = [...gameState.usedTerms, nextTerm.id];
+            gameState.terms = remainingTerms;
+            
+            // Make sure the game is NOT marked as finished
+            gameState.finished = false;
+            
+            console.log('Updated game state for next round:', {
+              currentRound: nextRound,
+              newKnownTerm: newKnownTerm.term,
+              newHiddenTerm: nextTerm.term,
+              remainingTerms: remainingTerms.length
+            });
+          } else {
+            // No more terms - player wins
+            gameState.finished = true;
+            gameState.winner = mockUserUid;
+            gameData.status = 'finished';
+            
+            console.log('Game completed - no more terms available');
+          }
+          
+          // Make sure the updated game state is saved in the game data
+          gameData['__trendguesser.state'] = gameState;
+          
+          // Save updated game data
+          sessionStorage.setItem(`game_${gameId}`, JSON.stringify(gameData));
+          console.log('Updated mock game data after correct guess');
+          
+          return true;
+        } else {
+          // Wrong guess - game over
+          gameState.finished = true;
+          gameData.status = 'finished';
+          
+          // Make sure the updated game state is saved in the game data
+          gameData['__trendguesser.state'] = gameState;
+          
+          // Save updated game data
+          sessionStorage.setItem(`game_${gameId}`, JSON.stringify(gameData));
+          console.log('Updated mock game data after wrong guess - game over');
+          
+          return false;
+        }
+      }
+      
+      return Math.random() > 0.5; // Fallback if no session storage
+    }
+    
+    // Regular Firestore implementation (keeping this part unchanged)
+    const gameRef = doc(db, 'games', gameId.toUpperCase());
+    const gameDoc = await getDoc(gameRef);
+    
+    if (!gameDoc.exists()) {
+      throw new Error('Game does not exist');
+    }
+    
+    const gameData = gameDoc.data();
+    const gameState = gameData['__trendguesser.state'] as TrendGuesserGameState;
+    const player = gameData[playerUid] as TrendGuesserPlayer;
+    
+    if (!gameState || !gameState.started || gameState.finished) {
+      throw new Error('Game is not active');
+    }
+    
+    // Check if the guess is correct
+    // Log volumes for debugging
+    console.log('Guess evaluation (Firestore):', {
+      isHigher,
+      knownTermVolume: gameState.knownTerm.volume,
+      hiddenTermVolume: gameState.hiddenTerm.volume,
+      knownTerm: gameState.knownTerm.term,
+      hiddenTerm: gameState.hiddenTerm.term
+    });
+    
+    // Determine if the guess is correct
+    let isCorrect;
+    
+    // EDGE CASE: If volumes are exactly equal, the guess is ALWAYS correct
+    // regardless of whether the player chose "higher" or "lower"
+    if (gameState.hiddenTerm.volume === gameState.knownTerm.volume) {
+      console.log('Equal volumes detected! ALWAYS counting guess as correct!');
+      isCorrect = true;
+    } else {
+      isCorrect = isHigher 
+        ? gameState.hiddenTerm.volume > gameState.knownTerm.volume
+        : gameState.hiddenTerm.volume < gameState.knownTerm.volume;
+    }
+    
+    // Log the result for debugging
+    console.log(`Guess result (Firestore): ${isCorrect ? 'CORRECT' : 'INCORRECT'} (${isHigher ? 'HIGHER' : 'LOWER'})`);
+    
+    if (isCorrect) {
+      // Correct guess - prepare next round
+      const nextRound = gameState.currentRound + 1;
+      const newPlayerScore = (player.score || 0) + 1;
+      
+      // Update player score
+      await updateDoc(gameRef, {
+        [`${playerUid}.score`]: newPlayerScore
+      });
+      
+      // If we have more terms, set up next round
+      if (gameState.terms.length > 0) {
+        const nextTerm = gameState.terms[0];
+        const remainingTerms = gameState.terms.slice(1);
+        
+        // Create a deep copy of the hiddenTerm to use as the new knownTerm
+        const newKnownTerm = {...gameState.hiddenTerm};
+        
         const updatedState: TrendGuesserGameState = {
           ...gameState,
-          finished: true
+          currentRound: nextRound,
+          knownTerm: newKnownTerm,
+          hiddenTerm: {...nextTerm},
+          usedTerms: [...gameState.usedTerms, nextTerm.id],
+          terms: remainingTerms,
+          finished: false  // Ensure game is not marked as finished
+        };
+        
+        await updateDoc(gameRef, {
+          '__trendguesser.state': updatedState
+        });
+      } else {
+        // No more terms - player wins by completing all terms
+        const updatedState: TrendGuesserGameState = {
+          ...gameState,
+          finished: true,
+          winner: playerUid
         };
         
         await updateDoc(gameRef, {
@@ -478,16 +488,33 @@ export class TrendGuesserService {
         });
         
         // Update high score if needed
-        await this.updateHighScore(playerUid, gameState.category, player.score || 0);
-        
-        return false;
+        await this.updateHighScore(playerUid, gameState.category, newPlayerScore);
       }
       
-    } catch (error) {
-      console.error('Error making guess:', error);
-      throw error;
+      return true;
+    } else {
+      // Incorrect guess - game over
+      const updatedState: TrendGuesserGameState = {
+        ...gameState,
+        finished: true
+      };
+      
+      await updateDoc(gameRef, {
+        '__trendguesser.state': updatedState,
+        status: 'finished'
+      });
+      
+      // Update high score if needed
+      await this.updateHighScore(playerUid, gameState.category, player.score || 0);
+      
+      return false;
     }
+    
+  } catch (error) {
+    console.error('Error making guess:', error);
+    throw error;
   }
+}
   
   // End the game and update high scores
   static async endGame(gameId: string, playerUid: string, finalScore: number): Promise<void> {
