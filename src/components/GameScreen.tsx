@@ -3,9 +3,11 @@ import { useRouter } from "next/router";
 import { useGame } from "@/contexts/GameContext";
 import { motion, AnimatePresence } from "framer-motion";
 import SearchTermCard from "./SearchTermCard";
+import { useWindowSize } from "@/hooks/useWindowSize";
 
 const GameScreen = () => {
   const router = useRouter();
+  const windowSize = useWindowSize();
   const {
     gameState,
     currentPlayer,
@@ -32,7 +34,7 @@ const GameScreen = () => {
   }>({
     knownTerm: null,
     hiddenTerm: null,
-    isTransitioning: false
+    isTransitioning: false,
   });
 
   // Display any errors from the game context
@@ -118,9 +120,6 @@ const GameScreen = () => {
     // First, ensure we mark this as a correct guess and show volume of hidden card
     setLastGuessCorrect(true);
     setShowResult(true);
-
-    // NOTE: We don't need to capture game state here anymore since we're
-    // already using the captured state from handleGuess
 
     // Start animation after revealing the volume
     const animationTimer = setTimeout(() => {
@@ -277,7 +276,7 @@ const GameScreen = () => {
   const containerVariants = {
     initial: { y: 0 },
     animate: {
-      y: "-33.33%", // Move up exactly one card's height
+      y: "-100%", // Move up exactly one card's height
       transition: {
         duration: 0.8,
         ease: [0.2, 0.9, 0.3, 1], // Custom easing curve for smooth conveyor movement
@@ -285,19 +284,7 @@ const GameScreen = () => {
     },
   };
 
-  // Define variants for the next card that will appear at bottom
-  const nextCardVariants = {
-    initial: { opacity: 0, y: 80 },
-    animate: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.3,
-        delay: 0.1, // Slightly delayed to create a cascading effect
-        ease: "easeOut",
-      },
-    },
-  };
+  const isDesktop = windowSize.width >= 768;
 
   return (
     <div className="min-h-screen bg-game-bg flex flex-col">
@@ -323,140 +310,173 @@ const GameScreen = () => {
         </div>
       </div>
 
-      {/* Game area with conveyor belt animation */}
-      <div className="flex-1 relative overflow-hidden">
-        {/* Cards container - using a triple-card system for conveyor belt effect */}
-        <motion.div
-          className="flex flex-col h-[calc(100vh-64px)]"
-          variants={containerVariants}
-          initial="initial"
-          animate={isAnimating ? "animate" : "initial"}
-        >
-          {/* Known term (top card) - will slide off the top */}
-          <div className="h-[33.33%] flex items-center justify-center px-4 py-8">
-            <div className="w-full max-w-7xl">
+      {/* Main game container - switched to grid layout for better spacing */}
+      <div className="flex-1 grid grid-rows-[40%_auto_40%] md:grid-rows-[45%_auto_45%] h-[calc(100vh-64px)]">
+        {/* Top card (known term) */}
+        <div className="flex items-center justify-center p-2 md:p-4">
+          <div className="w-full max-w-3xl mx-auto">
+            <div
+              className="w-full rounded-xl overflow-hidden shadow-xl relative h-full max-h-60 md:max-h-80"
+              style={{
+                backgroundImage: `url("${
+                  animationState.isTransitioning &&
+                  isAnimating &&
+                  animationState.knownTerm
+                    ? animationState.knownTerm.imageUrl
+                    : gameState.knownTerm.imageUrl
+                }")`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80"></div>
+
+              {/* Card pattern overlay */}
               <div
-                className="w-full rounded-xl overflow-hidden shadow-xl min-h-[280px] relative"
-                style={{
-                  backgroundImage: `url("${
-                    animationState.isTransitioning && isAnimating && animationState.knownTerm
-                      ? animationState.knownTerm.imageUrl
-                      : gameState.knownTerm.imageUrl
-                  }")`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
-              >
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80"></div>
+                className="absolute inset-0 opacity-15"
+                style={{ backgroundImage: `url(/images/card-pattern.svg)` }}
+              ></div>
 
-                {/* Card pattern overlay */}
-                <div
-                  className="absolute inset-0 opacity-15"
-                  style={{ backgroundImage: `url(/images/card-pattern.svg)` }}
-                ></div>
+              {/* Content */}
+              <div className="relative p-4 md:p-6 flex flex-col items-center justify-center text-center h-full">
+                <h3 className="text-xl md:text-3xl font-bold text-white mb-2 md:mb-4 font-game-fallback text-center">
+                  {animationState.isTransitioning &&
+                  isAnimating &&
+                  animationState.knownTerm
+                    ? animationState.knownTerm.term
+                    : gameState.knownTerm.term}
+                </h3>
 
-                {/* Content */}
-                <div className="relative p-6 sm:p-8 flex flex-col items-center justify-center text-center min-h-[280px]">
-                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 font-game-fallback text-center">
-                    {animationState.isTransitioning && isAnimating && animationState.knownTerm
-                      ? animationState.knownTerm.term
-                      : gameState.knownTerm.term}
-                  </h3>
+                <motion.div
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", damping: 15 }}
+                  className="mt-1 md:mt-2 text-center"
+                >
+                  <p className="text-sm md:text-lg text-white/70 font-game-fallback mb-1">
+                    Monthly Search Volume
+                  </p>
+                  <p className="text-xl md:text-3xl font-bold text-game-neon-blue font-game-fallback">
+                    {(animationState.isTransitioning &&
+                    isAnimating &&
+                    animationState.knownTerm
+                      ? animationState.knownTerm.volume
+                      : gameState.knownTerm.volume
+                    ).toLocaleString()}
+                  </p>
+                </motion.div>
+              </div>
+            </div>
+          </div>
+        </div>
 
+        {/* Middle ribbon - fixed height with buttons */}
+        <div className="flex items-center justify-center bg-black/70 border-y border-white/10 backdrop-blur-md z-20">
+          <div className="flex justify-center items-center gap-4 md:gap-6 py-3 md:py-4 px-4 w-full max-w-3xl mx-auto">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleGuess(false)}
+              disabled={isGuessing}
+              className="px-4 md:px-8 py-3 md:py-4 bg-black/60 backdrop-blur-sm rounded-xl border-2 border-game-neon-blue/70 text-game-neon-blue font-bold font-game-fallback text-base md:text-xl hover:bg-black/80 shadow-neon-blue-sm disabled:opacity-50 disabled:cursor-not-allowed flex-1 max-w-36 md:max-w-52 text-center"
+            >
+              LOWER
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleGuess(true)}
+              disabled={isGuessing}
+              className="px-4 md:px-8 py-3 md:py-4 bg-black/60 backdrop-blur-sm rounded-xl border-2 border-game-neon-green/70 text-game-neon-green font-bold font-game-fallback text-base md:text-xl hover:bg-black/80 shadow-neon-green-sm disabled:opacity-50 disabled:cursor-not-allowed flex-1 max-w-36 md:max-w-52 text-center"
+            >
+              HIGHER
+            </motion.button>
+          </div>
+        </div>
+
+        {/* Bottom card (hidden term) */}
+        <div className="flex items-center justify-center p-2 md:p-4 relative">
+          <div className="w-full max-w-3xl mx-auto">
+            <div
+              className="w-full rounded-xl overflow-hidden shadow-xl relative h-full max-h-60 md:max-h-80"
+              style={{
+                backgroundImage: `url("${
+                  animationState.isTransitioning &&
+                  isAnimating &&
+                  animationState.hiddenTerm
+                    ? animationState.hiddenTerm.imageUrl
+                    : gameState.hiddenTerm.imageUrl
+                }")`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            >
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80"></div>
+
+              {/* Card pattern overlay */}
+              <div
+                className="absolute inset-0 opacity-15"
+                style={{ backgroundImage: `url(/images/card-pattern.svg)` }}
+              ></div>
+
+              {/* Content */}
+              <div className="relative p-4 md:p-6 flex flex-col items-center justify-center text-center h-full">
+                <h3 className="text-xl md:text-3xl font-bold text-white mb-2 md:mb-4 font-game-fallback text-center">
+                  {animationState.isTransitioning &&
+                  isAnimating &&
+                  animationState.hiddenTerm
+                    ? animationState.hiddenTerm.term
+                    : gameState.hiddenTerm.term}
+                </h3>
+
+                {showResult ? (
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ type: "spring", damping: 15 }}
-                    className="mt-2 text-center"
+                    className="mt-1 md:mt-2 text-center"
                   >
-                    <p className="text-lg text-white/70 font-game-fallback mb-1">
+                    <p className="text-sm md:text-lg text-white/70 font-game-fallback mb-1">
                       Monthly Search Volume
                     </p>
-                    <p className="text-3xl sm:text-4xl font-bold text-game-neon-blue font-game-fallback">
-                      {(animationState.isTransitioning && isAnimating && animationState.knownTerm
-                        ? animationState.knownTerm.volume
-                        : gameState.knownTerm.volume).toLocaleString()}
+                    <p className="text-xl md:text-3xl font-bold text-game-neon-blue font-game-fallback">
+                      {(animationState.isTransitioning &&
+                      animationState.hiddenTerm
+                        ? animationState.hiddenTerm.volume
+                        : gameState.hiddenTerm.volume
+                      ).toLocaleString()}
                     </p>
                   </motion.div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Hidden term (will become the top card) */}
-          <div className="h-[33.33%] flex items-center justify-center px-4 py-8">
-            <div className="w-full max-w-7xl">
-              <div
-                className="w-full rounded-xl overflow-hidden shadow-xl min-h-[280px] relative"
-                style={{
-                  backgroundImage: `url("${
-                    animationState.isTransitioning && isAnimating && animationState.hiddenTerm
-                      ? animationState.hiddenTerm.imageUrl
-                      : gameState.hiddenTerm.imageUrl
-                  }")`,
-                  backgroundSize: "cover",
-                  backgroundPosition: "center",
-                }}
-              >
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80"></div>
-
-                {/* Card pattern overlay */}
-                <div
-                  className="absolute inset-0 opacity-15"
-                  style={{ backgroundImage: `url(/images/card-pattern.svg)` }}
-                ></div>
-
-                {/* Content */}
-                <div className="relative p-6 sm:p-8 flex flex-col items-center justify-center text-center min-h-[280px]">
-                  <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 font-game-fallback text-center">
-                    {animationState.isTransitioning && isAnimating && animationState.hiddenTerm
-                      ? animationState.hiddenTerm.term
-                      : gameState.hiddenTerm.term}
-                  </h3>
-
-                  {showResult ? (
-                    <motion.div
-                      initial={{ scale: 0.8, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ type: "spring", damping: 15 }}
-                      className="mt-2 text-center"
-                    >
-                      <p className="text-lg text-white/70 font-game-fallback mb-1">
-                        Monthly Search Volume
-                      </p>
-                      <p className="text-3xl sm:text-4xl font-bold text-game-neon-blue font-game-fallback">
-                        {(animationState.isTransitioning && animationState.hiddenTerm
-                          ? animationState.hiddenTerm.volume
-                          : gameState.hiddenTerm.volume).toLocaleString()}
-                      </p>
-                    </motion.div>
-                  ) : (
-                    <div className="mt-2 flex flex-col items-center">
-                      <p className="text-lg text-white/70 font-game-fallback mb-1">
-                        Monthly Search Volume
-                      </p>
-                      <div className="w-20 h-20 rounded-full border-4 border-game-neon-yellow flex items-center justify-center">
-                        <span className="text-5xl font-bold text-game-neon-yellow">
-                          ?
-                        </span>
-                      </div>
+                ) : (
+                  <div className="mt-1 md:mt-2 flex flex-col items-center">
+                    <p className="text-sm md:text-lg text-white/70 font-game-fallback mb-1">
+                      Monthly Search Volume
+                    </p>
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-4 border-game-neon-yellow flex items-center justify-center">
+                      <span className="text-3xl md:text-5xl font-bold text-game-neon-yellow">
+                        ?
+                      </span>
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Next card (will slide up from below) */}
-          {getNextTerm && (
-            <div className="h-[33.33%] flex items-center justify-center px-4 py-8">
-              <div className="w-full max-w-7xl">
+          {/* Hidden card for animation that appears from below */}
+          {isAnimating && getNextTerm && (
+            <motion.div
+              className="absolute left-0 right-0 bottom-0 transform translate-y-full"
+              initial={{ opacity: 0, y: "50%" }}
+              animate={{ opacity: 1, y: "0%" }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              <div className="w-full max-w-3xl mx-auto px-2 md:px-4">
                 <div
-                  className={`w-full rounded-xl overflow-hidden shadow-xl min-h-[280px] relative ${
-                    !isAnimating && "opacity-0"
-                  }`}
+                  className="w-full rounded-xl overflow-hidden shadow-xl relative h-full max-h-60 md:max-h-80"
                   style={{
                     backgroundImage: `url("${getNextTerm.imageUrl}")`,
                     backgroundSize: "cover",
@@ -473,17 +493,17 @@ const GameScreen = () => {
                   ></div>
 
                   {/* Content */}
-                  <div className="relative p-6 sm:p-8 flex flex-col items-center justify-center text-center min-h-[280px]">
-                    <h3 className="text-2xl sm:text-3xl font-bold text-white mb-4 font-game-fallback text-center">
+                  <div className="relative p-4 md:p-6 flex flex-col items-center justify-center text-center h-full">
+                    <h3 className="text-xl md:text-3xl font-bold text-white mb-2 md:mb-4 font-game-fallback text-center">
                       {getNextTerm.term}
                     </h3>
 
-                    <div className="mt-2 flex flex-col items-center">
-                      <p className="text-lg text-white/70 font-game-fallback mb-1">
+                    <div className="mt-1 md:mt-2 flex flex-col items-center">
+                      <p className="text-sm md:text-lg text-white/70 font-game-fallback mb-1">
                         Monthly Search Volume
                       </p>
-                      <div className="w-20 h-20 rounded-full border-4 border-game-neon-yellow flex items-center justify-center">
-                        <span className="text-5xl font-bold text-game-neon-yellow">
+                      <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-4 border-game-neon-yellow flex items-center justify-center">
+                        <span className="text-3xl md:text-5xl font-bold text-game-neon-yellow">
                           ?
                         </span>
                       </div>
@@ -491,31 +511,8 @@ const GameScreen = () => {
                   </div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           )}
-        </motion.div>
-
-        {/* Higher/Lower buttons - fixed in the middle on top of everything */}
-        <div className="absolute left-0 right-0 top-1/2 transform -translate-y-1/2 z-30 flex justify-center items-center gap-6 bg-black/70 border-y border-white/10 backdrop-blur-md py-5">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => handleGuess(false)}
-            disabled={isGuessing}
-            className="px-8 py-4 bg-black/60 backdrop-blur-sm rounded-xl border-2 border-game-neon-blue/70 text-game-neon-blue font-bold font-game-fallback text-xl hover:bg-black/80 shadow-neon-blue-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            LOWER
-          </motion.button>
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => handleGuess(true)}
-            disabled={isGuessing}
-            className="px-8 py-4 bg-black/60 backdrop-blur-sm rounded-xl border-2 border-game-neon-green/70 text-game-neon-green font-bold font-game-fallback text-xl hover:bg-black/80 shadow-neon-green-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            HIGHER
-          </motion.button>
         </div>
       </div>
 
@@ -576,7 +573,11 @@ const GameScreen = () => {
                 <div
                   className="rounded-xl overflow-hidden shadow-xl relative"
                   style={{
-                    backgroundImage: `url("${animationState.isTransitioning && animationState.knownTerm ? animationState.knownTerm.imageUrl : gameState.knownTerm.imageUrl}")`,
+                    backgroundImage: `url("${
+                      animationState.isTransitioning && animationState.knownTerm
+                        ? animationState.knownTerm.imageUrl
+                        : gameState.knownTerm.imageUrl
+                    }")`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }}
@@ -589,14 +590,21 @@ const GameScreen = () => {
 
                   <div className="relative p-5 flex flex-col md:flex-row items-center justify-between">
                     <h3 className="text-xl font-bold text-white font-game-fallback md:text-left text-center mb-3 md:mb-0">
-                      {animationState.isTransitioning && animationState.knownTerm ? animationState.knownTerm.term : gameState.knownTerm.term}
+                      {animationState.isTransitioning &&
+                      animationState.knownTerm
+                        ? animationState.knownTerm.term
+                        : gameState.knownTerm.term}
                     </h3>
                     <div className="bg-black/40 backdrop-blur-sm px-4 py-2 rounded-lg">
                       <p className="text-sm text-white/70 font-game-fallback">
                         Search Volume
                       </p>
                       <p className="text-xl font-bold text-game-neon-blue font-game-fallback text-center">
-                        {(animationState.isTransitioning && animationState.knownTerm ? animationState.knownTerm.volume : gameState.knownTerm.volume).toLocaleString()}
+                        {(animationState.isTransitioning &&
+                        animationState.knownTerm
+                          ? animationState.knownTerm.volume
+                          : gameState.knownTerm.volume
+                        ).toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -621,14 +629,18 @@ const GameScreen = () => {
                     {/* Show what the correct answer would have been */}
                     {(() => {
                       // Use animation state if transitioning, otherwise use game state
-                      const knownVolume = animationState.isTransitioning && animationState.knownTerm 
-                        ? animationState.knownTerm.volume 
-                        : gameState.knownTerm.volume;
-                      
-                      const hiddenVolume = animationState.isTransitioning && animationState.hiddenTerm
-                        ? animationState.hiddenTerm.volume
-                        : gameState.hiddenTerm.volume;
-                      
+                      const knownVolume =
+                        animationState.isTransitioning &&
+                        animationState.knownTerm
+                          ? animationState.knownTerm.volume
+                          : gameState.knownTerm.volume;
+
+                      const hiddenVolume =
+                        animationState.isTransitioning &&
+                        animationState.hiddenTerm
+                          ? animationState.hiddenTerm.volume
+                          : gameState.hiddenTerm.volume;
+
                       if (hiddenVolume === knownVolume) {
                         return "EQUAL (either choice is correct)";
                       } else if (hiddenVolume > knownVolume) {
@@ -645,7 +657,12 @@ const GameScreen = () => {
                 <div
                   className="rounded-xl overflow-hidden shadow-xl relative"
                   style={{
-                    backgroundImage: `url("${animationState.isTransitioning && animationState.hiddenTerm ? animationState.hiddenTerm.imageUrl : gameState.hiddenTerm.imageUrl}")`,
+                    backgroundImage: `url("${
+                      animationState.isTransitioning &&
+                      animationState.hiddenTerm
+                        ? animationState.hiddenTerm.imageUrl
+                        : gameState.hiddenTerm.imageUrl
+                    }")`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                   }}
@@ -658,14 +675,21 @@ const GameScreen = () => {
 
                   <div className="relative p-5 flex flex-col md:flex-row items-center justify-between">
                     <h3 className="text-xl font-bold text-white font-game-fallback md:text-left text-center mb-3 md:mb-0">
-                      {animationState.isTransitioning && animationState.hiddenTerm ? animationState.hiddenTerm.term : gameState.hiddenTerm.term}
+                      {animationState.isTransitioning &&
+                      animationState.hiddenTerm
+                        ? animationState.hiddenTerm.term
+                        : gameState.hiddenTerm.term}
                     </h3>
                     <div className="bg-black/40 backdrop-blur-sm px-4 py-2 rounded-lg">
                       <p className="text-sm text-white/70 font-game-fallback">
                         Search Volume
                       </p>
                       <p className="text-xl font-bold text-game-neon-yellow font-game-fallback text-center">
-                        {(animationState.isTransitioning && animationState.hiddenTerm ? animationState.hiddenTerm.volume : gameState.hiddenTerm.volume).toLocaleString()}
+                        {(animationState.isTransitioning &&
+                        animationState.hiddenTerm
+                          ? animationState.hiddenTerm.volume
+                          : gameState.hiddenTerm.volume
+                        ).toLocaleString()}
                       </p>
                     </div>
                   </div>
