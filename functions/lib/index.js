@@ -83,7 +83,7 @@ const volumeCache = {};
 const CACHE_TTL = 12 * 60 * 60 * 1000;
 // Initialize the OpenAI client using the official OpenAI Node API
 const openai = new openai_1.OpenAI({
-    apiKey: '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',
+    apiKey: functions.config().openai.key,
 });
 // Cloud Function to fetch search volume for a term
 exports.fetchSearchVolume = functions.https.onCall(async (data, context) => {
