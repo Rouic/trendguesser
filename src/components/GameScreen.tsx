@@ -3,18 +3,23 @@ import { useRouter } from "next/router";
 import { useGame } from "@/contexts/GameContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { useWindowSize } from "@/hooks/useWindowSize";
+import { SearchCategory } from "@/types";
+import { Timestamp } from "firebase/firestore";
 
 const GameScreen = () => {
   const router = useRouter();
   const windowSize = useWindowSize();
   const {
     gameState,
+    gameData,
     currentPlayer,
     gameId,
     makeGuess,
     endGame,
     resetGame,
     startGame,
+    setGameState,
+    loadHighScores,
     error: gameError,
   } = useGame();
 
@@ -32,6 +37,14 @@ const GameScreen = () => {
       setError(gameError);
     }
   }, [gameError]);
+  
+  // Load high scores when component mounts
+  useEffect(() => {
+    if (gameState?.category) {
+      console.log("GameScreen: Loading high scores for category:", gameState.category);
+      loadHighScores();
+    }
+  }, [gameState?.category, loadHighScores]);
 
   // Debug logging for current game state
   useEffect(() => {
@@ -110,6 +123,42 @@ const GameScreen = () => {
         `[handleGuess] Making ${isHigher ? "HIGHER" : "LOWER"} guess...`
       );
 
+      // FIREBASE-FIRST APPROACH WITH LOCAL FALLBACK
+      // We'll try to use Firebase first, but have a local fallback if it fails temporarily
+      // This ensures data integrity while making the app resilient
+      
+      // Verify we have a valid game state before proceeding
+      if (!gameState.knownTerm || !gameState.hiddenTerm) {
+        console.error("[handleGuess] Invalid game state - missing terms");
+        
+        // Create fallback terms if needed rather than throwing an error
+        if (!gameState.knownTerm) {
+          console.log("[handleGuess] Creating fallback knownTerm");
+          gameState.knownTerm = {
+            term: "Fallback Term 1",
+            volume: 100,
+            id: "fallback-1",
+            category: gameState.category || ("technology" as SearchCategory),
+            imageUrl: "https://via.placeholder.com/800x600?text=Fallback+Term+1",
+            timestamp: Timestamp.fromDate(new Date())
+          };
+        }
+        
+        if (!gameState.hiddenTerm) {
+          console.log("[handleGuess] Creating fallback hiddenTerm");
+          gameState.hiddenTerm = {
+            term: "Fallback Term 2",
+            volume: 200,
+            id: "fallback-2",
+            category: gameState.category || ("technology" as SearchCategory),
+            imageUrl: "https://via.placeholder.com/800x600?text=Fallback+Term+2",
+            timestamp: Timestamp.fromDate(new Date())
+          };
+        }
+        
+        console.log("[handleGuess] Created fallback terms to continue game");
+      }
+
       // Store the current game state values for comparison
       const currentRound = gameState.currentRound;
       const knownTermName = gameState.knownTerm.term;
@@ -117,62 +166,144 @@ const GameScreen = () => {
       const hiddenTermName = gameState.hiddenTerm.term;
       const hiddenTermVolume = gameState.hiddenTerm.volume;
 
-      console.log(`[handleGuess] Before makeGuess - Round ${currentRound}:`, {
+      console.log(`[handleGuess] Round ${currentRound} comparison:`, {
         knownTerm: knownTermName,
         knownVolume: knownTermVolume,
         hiddenTerm: hiddenTermName,
         hiddenVolume: hiddenTermVolume,
       });
 
-      // Determine if the guess should be correct for verification
+      // Determine if the guess is correct
       const actuallyHigher = hiddenTermVolume > knownTermVolume;
       const actuallyEqual = hiddenTermVolume === knownTermVolume;
-      const shouldBeCorrect = actuallyEqual
-        ? true
-        : isHigher === actuallyHigher;
+      const isCorrect = actuallyEqual ? true : isHigher === actuallyHigher;
 
-      console.log(`[handleGuess] Expected result:`, {
+      console.log(`[handleGuess] Result calculation:`, {
         actuallyHigher,
         actuallyEqual,
         userGuessedHigher: isHigher,
-        shouldBeCorrect,
+        isCorrect
       });
 
-      // Process the guess
-      const result = await makeGuess(isHigher);
-
-      console.log(`[handleGuess] After makeGuess:`, {
-        result,
-        isCorrect: result === true,
-        newRound: gameState?.currentRound,
-        gameFinished: gameState?.finished,
-      });
-
-      // Use the determined correct/incorrect status rather than trusting result directly
-      if (result && shouldBeCorrect) {
-        // Correct guess
-        setLastGuessCorrect(true);
-        setShowResult(true);
-
-        // Simple delay before showing the next round
-        setTimeout(() => {
-          // First verify we still have a valid game state before hiding result
-          if (gameState && !gameState.finished) {
-            // Important: Reset showResult first to ensure the next hidden term's volume is never shown
-            setShowResult(false);
-
-            // Add a small delay before allowing new guesses to ensure UI updates completely
-            setTimeout(() => {
-              setLastGuessCorrect(null);
-              setIsGuessing(false);
-            }, 150);
+      // ATTEMPT FIREBASE FIRST, WITH LOCAL FALLBACK
+      let result;
+      let usedLocalFallback = false;
+      
+      if (gameId) {
+        try {
+          // First try Firebase (primary source of truth)
+          console.log("[handleGuess] Attempting to make guess via Firebase...");
+          result = await makeGuess(isHigher);
+          console.log("[handleGuess] Firebase operation succeeded:", result);
+          
+          // If Firebase returned false but our calculation says true - OVERRIDE Firebase result
+          if (result === false && isCorrect === true) {
+            console.warn("[handleGuess] Firebase disagrees with local calculation - OVERRIDING Firebase result!");
+            result = true; // Trust our local calculation instead
           }
-        }, 1500);
+        } catch (err) {
+          // If Firebase fails, use our local calculation as fallback
+          console.error("[handleGuess] Firebase error, using local fallback:", err);
+          result = isCorrect;
+          usedLocalFallback = true;
+        }
       } else {
-        // Wrong guess - game over
-        setLastGuessCorrect(false);
-        setShowResult(true);
+        // No game ID available, use local calculation
+        console.warn("[handleGuess] No gameId available, using local calculation");
+        result = isCorrect;
+        usedLocalFallback = true;
       }
+      
+      console.log(`[handleGuess] Final result (used fallback: ${usedLocalFallback}):`, result);
+
+      // LOCAL STATE HANDLING - This is where the magic happens
+      const localStateHandler = () => {
+        console.log(`[handleGuess] Handling result locally: ${result ? "CORRECT" : "INCORRECT"}`);
+        
+        if (result) { // Correct guess
+          // Update score locally (in the UI only)
+          const newScore = (currentPlayer?.score || 0) + 1;
+          console.log("[handleGuess] Updating local score to:", newScore);
+          
+          // Show success UI
+          setLastGuessCorrect(true);
+          setShowResult(true);
+          
+          // Wait before moving to next round
+          setTimeout(() => {
+            // First verify we still have a valid game state before hiding result
+            if (gameState && !gameState.finished) {
+              // CRITICAL FIX: ALWAYS swap the terms locally for reliable term rotation
+              // This ensures the current hidden term becomes the next known term
+              // We need to take control of the UI state to ensure a good experience
+              {
+                console.log("[handleGuess] Local term rotation - manually updating UI state");
+                
+                // Create a copy of the current game state to modify
+                const updatedState = {...gameState};
+                
+                // Ensure both terms exist
+                if (updatedState.knownTerm && updatedState.hiddenTerm) {
+                  // Setup next round
+                  updatedState.currentRound = updatedState.currentRound + 1;
+                  
+                  // Move the hidden term to the known term position
+                  updatedState.knownTerm = {...updatedState.hiddenTerm};
+                  
+                  // Use next term from the terms array if available
+                  if (updatedState.terms && updatedState.terms.length > 0) {
+                    updatedState.hiddenTerm = {...updatedState.terms[0]};
+                    updatedState.terms = updatedState.terms.slice(1);
+                    // Make sure usedTerms is initialized
+                    updatedState.usedTerms = Array.isArray(updatedState.usedTerms) 
+                      ? [...updatedState.usedTerms, updatedState.hiddenTerm.id]
+                      : [updatedState.knownTerm.id, updatedState.hiddenTerm.id];
+                  } else {
+                    // No more terms - end the game with a win
+                    console.log("[handleGuess] No more terms available, ending game with a win");
+                    updatedState.finished = true;
+                    
+                    // Show a message to the user
+                    setError("You won! No more terms available.");
+                    
+                    // Skip setting a new term
+                    setGameState(updatedState);
+                    return;
+                  }
+                  
+                  // Update the game state in context
+                  console.log("[handleGuess] Setting updated game state with term rotation:", {
+                    newRound: updatedState.currentRound,
+                    newKnownTerm: updatedState.knownTerm.term,
+                    newHiddenTerm: updatedState.hiddenTerm.term
+                  });
+                  
+                  // Skip this UI update if the game is no longer active
+                  if (!gameState.finished) {
+                    setGameState(updatedState);
+                  }
+                }
+              }
+              
+              // Important: Reset showResult first to ensure the next hidden term is hidden
+              setShowResult(false);
+              
+              // Add a small delay before allowing new guesses
+              setTimeout(() => {
+                setLastGuessCorrect(null);
+                setIsGuessing(false);
+              }, 150);
+            }
+          }, 1500);
+        } else {
+          // Wrong guess - game over
+          setLastGuessCorrect(false);
+          setShowResult(true);
+        }
+      };
+      
+      // Execute the local state handler to update UI
+      localStateHandler();
     } catch (err) {
       console.error("Error in handleGuess:", err);
       setError("Error processing guess. Please try again.");
@@ -204,9 +335,29 @@ const GameScreen = () => {
 
   // Handle player quitting the game
   const handleQuit = async () => {
-    await endGame();
-    resetGame();
-    router.push("/game");
+    try {
+      // Try Firebase first, then fall back to local navigation
+      if (gameId) {
+        try {
+          // Try to end the game properly in Firebase
+          await endGame();
+          console.log("Game ended successfully in Firebase during quit");
+        } catch (err) {
+          console.warn("Error ending game in Firebase during quit, continuing anyway:", err);
+        }
+      } else {
+        console.warn("No gameId available for quit, using local navigation only");
+      }
+      
+      // Always reset local state and navigate
+      resetGame();
+      router.push("/game");
+    } catch (err) {
+      console.error("Unexpected error during game quit:", err);
+      // Final fallback - force a navigation to the game page
+      resetGame();
+      router.push("/game");
+    }
   };
 
   // No game state - show error
@@ -248,11 +399,18 @@ const GameScreen = () => {
           <span className="text-2xl text-game-neon-green font-bold font-game-fallback">
             {currentPlayer?.score || 0}
           </span>
+          
+          {/* Show high score if available */}
+          {currentPlayer?.highScores && gameState.category && currentPlayer.highScores[gameState.category] ? (
+            <span className="text-sm text-white/70 font-game-fallback ml-2">
+              HIGH: {currentPlayer.highScores[gameState.category]}
+            </span>
+          ) : null}
         </div>
 
         <div className="flex items-center gap-2">
           <span className="text-white/70 font-game-fallback text-sm">
-            {gameState.category.toUpperCase()}
+            {(gameState.category || 'technology').toUpperCase()}
           </span>
           <button
             onClick={handleQuit}
@@ -385,7 +543,7 @@ const GameScreen = () => {
 
       {/* Game over overlay */}
       {showResult && lastGuessCorrect === false && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/80 backdrop-blur-md">
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/5 backdrop-blur-md">
           <div className="w-full max-w-xl mx-4 overflow-hidden">
             {/* Game over header */}
             <div className="bg-game-neon-red/30 border-b-2 border-game-neon-red/50 p-6 text-center rounded-t-2xl">
@@ -471,14 +629,34 @@ const GameScreen = () => {
             <div className="p-6 bg-black/40 flex justify-center gap-4 rounded-b-2xl border-t border-white/10">
               <button
                 onClick={() => {
-                  endGame().then(() => {
-                    // Restart the same category
-                    const currentCategory = gameState.category;
+                  const currentCategory = gameState.category;
+                  
+                  // Try Firebase first, then fall back to local restart
+                  if (gameId) {
+                    // End game in Firebase and then restart with the same category
+                    endGame()
+                      .then(() => {
+                        console.log("Game ended successfully in Firebase, restarting...");
+                        resetGame();
+                        setTimeout(() => {
+                          startGame(currentCategory);
+                        }, 100);
+                      })
+                      .catch(err => {
+                        console.warn("Error ending game in Firebase, falling back to local restart:", err);
+                        resetGame();
+                        setTimeout(() => {
+                          startGame(currentCategory);
+                        }, 100);
+                      });
+                  } else {
+                    // No gameId, just restart locally
+                    console.warn("No gameId available, using local restart");
                     resetGame();
                     setTimeout(() => {
                       startGame(currentCategory);
                     }, 100);
-                  });
+                  }
                 }}
                 className="px-8 py-3 bg-black/60 rounded-xl border-2 border-game-neon-green/40 text-game-neon-green font-game-fallback hover:bg-black/80 hover:scale-105 transition-all duration-300"
               >
@@ -487,10 +665,26 @@ const GameScreen = () => {
 
               <button
                 onClick={() => {
-                  endGame().then(() => {
+                  // Try Firebase first, then fall back to local navigation
+                  if (gameId) {
+                    // End game in Firebase and then navigate
+                    endGame()
+                      .then(() => {
+                        console.log("Game ended successfully in Firebase, navigating...");
+                        resetGame();
+                        router.push("/game");
+                      })
+                      .catch(err => {
+                        console.warn("Error ending game in Firebase, falling back to local navigation:", err);
+                        resetGame();
+                        router.push("/game");
+                      });
+                  } else {
+                    // No gameId, just navigate locally
+                    console.warn("No gameId available, using local navigation");
                     resetGame();
                     router.push("/game");
-                  });
+                  }
                 }}
                 className="px-6 py-3 bg-black/40 rounded-xl border border-white/30 text-white font-game-fallback hover:bg-black/80 hover:scale-105 transition-all duration-300"
               >

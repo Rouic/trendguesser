@@ -54,7 +54,7 @@ export interface TrendGuesserGameState {
   started: boolean;
   finished: boolean;
   winner?: string;
-  customTerm?: string | null; // Allow null as well
+  customTerm: string | null; // Must be string or null, not undefined
   usedTerms: string[];
   terms: SearchTerm[];
 }

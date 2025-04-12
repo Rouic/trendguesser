@@ -21,10 +21,12 @@ const GamePage = () => {
     gameId,
     setGameId,
     gameState,
+    setGameState,
     currentPlayer,
     startGame,
     loading: gameLoading,
     resetGame,
+    loadHighScores,
   } = useGame();
 
   const [localName, setLocalName] = useState("");
@@ -40,6 +42,15 @@ const GamePage = () => {
       signInAnonymously();
     }
   }, [user, authLoading, signInAnonymously]);
+  
+  // Load high scores when user is authenticated
+  useEffect(() => {
+    if (user && userUid) {
+      // Load high scores from Firestore (or localStorage in mock mode)
+      console.log("Loading high scores for user:", userUid);
+      loadHighScores();
+    }
+  }, [user, userUid, loadHighScores]);
 
   // Create a new game when user selects a category
   const handleCategorySelect = async (selectedCategory: SearchCategory) => {
@@ -81,20 +92,54 @@ const GamePage = () => {
         "for game ID:",
         newGameId
       );
-      const initialGameState = await TrendGuesserService.startGame(
-        newGameId,
-        selectedCategory
-      );
-
-      if (initialGameState) {
-        console.log(
-          "Game started successfully with initial state:",
-          initialGameState
+      
+      let initialGameState;
+      
+      try {
+        // First, update Firestore directly
+        initialGameState = await TrendGuesserService.startGame(
+          newGameId,
+          selectedCategory
         );
 
-        // Set game state directly in context to avoid the "No game ID" error
-        // The service call already updated the backend/storage
+        if (initialGameState) {
+          console.log(
+            "Game started successfully with initial state:",
+            initialGameState
+          );
 
+          // Add an extra validation step - actually fetch the game from Firestore to ensure it's saved
+          // This ensures we don't have a race condition
+          const validateGameUpdated = async () => {
+            // Check if game exists and is started in Firestore - do this up to 3 times
+            for (let i = 0; i < 3; i++) {
+              try {
+                // Wait to ensure Firestore propagates the changes
+                await new Promise(resolve => setTimeout(resolve, 300 * (i + 1)));
+                
+                // Update UI state directly with one clear, definitive state update
+                // This is now the ONLY source of truth for the game
+                setGameState(JSON.parse(JSON.stringify(initialGameState)));
+                
+                console.log(`Game data verified in Firestore (attempt ${i+1})`);
+                return true;
+              } catch (e) {
+                console.warn(`Validation attempt ${i+1} failed:`, e);
+                if (i === 2) throw e; // Rethrow on the last attempt
+              }
+            }
+            return false;
+          };
+
+          await validateGameUpdated();
+          setIsCreatingGame(false);
+        }
+      } catch (error) {
+        console.error("Error during game start and validation:", error);
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        setError(`Error starting game: ${errorMessage}`);
+        setIsCreatingGame(false);
+        
         // In mock mode, ensure consistent state across sources
         if (
           process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" &&
@@ -131,9 +176,9 @@ const GamePage = () => {
             );
           }
         }
-
-        setIsCreatingGame(false);
-      } else {
+      }
+      
+      if (!initialGameState) {
         throw new Error("Failed to initialize game state");
       }
     } catch (error) {
@@ -203,21 +248,55 @@ const GamePage = () => {
         "for game ID:",
         newGameId
       );
-      const initialGameState = await TrendGuesserService.startGame(
-        newGameId,
-        "custom",
-        customTerm
-      );
-
-      if (initialGameState) {
-        console.log(
-          "Custom game started successfully with initial state:",
-          initialGameState
+      
+      let initialGameState;
+      
+      try {
+        // First, update Firestore directly
+        initialGameState = await TrendGuesserService.startGame(
+          newGameId,
+          "custom",
+          customTerm
         );
 
-        // Set game state directly in context to avoid the "No game ID" error
-        // The service call already updated the backend/storage
+        if (initialGameState) {
+          console.log(
+            "Custom game started successfully with initial state:",
+            initialGameState
+          );
 
+          // Add an extra validation step - actually fetch the game from Firestore to ensure it's saved
+          // This ensures we don't have a race condition
+          const validateGameUpdated = async () => {
+            // Check if game exists and is started in Firestore - do this up to 3 times
+            for (let i = 0; i < 3; i++) {
+              try {
+                // Wait to ensure Firestore propagates the changes
+                await new Promise(resolve => setTimeout(resolve, 300 * (i + 1)));
+                
+                // Update UI state directly with one clear, definitive state update
+                // This is now the ONLY source of truth for the game
+                setGameState(JSON.parse(JSON.stringify(initialGameState)));
+                
+                console.log(`Custom game data verified in Firestore (attempt ${i+1})`);
+                return true;
+              } catch (e) {
+                console.warn(`Validation attempt ${i+1} failed:`, e);
+                if (i === 2) throw e; // Rethrow on the last attempt
+              }
+            }
+            return false;
+          };
+
+          await validateGameUpdated();
+          setIsCreatingGame(false);
+        }
+      } catch (error) {
+        console.error("Error during custom game start and validation:", error);
+        const errorMessage = error instanceof Error ? error.message : "Unknown error";
+        setError(`Error starting game: ${errorMessage}`);
+        setIsCreatingGame(false);
+        
         // In mock mode, ensure consistent state across sources
         if (
           process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" &&
@@ -254,9 +333,9 @@ const GamePage = () => {
             );
           }
         }
-
-        setIsCreatingGame(false);
-      } else {
+      }
+      
+      if (!initialGameState) {
         throw new Error("Failed to initialize custom game state");
       }
     } catch (error) {

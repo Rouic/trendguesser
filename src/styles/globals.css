@@ -1,6 +1,26 @@
 @import "tailwindcss";
 
 @theme {
+  /* Game Core Colors */
+  --color-game-bg: #121218;        /* from game.bg and game-bg */
+  --color-game-card: #1a1a23;       /* from game.card and game-card */
+  --color-game-felt: #202030;       /* from game.felt */
+  --color-game-accent: #ff5722;     /* from game.accent */
+  --color-game-highlight: #ffc107;  /* from game.highlight */
+  
+  /* Game Neon Colors (nested under game.neon and separate keys) */
+  --color-game-neon-blue: #00DDFF;   /* from game.neon.blue and game-neon-blue */
+  --color-game-neon-red: #FF3366;    /* from game.neon.red and game-neon-red */
+  --color-game-neon-green: #00FF99;  /* from game.neon.green and game-neon-green */
+  --color-game-neon-pink: #FF00CC;   /* from game.neon.pink and game-neon-pink */
+  --color-game-neon-purple: #9932fc; /* from game.neon.purple and game-neon-purple */
+  --color-game-neon-yellow: #FFCC00; /* from game.neon.yellow and game-neon-yellow */
+  --color-game-neon-gold: #FFD700;   /* from game.neon.gold and game-neon-gold */
+  --color-game-neon-silver: #C0C0C0; /* from game.neon.silver and game-neon-silver */
+  --color-game-neon-bronze: #CD7F32; /* from game.neon.bronze and game-neon-bronze */
+}
+
+@theme {
   /* Core palette */
   --color-rose-dark: #26101a; /* Balatro-inspired rose dark background */
   --color-white: #ffffff;
@@ -51,6 +71,8 @@
   --color-game-neon-orange-lg-shadow: rgba(255, 153, 51, 0.7);
   --color-game-neon-orange-lg-shadow2: rgba(255, 153, 51, 0.4);
   
+
+
 
 
 }

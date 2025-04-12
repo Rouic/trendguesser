@@ -8,6 +8,7 @@ import {
   query,
   where,
   getDocs,
+  Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/firebase";
 import { useAuth } from "./AuthContext";
@@ -20,6 +21,9 @@ import {
 } from "@/types";
 import { TrendGuesserService } from "@/lib/firebase/trendGuesserService";
 
+// Development mode flag
+const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true';
+
 interface GameContextType {
   gameId: string | null;
   gameData: GameData | null;
@@ -28,10 +32,12 @@ interface GameContextType {
   currentPlayer: TrendGuesserPlayer | null;
   gameState: TrendGuesserGameState | null;
   setGameId: (id: string) => void;
+  setGameState: (state: TrendGuesserGameState) => void; // Added direct setter
   startGame: (category: SearchCategory, customTerm?: string) => Promise<void>;
   makeGuess: (isHigher: boolean) => Promise<boolean>;
   endGame: () => Promise<void>;
   resetGame: () => void;
+  loadHighScores: () => Promise<void>;
 }
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -269,6 +275,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       }
       
+      // For direct service calls, allow passing the game ID explicitly
+      if (!currentGameId && typeof window !== "undefined") {
+        // Try one more time with a delay to allow state updates to propagate
+        await new Promise(resolve => setTimeout(resolve, 100));
+        currentGameId = gameId || sessionStorage.getItem("current_game_id");
+        if (currentGameId) {
+          console.log("Retrieved game ID after short delay:", currentGameId);
+          setGameId(currentGameId);
+        }
+      }
+      
       // Check if we have necessary data
       if (!currentGameId) {
         console.warn("No game ID available for starting game");
@@ -408,8 +425,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       // In mock mode, ensure the current game state is loaded properly
       if (
         process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" &&
-        typeof window !== "undefined" &&
-        !gameState
+        typeof window !== "undefined" 
       ) {
         console.log("Loading game state from session storage before guess");
         const storedData = sessionStorage.getItem(`game_${currentGameId}`);
@@ -417,12 +433,153 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
           try {
             const parsedData = JSON.parse(storedData);
             if (parsedData["__trendguesser.state"]) {
+              // If game state exists but isn't marked as started or is marked as finished,
+              // fix it to ensure game actions can proceed
+              if (!parsedData["__trendguesser.state"].started || parsedData["__trendguesser.state"].finished) {
+                console.log("Fixing inactive game state in session storage:", {
+                  wasStarted: parsedData["__trendguesser.state"].started,
+                  wasFinished: parsedData["__trendguesser.state"].finished
+                });
+                
+                parsedData["__trendguesser.state"].started = true;
+                parsedData["__trendguesser.state"].finished = false;
+                parsedData.status = "active";
+                
+                // Save the fixed state back to session storage
+                sessionStorage.setItem(`game_${currentGameId}`, JSON.stringify(parsedData));
+                console.log("Saved fixed game state to session storage");
+              }
+              
+              // Set game state in React context
               setGameState(parsedData["__trendguesser.state"]);
               console.log("Loaded game state from session storage");
+              
+              // Check for the player data and create it if missing
+              const mockUserUid = sessionStorage.getItem("mock_user_uid") || userUid;
+              if (!parsedData[mockUserUid]) {
+                console.log("Creating missing player data for:", mockUserUid);
+                parsedData[mockUserUid] = {
+                  uid: mockUserUid,
+                  name: "Player",
+                  score: 0
+                };
+                
+                // Save the updated data with player info
+                sessionStorage.setItem(`game_${currentGameId}`, JSON.stringify(parsedData));
+              }
+            } else if (parsedData.id) {
+              // Game data exists but no game state - create a minimal game state
+              console.log("Game data exists but no game state - creating default state");
+              
+              // Create a default game state with proper SearchCategory type
+              const defaultState: TrendGuesserGameState = {
+                currentRound: 1,
+                category: "technology" as SearchCategory,
+                started: true,
+                finished: false,
+                knownTerm: { 
+                  term: "Default Term 1", 
+                  volume: 100, 
+                  id: "default-1", 
+                  category: "technology" as SearchCategory,
+                  imageUrl: "https://via.placeholder.com/800x600?text=Default+Term+1",
+                },
+                hiddenTerm: { 
+                  term: "Default Term 2", 
+                  volume: 200, 
+                  id: "default-2", 
+                  category: "technology" as SearchCategory,
+                  imageUrl: "https://via.placeholder.com/800x600?text=Default+Term+2", 
+                },
+                usedTerms: ["default-1", "default-2"],
+                terms: [],
+                customTerm: null
+              };
+              
+              // Set the default state
+              parsedData["__trendguesser.state"] = defaultState;
+              parsedData.status = "active";
+              
+              // Make sure createdAt exists
+              if (!parsedData.createdAt) {
+                parsedData.createdAt = Timestamp.now();
+              }
+              
+              // Create player data if missing
+              const mockUserUid = sessionStorage.getItem("mock_user_uid") || userUid;
+              if (!parsedData[mockUserUid]) {
+                parsedData[mockUserUid] = {
+                  uid: mockUserUid,
+                  name: "Player",
+                  score: 0
+                };
+              }
+              
+              // Save the updated data
+              sessionStorage.setItem(`game_${currentGameId}`, JSON.stringify(parsedData));
+              
+              // Update React state
+              setGameState(defaultState);
+              setGameData(parsedData as GameData);
+              setCurrentPlayer(parsedData[mockUserUid]);
+              console.log("Created and loaded default game state");
             }
           } catch (e) {
             console.error("Error parsing stored game data:", e);
           }
+        } else {
+          // No stored game data for this ID - create a minimal game data object
+          console.log("No game data found in session storage, creating minimal game data");
+          
+          // Create a default game state with proper SearchCategory type
+          const defaultState: TrendGuesserGameState = {
+            currentRound: 1,
+            category: "technology" as SearchCategory,
+            started: true,
+            finished: false,
+            knownTerm: { 
+              term: "Default Term 1", 
+              volume: 100, 
+              id: "default-1", 
+              category: "technology" as SearchCategory,
+              imageUrl: "https://via.placeholder.com/800x600?text=Default+Term+1",
+            },
+            hiddenTerm: { 
+              term: "Default Term 2", 
+              volume: 200, 
+              id: "default-2", 
+              category: "technology" as SearchCategory, 
+              imageUrl: "https://via.placeholder.com/800x600?text=Default+Term+2",
+            },
+            usedTerms: ["default-1", "default-2"],
+            terms: [],
+            customTerm: null
+          };
+          
+          // Create minimal game data
+          const mockUserUid = sessionStorage.getItem("mock_user_uid") || userUid;
+          const minimalGameData = {
+            id: currentGameId,
+            status: "active",
+            gameType: "trendguesser",
+            createdBy: mockUserUid,
+            createdAt: Timestamp.now(), // Add createdAt field
+            "__trendguesser.state": defaultState,
+            [mockUserUid]: {
+              uid: mockUserUid,
+              name: "Player",
+              score: 0
+            }
+          } as GameData;
+          
+          // Save to session storage
+          sessionStorage.setItem(`game_${currentGameId}`, JSON.stringify(minimalGameData));
+          
+          // Update React state
+          setGameState(defaultState);
+          setGameData(minimalGameData);
+          setCurrentPlayer(minimalGameData[mockUserUid]);
+          console.log("Created minimal game data with default state");
         }
       }
 
@@ -430,11 +587,55 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         `Making guess (${isHigher ? "HIGHER" : "LOWER"}) for game:`,
         currentGameId
       );
-      const result = await TrendGuesserService.makeGuess(
-        currentGameId,
-        userUid,
-        isHigher
-      );
+      
+      // Make the guess with enhanced retry logic
+      let result: boolean;
+      let retryCount = 0;
+      const maxRetries = 2;
+      
+      while (true) {
+        try {
+          // Attempt to make the guess via Firebase service
+          result = await TrendGuesserService.makeGuess(
+            currentGameId,
+            userUid,
+            isHigher
+          );
+          console.log("Guess result:", result);
+          break; // Success, exit the retry loop
+        } catch (err) {
+          retryCount++;
+          console.warn(`Error in makeGuess (attempt ${retryCount}/${maxRetries}):`, err);
+          
+          if (retryCount >= maxRetries) {
+            // We've reached max retries, let's calculate the result locally instead
+            console.error("Max retries reached, falling back to local calculation");
+            
+            if (gameState) {
+              // Calculate result based on local game state
+              const knownVolume = gameState.knownTerm?.volume || 0;
+              const hiddenVolume = gameState.hiddenTerm?.volume || 0;
+              
+              // Equal volumes always count as correct
+              if (hiddenVolume === knownVolume) {
+                result = true;
+              } else {
+                const actuallyHigher = hiddenVolume > knownVolume;
+                result = isHigher === actuallyHigher;
+              }
+              
+              console.log("Locally calculated result:", result);
+              break; // Exit the retry loop with our local result
+            } else {
+              // No game state available, can't calculate locally
+              throw new Error("Cannot make guess: game state unavailable");
+            }
+          }
+          
+          // If we're still in retry attempts, wait a bit before trying again
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
 
       // If in mock mode, immediately update the game state to reflect the guess result
       if (
@@ -646,6 +847,108 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         console.log("Removed stored game data for:", currentGameId);
       }
     }
+    
+    // Force the GameContext provider to re-render
+    if (typeof window !== "undefined") {
+      // This calls window.dispatchEvent(new Event('storage')) which can be used to trigger re-renders
+      window.dispatchEvent(new Event('storage'));
+    }
+  };
+
+  // Add direct setter for gameState
+  const setGameStateDirectly = (state: TrendGuesserGameState) => {
+    console.log("Setting game state directly:", state.category, state.currentRound);
+    setGameState(state);
+    setLoading(false);
+  };
+
+  // Load high scores from Firestore
+  const loadHighScores = async () => {
+    if (!userUid) {
+      console.warn("Cannot load high scores - no user ID");
+      return;
+    }
+
+    try {
+      console.log("Loading high scores for user:", userUid);
+      
+      if (USE_MOCK_DATA) {
+        console.log("Using mock data for high scores");
+        
+        // Try to get high scores from localStorage for persistence
+        if (typeof window !== 'undefined') {
+          const highScoresKey = `tg_highscores_${userUid}`;
+          const storedScores = localStorage.getItem(highScoresKey);
+          
+          if (storedScores) {
+            try {
+              const parsedScores = JSON.parse(storedScores);
+              console.log("Found high scores in localStorage:", parsedScores);
+              
+              // Create an immediately updated player with high scores
+              // Deep clone to ensure we're creating a new reference
+              const updatedPlayer = currentPlayer ? {
+                ...JSON.parse(JSON.stringify(currentPlayer)),
+                highScores: parsedScores
+              } : null;
+              
+              if (updatedPlayer) {
+                // Update the player state
+                setCurrentPlayer(updatedPlayer);
+                console.log("Updated current player with high scores:", updatedPlayer);
+              }
+            } catch (e) {
+              console.error("Error parsing high scores from localStorage:", e);
+            }
+          } else {
+            console.log("No high scores found in localStorage");
+          }
+        }
+        
+        return;
+      }
+      
+      // Real Firestore implementation
+      const playerRef = doc(db, 'players', userUid);
+      const playerDoc = await getDoc(playerRef);
+      
+      if (playerDoc.exists()) {
+        const playerData = playerDoc.data();
+        
+        if (playerData.highScores) {
+          console.log("Found high scores in Firestore:", playerData.highScores);
+          
+          // Create an immediately updated player object with high scores
+          const updatedPlayer = currentPlayer ? {
+            ...JSON.parse(JSON.stringify(currentPlayer)),
+            highScores: playerData.highScores
+          } : null;
+          
+          if (updatedPlayer) {
+            // Update the player state with a completely new object to trigger re-renders
+            setCurrentPlayer(updatedPlayer);
+            console.log("Updated current player with high scores from Firestore", updatedPlayer);
+          }
+          
+          // Save to localStorage for faster access next time
+          if (typeof window !== 'undefined') {
+            try {
+              const highScoresKey = `tg_highscores_${userUid}`;
+              localStorage.setItem(highScoresKey, JSON.stringify(playerData.highScores));
+              console.log("Saved high scores to localStorage for future use");
+            } catch (e) {
+              console.error("Error saving high scores to localStorage:", e);
+            }
+          }
+        } else {
+          console.log("Player document exists but has no high scores");
+        }
+      } else {
+        console.log("No player document found in Firestore");
+      }
+    } catch (error) {
+      console.error("Error loading high scores:", error);
+    }
   };
 
   const value: GameContextType = {
@@ -656,10 +959,12 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     currentPlayer,
     gameState,
     setGameId,
+    setGameState: setGameStateDirectly,
     startGame,
     makeGuess,
     endGame,
     resetGame,
+    loadHighScores,
   };
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;

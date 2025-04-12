@@ -1,11 +1,65 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { useGame } from "@/contexts/GameContext";
 import { motion } from "framer-motion";
+import { useAuth } from "@/contexts/AuthContext";
 
 const GameOver = () => {
   const router = useRouter();
-  const { gameState, currentPlayer, resetGame } = useGame();
+  const { gameState, currentPlayer, resetGame, loadHighScores } = useGame();
+  const { userUid } = useAuth();
+  const [highScore, setHighScore] = useState<number | null>(null);
+  const [isNewHighScore, setIsNewHighScore] = useState(false);
+  
+  // Load high scores and check if current score is a new high score
+  useEffect(() => {
+    const loadScores = async () => {
+      if (gameState && currentPlayer) {
+        console.log("GameOver: Loading high scores first...");
+        // Ensure high scores are loaded
+        await loadHighScores();
+        
+        // Now check if we have high scores for this category
+        if (typeof window !== 'undefined' && userUid && gameState.category) {
+          // Directly check localStorage for most up-to-date data
+          const highScoresKey = `tg_highscores_${userUid}`;
+          const storedScores = localStorage.getItem(highScoresKey);
+          
+          let loadedHighScore = 0;
+          if (storedScores) {
+            try {
+              const parsedScores = JSON.parse(storedScores);
+              loadedHighScore = parsedScores[gameState.category] || 0;
+              console.log(`GameOver: Loaded high score from localStorage: ${loadedHighScore}`);
+            } catch (e) {
+              console.error("GameOver: Error parsing high scores from localStorage:", e);
+            }
+          } else {
+            console.log("GameOver: No high scores found in localStorage, checking currentPlayer");
+            // Fallback to currentPlayer's high scores if available
+            if (currentPlayer.highScores && currentPlayer.highScores[gameState.category]) {
+              loadedHighScore = currentPlayer.highScores[gameState.category] || 0;
+              console.log(`GameOver: Loaded high score from currentPlayer: ${loadedHighScore}`);
+            }
+          }
+          
+          const currentScore = currentPlayer.score || 0;
+          console.log(`GameOver: Current score: ${currentScore}, High score: ${loadedHighScore}`);
+          
+          setHighScore(loadedHighScore);
+          setIsNewHighScore(currentScore > loadedHighScore);
+          
+          console.log(`GameOver: Is new high score: ${currentScore > loadedHighScore}`);
+        } else {
+          // If no high scores exist yet, any score is a new high score
+          console.log("GameOver: Missing required data - marking as new high score");
+          setIsNewHighScore(true);
+        }
+      }
+    };
+    
+    loadScores();
+  }, [gameState, currentPlayer, loadHighScores, userUid]);
 
   // Handle return to category selection
   const handlePlayAgain = () => {
@@ -59,14 +113,29 @@ const GameOver = () => {
 
         <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-game-neon-red/50 to-transparent mb-6"></div>
 
-        <p className="text-white text-xl mb-8 font-game-fallback text-center">
+        <p className="text-white text-xl mb-2 font-game-fallback text-center">
           You scored
         </p>
 
-        <div className="flex items-center justify-center mb-8">
+        <div className="flex items-center justify-center mb-4">
           <span className="text-6xl font-bold text-game-neon-green animate-pulse">
             {currentPlayer?.score || 0}
           </span>
+        </div>
+        
+        {/* High score section */}
+        <div className="flex flex-col items-center justify-center mb-8">
+          {isNewHighScore ? (
+            <div className="bg-game-neon-yellow/20 border border-game-neon-yellow/50 rounded-xl px-4 py-2 text-game-neon-yellow mb-2">
+              <span className="text-xl font-bold">NEW HIGH SCORE!</span>
+            </div>
+          ) : highScore !== null ? (
+            <div className="text-white/80 font-game-fallback">
+              <span>Your high score for {gameState?.category}: {highScore}</span>
+            </div>
+          ) : (
+            <div className="h-6"></div>
+          )}
         </div>
 
         {gameState.knownTerm && gameState.hiddenTerm && (
