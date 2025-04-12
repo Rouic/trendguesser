@@ -300,19 +300,33 @@ export class TrendGuesserService {
           // Determine if the guess is correct
           let isCorrect;
           
+          // Store volumes for clarity
+          const knownVolume = gameState.knownTerm.volume;
+          const hiddenVolume = gameState.hiddenTerm.volume;
+          
           // EDGE CASE: If volumes are exactly equal, the guess is ALWAYS correct
           // regardless of whether the player chose "higher" or "lower"
-          if (gameState.hiddenTerm.volume === gameState.knownTerm.volume) {
+          if (hiddenVolume === knownVolume) {
             console.log('Equal volumes detected! ALWAYS counting guess as correct!');
             isCorrect = true;
           } else {
-            isCorrect = isHigher 
-              ? gameState.hiddenTerm.volume > gameState.knownTerm.volume
-              : gameState.hiddenTerm.volume < gameState.knownTerm.volume;
+            // Clear logic for determining correctness:
+            // - If player guessed higher, it's correct when hidden volume > known volume
+            // - If player guessed lower, it's correct when hidden volume < known volume
+            const actuallyHigher = hiddenVolume > knownVolume;
+            isCorrect = isHigher ? actuallyHigher : !actuallyHigher;
           }
           
-          // Log the result for debugging
-          console.log(`Guess result: ${isCorrect ? 'CORRECT' : 'INCORRECT'} (${isHigher ? 'HIGHER' : 'LOWER'})`);
+          // Log the result for debugging with very clear information
+          console.log(`
+            --------- GUESS EVALUATION ---------
+            Known term: ${gameState.knownTerm.term} (${knownVolume})
+            Hidden term: ${gameState.hiddenTerm.term} (${hiddenVolume})
+            Player guessed: ${isHigher ? 'HIGHER' : 'LOWER'}
+            Actual relation: Hidden term is ${hiddenVolume > knownVolume ? 'HIGHER' : hiddenVolume < knownVolume ? 'LOWER' : 'EQUAL'} than known term
+            Guess result: ${isCorrect ? 'CORRECT' : 'INCORRECT'}
+            -------------------------------------
+          `);
           
           
           if (isCorrect) {
