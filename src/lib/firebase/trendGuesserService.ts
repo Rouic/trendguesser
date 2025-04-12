@@ -819,22 +819,25 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
 }
   
   // End the game and update high scores
-  static async endGame(gameId: string, playerUid: string, finalScore: number): Promise<void> {
-    try {
-      // Handle mock mode
-      if (USE_MOCK_DATA && typeof window !== 'undefined') {
-        console.log('Using mock data for ending game:', gameId);
-        
-        // Get current game ID from session storage if needed
-        const currentGameId = sessionStorage.getItem('current_game_id');
-        if (currentGameId && currentGameId !== gameId) {
-          console.warn('WARNING: gameId mismatch in endGame. Using current_game_id:', currentGameId);
-          gameId = currentGameId;
-        }
-        
-        // Get game data from session storage
-        const storedGameData = sessionStorage.getItem(`game_${gameId}`);
-        if (storedGameData) {
+static async endGame(gameId: string, playerUid: string, finalScore: number): Promise<void> {
+  try {
+    console.log(`[TrendGuesserService.endGame] CRITICAL: Ending game ${gameId} for player ${playerUid} with score ${finalScore}`);
+    
+    // Handle mock mode
+    if (USE_MOCK_DATA && typeof window !== 'undefined') {
+      console.log('[TrendGuesserService.endGame] Using mock data for ending game:', gameId);
+      
+      // Get current game ID from session storage if needed
+      const currentGameId = sessionStorage.getItem('current_game_id');
+      if (currentGameId && currentGameId !== gameId) {
+        console.warn('[TrendGuesserService.endGame] WARNING: gameId mismatch. Using current_game_id:', currentGameId);
+        gameId = currentGameId;
+      }
+      
+      // Get game data from session storage
+      const storedGameData = sessionStorage.getItem(`game_${gameId}`);
+      if (storedGameData) {
+        try {
           const gameData = JSON.parse(storedGameData);
           const gameState = gameData['__trendguesser.state'] as TrendGuesserGameState;
           
@@ -845,17 +848,40 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
             
             // Save updated game data
             sessionStorage.setItem(`game_${gameId}`, JSON.stringify(gameData));
-            console.log('Updated mock game data as finished:', gameData);
+            console.log('[TrendGuesserService.endGame] Updated mock game data as finished');
+            
+            // IMPORTANT: Make sure we update high score in mock mode too
+            if (gameState.category) {
+              console.log(`[TrendGuesserService.endGame] Calling updateHighScore with category ${gameState.category} and score ${finalScore}`);
+              await this.updateHighScore(playerUid, gameState.category, finalScore);
+            } else {
+              console.error('[TrendGuesserService.endGame] No category found in game state');
+            }
+          } else {
+            console.log('[TrendGuesserService.endGame] Game not started, skipping high score update');
           }
+        } catch (e) {
+          console.error('[TrendGuesserService.endGame] Error processing game data:', e);
         }
-        
-        return;
+      } else {
+        console.error('[TrendGuesserService.endGame] No game data found for ID:', gameId);
       }
+      
+      return;
+    }
+  
+    // REAL FIREBASE MODE
+    console.log('[TrendGuesserService.endGame] Using Firestore for ending game');
+    const gameRef = doc(db, 'games', gameId.toUpperCase());
     
-      const gameRef = doc(db, 'games', gameId.toUpperCase());
+    // Declare gameState variable at this scope to be accessible in catch block
+    let foundCategory: SearchCategory | null = null;
+    
+    try {
       const gameDoc = await getDoc(gameRef);
       
       if (!gameDoc.exists()) {
+        console.error('[TrendGuesserService.endGame] Game does not exist');
         throw new Error('Game does not exist');
       }
       
@@ -863,29 +889,84 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
       const gameState = gameData['__trendguesser.state'] as TrendGuesserGameState;
       
       if (!gameState) {
+        console.error('[TrendGuesserService.endGame] No game state found');
         throw new Error('No game state found');
       }
+      
+      // Store the category for use outside this try block
+      foundCategory = gameState.category;
+      
+      // Log the game state for debugging
+      console.log('[TrendGuesserService.endGame] Game state found:', {
+        category: gameState.category,
+        started: gameState.started,
+        finished: gameState.finished,
+        currentRound: gameState.currentRound
+      });
       
       // Only update if game was actually started
       if (gameState.started) {
         // Mark game as finished
         await updateDoc(gameRef, {
           status: 'finished',
-          '__trendguesser.state': {
-            ...gameState,
-            finished: true
-          }
+          '__trendguesser.state.finished': true
         });
         
-        // Update high score if needed
-        await this.updateHighScore(playerUid, gameState.category, finalScore);
+        console.log('[TrendGuesserService.endGame] Marked game as finished in Firestore');
+        
+        // Update high score if we have a category
+        if (gameState.category) {
+          console.log(`[TrendGuesserService.endGame] Calling updateHighScore with category ${gameState.category} and score ${finalScore}`);
+          await this.updateHighScore(playerUid, gameState.category, finalScore);
+        } else {
+          console.error('[TrendGuesserService.endGame] No category found in game state');
+        }
+      } else {
+        console.log('[TrendGuesserService.endGame] Game not started, skipping high score update');
+      }
+    } catch (firebaseError) {
+      console.error('[TrendGuesserService.endGame] Firebase operation error:', firebaseError);
+      
+      // If there's a Firebase error, still try to update the high score directly if we found a category
+      if (foundCategory) {
+        console.log(`[TrendGuesserService.endGame] Attempting direct high score update after error with category ${foundCategory}`);
+        try {
+          await this.updateHighScore(playerUid, foundCategory, finalScore);
+        } catch (scoreError) {
+          console.error('[TrendGuesserService.endGame] Failed to update high score after error:', scoreError);
+        }
+      } else {
+        console.error('[TrendGuesserService.endGame] No category found, cannot update high score after error');
+        
+        // Last resort: try to get the category from localStorage if we have a current game
+        try {
+          if (typeof window !== 'undefined') {
+            const currentGameId = sessionStorage.getItem('current_game_id');
+            if (currentGameId === gameId) {
+              const gameData = sessionStorage.getItem(`game_${gameId}`);
+              if (gameData) {
+                const parsedData = JSON.parse(gameData);
+                const fallbackCategory = parsedData['__trendguesser.state']?.category;
+                
+                if (fallbackCategory) {
+                  console.log(`[TrendGuesserService.endGame] Found fallback category ${fallbackCategory} from sessionStorage`);
+                  await this.updateHighScore(playerUid, fallbackCategory, finalScore);
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.error('[TrendGuesserService.endGame] Error in last resort category lookup:', e);
+        }
       }
       
-    } catch (error) {
-      console.error('Error ending game:', error);
-      throw error;
+      throw firebaseError;
     }
+  } catch (error) {
+    console.error('[TrendGuesserService.endGame] Error ending game:', error);
+    throw error;
   }
+}
   
   // Create a new game session
   static async createGame(createdBy: string, playerName: string): Promise<string> {
@@ -1012,125 +1093,113 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
   
   // Helper methods
   private static async updateHighScore(
-    playerUid: string, 
-    category: SearchCategory, 
-    score: number
-  ): Promise<void> {
-    try {
-      // Log the high score update operation
-      console.log(`[TrendGuesserService.updateHighScore] Updating score for player ${playerUid}, category ${category}: ${score}`);
+  playerUid: string, 
+  category: SearchCategory, 
+  score: number
+): Promise<void> {
+  try {
+    console.log(`[TrendGuesserService.updateHighScore] CRITICAL: Updating high score for player ${playerUid}, category ${category}, score ${score}`);
+    
+    // In mock mode, store high score in sessionStorage and localStorage for persistence
+    if (USE_MOCK_DATA && typeof window !== 'undefined') {
+      console.log('[TrendGuesserService.updateHighScore] Using mock mode for high score');
       
-      // In mock mode, store high score in sessionStorage and localStorage for persistence
-      if (USE_MOCK_DATA && typeof window !== 'undefined') {
-        console.log('[TrendGuesserService.updateHighScore] Using mock mode for high score');
+      // Always save to localStorage for persistence across sessions
+      try {
+        const lsHighScoresKey = `tg_highscores_${playerUid}`;
+        let lsHighScores = {};
         
-        // First save to sessionStorage (temporary)
-        const highScoresData = sessionStorage.getItem('highScores');
-        let highScores = highScoresData ? JSON.parse(highScoresData) : {};
-        
-        // Initialize user's high scores if they don't exist
-        if (!highScores[playerUid]) {
-          highScores[playerUid] = {};
-        }
-        
-        // Update high score if the new score is higher
-        const currentHighScore = highScores[playerUid][category] || 0;
-        if (score > currentHighScore) {
-          highScores[playerUid][category] = score;
-          sessionStorage.setItem('highScores', JSON.stringify(highScores));
-          console.log(`[TrendGuesserService.updateHighScore] Updated session storage high score: ${score}`);
-        }
-        
-        // Always save to localStorage for persistence across sessions
-        try {
-          const lsHighScoresKey = `tg_highscores_${playerUid}`;
-          let lsHighScores = {};
-          
-          const existingLsData = localStorage.getItem(lsHighScoresKey);
-          if (existingLsData) {
-            try {
-              lsHighScores = JSON.parse(existingLsData);
-            } catch (parseErr) {
-              console.error('[TrendGuesserService.updateHighScore] Error parsing localStorage data:', parseErr);
-              // Initialize with empty object if parsing fails
-              lsHighScores = {};
-            }
+        const existingLsData = localStorage.getItem(lsHighScoresKey);
+        if (existingLsData) {
+          try {
+            lsHighScores = JSON.parse(existingLsData);
+          } catch (parseErr) {
+            console.error('[TrendGuesserService.updateHighScore] Error parsing localStorage data:', parseErr);
+            lsHighScores = {};
           }
-          
-          // IMPORTANT CHANGE: Always update the score, regardless of whether it's a high score
-          // This ensures the latest score is always available immediately
-          lsHighScores[category] = Math.max(score, lsHighScores[category] || 0);
+        }
+        
+        const currentHighScore = lsHighScores[category] || 0;
+        console.log(`[TrendGuesserService.updateHighScore] Current high score: ${currentHighScore}, New score: ${score}`);
+        
+        // Only update if the new score is higher
+        if (score > currentHighScore) {
+          console.log(`[TrendGuesserService.updateHighScore] New high score detected: ${score} > ${currentHighScore}`);
+          lsHighScores[category] = score;
           localStorage.setItem(lsHighScoresKey, JSON.stringify(lsHighScores));
-          console.log(`[TrendGuesserService.updateHighScore] Updated localStorage with score: ${lsHighScores[category]}`);
+          console.log(`[TrendGuesserService.updateHighScore] Updated localStorage with new high score: ${score}`);
           
           // Trigger a storage event so other components can react to the change
-          if (typeof window !== 'undefined') {
-            try {
-              // This fires a storage event that can be used for cross-component communication
-              window.dispatchEvent(new Event('storage'));
-              console.log('[TrendGuesserService.updateHighScore] Dispatched storage event to notify other components');
-            } catch (e) {
-              console.error('[TrendGuesserService.updateHighScore] Error dispatching storage event:', e);
-            }
-          }
-        } catch (e) {
-          console.error('[TrendGuesserService.updateHighScore] Failed to save to localStorage:', e);
+          window.dispatchEvent(new Event('storage'));
+        } else {
+          console.log(`[TrendGuesserService.updateHighScore] Score ${score} not higher than current high score ${currentHighScore}, not updating`);
         }
-        
-        return;
+      } catch (e) {
+        console.error('[TrendGuesserService.updateHighScore] Failed to save to localStorage:', e);
       }
-    
-      // Check if player exists in Firestore
-      const playerRef = doc(db, 'players', playerUid);
       
-      try {
-        const playerDoc = await getDoc(playerRef);
+      return;
+    }
+  
+    // REAL FIREBASE MODE
+    console.log('[TrendGuesserService.updateHighScore] Using Firestore to update high score');
+    const playerRef = doc(db, 'players', playerUid);
+    
+    try {
+      // First, get the current player document
+      console.log('[TrendGuesserService.updateHighScore] Getting player document from Firestore');
+      const playerDoc = await getDoc(playerRef);
+      
+      if (playerDoc.exists()) {
+        console.log('[TrendGuesserService.updateHighScore] Player exists in Firestore');
+        const playerData = playerDoc.data();
+        console.log('[TrendGuesserService.updateHighScore] Current player data:', playerData);
         
-        if (playerDoc.exists()) {
-          console.log('[TrendGuesserService.updateHighScore] Player exists in Firestore');
-          const playerData = playerDoc.data();
-          const currentHighScore = playerData.highScores?.[category] || 0;
+        // Get current high score for the category
+        const currentHighScore = playerData.highScores?.[category] || 0;
+        console.log(`[TrendGuesserService.updateHighScore] Current high score: ${currentHighScore}, New score: ${score}`);
+        
+        if (score > currentHighScore) {
+          console.log(`[TrendGuesserService.updateHighScore] New high score detected: ${score} > ${currentHighScore}`);
           
-          if (score > currentHighScore) {
-            console.log(`[TrendGuesserService.updateHighScore] New high score: ${score} > ${currentHighScore}`);
+          try {
+            // Create a complete new highScores object that includes all existing scores
+            const existingHighScores = playerData.highScores || {};
+            console.log('[TrendGuesserService.updateHighScore] Existing high scores:', existingHighScores);
             
-            // Update player's high score for this category
-            try {
-              await setDoc(playerRef, {
-                highScores: {
-                  [category]: score
-                }
-              }, { merge: true });
-              console.log('[TrendGuesserService.updateHighScore] Updated player document');
-              
-              // Immediately save to localStorage to ensure scores are available immediately
-              if (typeof window !== 'undefined') {
-                try {
-                  const highScoresKey = `tg_highscores_${playerUid}`;
-                  let localHighScores = {};
-                  
-                  const existingData = localStorage.getItem(highScoresKey);
-                  if (existingData) {
-                    try {
-                      localHighScores = JSON.parse(existingData);
-                    } catch (e) {
-                      console.error('[TrendGuesserService.updateHighScore] Error parsing localStorage:', e);
-                    }
-                  }
-                  
-                  // Update the score in localStorage
-                  localHighScores[category] = score;
-                  localStorage.setItem(highScoresKey, JSON.stringify(localHighScores));
-                  console.log('[TrendGuesserService.updateHighScore] Updated localStorage with Firestore high score');
-                  
-                  // Trigger a storage event for cross-component communication
-                  window.dispatchEvent(new Event('storage'));
-                } catch (e) {
-                  console.error('[TrendGuesserService.updateHighScore] Error updating localStorage:', e);
-                }
+            const updatedHighScores = {
+              ...existingHighScores,
+              [category]: score
+            };
+            console.log('[TrendGuesserService.updateHighScore] Updated high scores object:', updatedHighScores);
+            
+            // Use a direct Firestore update that COMPLETELY replaces the highScores field
+            // We cannot use a nested merge as Firestore doesn't support deep merges
+            await updateDoc(playerRef, {
+              highScores: updatedHighScores
+            });
+            
+            console.log('[TrendGuesserService.updateHighScore] Successfully updated player document in Firestore');
+            
+            // Verify the update worked by reading the document again
+            const verifyDoc = await getDoc(playerRef);
+            if (verifyDoc.exists()) {
+              const verifyData = verifyDoc.data();
+              console.log('[TrendGuesserService.updateHighScore] Verified high scores after update:', verifyData.highScores);
+            }
+            
+            // Also update localStorage for immediate access
+            if (typeof window !== 'undefined') {
+              try {
+                const highScoresKey = `tg_highscores_${playerUid}`;
+                localStorage.setItem(highScoresKey, JSON.stringify(updatedHighScores));
+                console.log('[TrendGuesserService.updateHighScore] Updated localStorage with Firestore high score');
+                
+                // Trigger a storage event for cross-component communication
+                window.dispatchEvent(new Event('storage'));
+              } catch (e) {
+                console.error('[TrendGuesserService.updateHighScore] Error updating localStorage:', e);
               }
-            } catch (updateErr) {
-              console.error('[TrendGuesserService.updateHighScore] Failed to update player document:', updateErr);
             }
             
             // Also update leaderboard if score is significant
@@ -1149,116 +1218,108 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
                 console.error('[TrendGuesserService.updateHighScore] Failed to update leaderboard:', leaderboardErr);
               }
             }
-          } else {
-            console.log(`[TrendGuesserService.updateHighScore] Score ${score} not higher than current high score ${currentHighScore}`);
-            
-            // Even if it's not a high score, update localStorage for consistency
-            if (typeof window !== 'undefined') {
-              try {
-                const highScoresKey = `tg_highscores_${playerUid}`;
-                let localHighScores = {};
-                
-                const existingData = localStorage.getItem(highScoresKey);
-                if (existingData) {
-                  try {
-                    localHighScores = JSON.parse(existingData);
-                  } catch (e) {
-                    console.error('[TrendGuesserService.updateHighScore] Error parsing localStorage:', e);
-                  }
-                }
-                
-                // Ensure high score is saved in localStorage
-                localHighScores[category] = currentHighScore;
-                localStorage.setItem(highScoresKey, JSON.stringify(localHighScores));
-                console.log('[TrendGuesserService.updateHighScore] Updated localStorage with existing high score');
-              } catch (e) {
-                console.error('[TrendGuesserService.updateHighScore] Error updating localStorage:', e);
-              }
-            }
+          } catch (updateErr) {
+            console.error('[TrendGuesserService.updateHighScore] CRITICAL ERROR - Failed to update high score in Firestore:', updateErr);
+            throw updateErr; // Re-throw to handle it at a higher level
           }
         } else {
-          // Player doesn't exist - create a new player document
-          console.log('[TrendGuesserService.updateHighScore] Creating new player document');
-          
-          try {
-            await setDoc(playerRef, {
-              uid: playerUid,
-              createdAt: serverTimestamp(),
-              name: 'Player',
-              highScores: {
-                [category]: score
-              }
-            });
-            console.log('[TrendGuesserService.updateHighScore] Created new player document');
-            
-            // Immediately save to localStorage
-            if (typeof window !== 'undefined') {
-              try {
-                const highScoresKey = `tg_highscores_${playerUid}`;
-                const localHighScores = { [category]: score };
-                localStorage.setItem(highScoresKey, JSON.stringify(localHighScores));
-                console.log('[TrendGuesserService.updateHighScore] Created localStorage high scores');
-                
-                // Trigger storage event
-                window.dispatchEvent(new Event('storage'));
-              } catch (e) {
-                console.error('[TrendGuesserService.updateHighScore] Error creating localStorage high scores:', e);
-              }
-            }
-            
-            // Also create leaderboard entry
-            if (score > 2) {
-              const leaderboardRef = doc(db, 'leaderboard', `${category}_${playerUid}`);
-              await setDoc(leaderboardRef, {
-                uid: playerUid,
-                name: 'Player',
-                score,
-                category,
-                updatedAt: serverTimestamp()
-              });
-              console.log('[TrendGuesserService.updateHighScore] Created leaderboard entry');
-            }
-          } catch (createErr) {
-            console.error('[TrendGuesserService.updateHighScore] Failed to create player document:', createErr);
-          }
+          console.log(`[TrendGuesserService.updateHighScore] Score ${score} not higher than current high score ${currentHighScore}, not updating`);
         }
-      } catch (docErr) {
-        console.error('[TrendGuesserService.updateHighScore] Error getting player document:', docErr);
-        
-        // Attempt to create a new player document even if reading failed
+      } else {
+        // Player doesn't exist - create a new player document
+        console.log('[TrendGuesserService.updateHighScore] Player document not found, creating new one');
         try {
-          await setDoc(playerRef, {
+          const newPlayer = {
             uid: playerUid,
             createdAt: serverTimestamp(),
             name: 'Player',
             highScores: {
               [category]: score
             }
-          }, { merge: true });
-          console.log('[TrendGuesserService.updateHighScore] Created player document after read error');
+          };
           
-          // Also update localStorage
+          await setDoc(playerRef, newPlayer);
+          console.log('[TrendGuesserService.updateHighScore] Created new player document with high score');
+          
+          // Immediately save to localStorage
           if (typeof window !== 'undefined') {
             try {
               const highScoresKey = `tg_highscores_${playerUid}`;
               const localHighScores = { [category]: score };
               localStorage.setItem(highScoresKey, JSON.stringify(localHighScores));
+              console.log('[TrendGuesserService.updateHighScore] Created localStorage high scores');
               
               // Trigger storage event
               window.dispatchEvent(new Event('storage'));
             } catch (e) {
-              console.error('[TrendGuesserService.updateHighScore] Error updating localStorage after recovery:', e);
+              console.error('[TrendGuesserService.updateHighScore] Error creating localStorage high scores:', e);
             }
           }
-        } catch (e) {
-          console.error('[TrendGuesserService.updateHighScore] Failed to create player after read error:', e);
+          
+          // Also create leaderboard entry
+          if (score > 2) {
+            const leaderboardRef = doc(db, 'leaderboard', `${category}_${playerUid}`);
+            await setDoc(leaderboardRef, {
+              uid: playerUid,
+              name: 'Player',
+              score,
+              category,
+              updatedAt: serverTimestamp()
+            });
+            console.log('[TrendGuesserService.updateHighScore] Created leaderboard entry');
+          }
+        } catch (createErr) {
+          console.error('[TrendGuesserService.updateHighScore] Failed to create player document:', createErr);
+          throw createErr; // Re-throw to handle it at a higher level
         }
       }
-    } catch (error) {
-      console.error('[TrendGuesserService.updateHighScore] Error updating high score:', error);
-      // Don't throw, just log - this is a non-critical operation
+    } catch (docErr) {
+      console.error('[TrendGuesserService.updateHighScore] Error getting/updating player document:', docErr);
+      
+      // Last resort: try a direct update without reading first
+      try {
+        console.log('[TrendGuesserService.updateHighScore] Attempting direct update without reading first');
+        
+        // Create a map for just this category score
+        const highScoreUpdate = {};
+        highScoreUpdate[`highScores.${category}`] = score;
+        
+        await updateDoc(playerRef, highScoreUpdate);
+        console.log('[TrendGuesserService.updateHighScore] Directly updated high score field');
+        
+        // Also update localStorage
+        if (typeof window !== 'undefined') {
+          try {
+            const highScoresKey = `tg_highscores_${playerUid}`;
+            let currentHighScores = {};
+            
+            // Try to get existing data
+            const existingData = localStorage.getItem(highScoresKey);
+            if (existingData) {
+              try {
+                currentHighScores = JSON.parse(existingData);
+              } catch (e) {}
+            }
+            
+            // Update and save
+            currentHighScores[category] = score;
+            localStorage.setItem(highScoresKey, JSON.stringify(currentHighScores));
+            
+            // Trigger storage event
+            window.dispatchEvent(new Event('storage'));
+          } catch (e) {
+            console.error('[TrendGuesserService.updateHighScore] Error updating localStorage:', e);
+          }
+        }
+      } catch (finalError) {
+        console.error('[TrendGuesserService.updateHighScore] All update attempts failed:', finalError);
+      }
     }
+  } catch (error) {
+    console.error('[TrendGuesserService.updateHighScore] Error updating high score:', error);
+    // Don't throw, just log - this is a non-critical operation
   }
+}
   
   private static async fetchTermsByCategory(category: SearchCategory): Promise<SearchTerm[]> {
     try {

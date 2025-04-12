@@ -20,6 +20,7 @@ const GameScreen = () => {
     startGame,
     setGameState,
     loadHighScores,
+    setCurrentPlayer,
     error: gameError,
   } = useGame();
 
@@ -220,15 +221,26 @@ const GameScreen = () => {
       const localStateHandler = () => {
         console.log(`[handleGuess] Handling result locally: ${result ? "CORRECT" : "INCORRECT"}`);
         
-        if (result) { // Correct guess
+        if (result) {
+          // Correct guess
           // Update score locally (in the UI only)
           const newScore = (currentPlayer?.score || 0) + 1;
           console.log("[handleGuess] Updating local score to:", newScore);
-          
+
+          // Create an updated player with the new score and update the state
+          if (currentPlayer) {
+            const updatedPlayer = {
+              ...currentPlayer,
+              score: newScore,
+            };
+            // Update the local state immediately so UI shows correct score
+            setCurrentPlayer(updatedPlayer);
+          }
+
           // Show success UI
           setLastGuessCorrect(true);
           setShowResult(true);
-          
+
           // Wait before moving to next round
           setTimeout(() => {
             // First verify we still have a valid game state before hiding result
@@ -237,57 +249,66 @@ const GameScreen = () => {
               // This ensures the current hidden term becomes the next known term
               // We need to take control of the UI state to ensure a good experience
               {
-                console.log("[handleGuess] Local term rotation - manually updating UI state");
-                
+                console.log(
+                  "[handleGuess] Local term rotation - manually updating UI state"
+                );
+
                 // Create a copy of the current game state to modify
-                const updatedState = {...gameState};
-                
+                const updatedState = { ...gameState };
+
                 // Ensure both terms exist
                 if (updatedState.knownTerm && updatedState.hiddenTerm) {
                   // Setup next round
                   updatedState.currentRound = updatedState.currentRound + 1;
-                  
+
                   // Move the hidden term to the known term position
-                  updatedState.knownTerm = {...updatedState.hiddenTerm};
-                  
+                  updatedState.knownTerm = { ...updatedState.hiddenTerm };
+
                   // Use next term from the terms array if available
                   if (updatedState.terms && updatedState.terms.length > 0) {
-                    updatedState.hiddenTerm = {...updatedState.terms[0]};
+                    updatedState.hiddenTerm = { ...updatedState.terms[0] };
                     updatedState.terms = updatedState.terms.slice(1);
                     // Make sure usedTerms is initialized
-                    updatedState.usedTerms = Array.isArray(updatedState.usedTerms) 
+                    updatedState.usedTerms = Array.isArray(
+                      updatedState.usedTerms
+                    )
                       ? [...updatedState.usedTerms, updatedState.hiddenTerm.id]
                       : [updatedState.knownTerm.id, updatedState.hiddenTerm.id];
                   } else {
                     // No more terms - end the game with a win
-                    console.log("[handleGuess] No more terms available, ending game with a win");
+                    console.log(
+                      "[handleGuess] No more terms available, ending game with a win"
+                    );
                     updatedState.finished = true;
-                    
+
                     // Show a message to the user
                     setError("You won! No more terms available.");
-                    
+
                     // Skip setting a new term
                     setGameState(updatedState);
                     return;
                   }
-                  
+
                   // Update the game state in context
-                  console.log("[handleGuess] Setting updated game state with term rotation:", {
-                    newRound: updatedState.currentRound,
-                    newKnownTerm: updatedState.knownTerm.term,
-                    newHiddenTerm: updatedState.hiddenTerm.term
-                  });
-                  
+                  console.log(
+                    "[handleGuess] Setting updated game state with term rotation:",
+                    {
+                      newRound: updatedState.currentRound,
+                      newKnownTerm: updatedState.knownTerm.term,
+                      newHiddenTerm: updatedState.hiddenTerm.term,
+                    }
+                  );
+
                   // Skip this UI update if the game is no longer active
                   if (!gameState.finished) {
                     setGameState(updatedState);
                   }
                 }
               }
-              
+
               // Important: Reset showResult first to ensure the next hidden term is hidden
               setShowResult(false);
-              
+
               // Add a small delay before allowing new guesses
               setTimeout(() => {
                 setLastGuessCorrect(null);
