@@ -1,9 +1,11 @@
 import { SearchTerm, TrendGuesserPlayer } from '@/types';
 import { Timestamp } from 'firebase/firestore';
 
+import { ImageConfig } from '@/utils/imageUtils';
+
 // Function to generate a consistent image URL for a term
 const getImageUrl = (term: string): string => {
-  return `https://source.unsplash.com/800x600/?${encodeURIComponent(term)}`;
+  return ImageConfig.primary.getUrl(term, 800, 600);
 };
 
 // Sample search terms for development

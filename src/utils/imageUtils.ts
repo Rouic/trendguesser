@@ -3,6 +3,44 @@
  */
 
 /**
+ * Configuration for image sources - centralized for easy updates
+ * when APIs change or to switch between different image providers
+ */
+export const ImageConfig = {
+  // Primary image service configuration
+  primary: {
+    baseUrl: 'https://picsum.photos',
+    getUrl: (term: string, width = 800, height = 600): string => {
+      // Create a hash from the term for deterministic images
+      const hash = term.split('').reduce((acc, char, i) => {
+        return acc + char.charCodeAt(0) * (i + 1);
+      }, 0);
+      
+      // Use the hash to create a predictable ID for an image
+      const imageId = Math.abs(hash % 1000); // Get a number between 0-999
+      
+      return `${ImageConfig.primary.baseUrl}/seed/${imageId}/${width}/${height}`;
+    }
+  },
+  
+  // Fallback image service configuration
+  fallback: {
+    baseUrl: 'https://picsum.photos',
+    getUrl: (term: string, width = 800, height = 600): string => {
+      return `${ImageConfig.fallback.baseUrl}/id/${Math.floor(Math.random() * 1000)}/${width}/${height}`;
+    }
+  },
+  
+  // Unsplash configuration (currently not working reliably)
+  unsplash: {
+    baseUrl: 'https://source.unsplash.com',
+    getUrl: (term: string, width = 800, height = 600): string => {
+      return `${ImageConfig.unsplash.baseUrl}/random/${width}x${height}?${encodeURIComponent(term)}`;
+    }
+  }
+};
+
+/**
  * Get a high-quality image URL for a search term
  * @param term The search term to get an image for
  * @param width Optional width for the image
@@ -10,10 +48,8 @@
  * @returns A URL string for an image related to the term
  */
 export const getImageUrl = (term: string, width = 800, height = 600): string => {
-  // Use Unsplash Source API with specific dimensions
-  // We add a timestamp to force a refresh when using mock data
-  const timestamp = Date.now();
-  return `https://source.unsplash.com/featured/${width}x${height}/?${encodeURIComponent(term)}&t=${timestamp}`;
+  // Use the primary image service
+  return ImageConfig.primary.getUrl(term, width, height);
 };
 
 /**
@@ -22,10 +58,8 @@ export const getImageUrl = (term: string, width = 800, height = 600): string => 
  * @returns A URL string for a fallback image
  */
 export const getFallbackImageUrl = (term: string): string => {
-  // Use a different image service or approach for fallbacks
-  // Here we're using the same service but with different parameters
-  const encodedTerm = encodeURIComponent(term.split(' ')[0]);
-  return `https://source.unsplash.com/random/800x600/?${encodedTerm}`;
+  // Use fallback image service
+  return ImageConfig.fallback.getUrl(term);
 };
 
 /**
@@ -51,14 +85,6 @@ export const isImageUrlValid = async (url: string): Promise<boolean> => {
  * @returns A URL string for a deterministic image
  */
 export const getDeterministicImageUrl = (term: string, seed = 0): string => {
-  // Create a hash from the term
-  const hash = term.split('').reduce((acc, char, i) => {
-    return acc + char.charCodeAt(0) * (i + 1);
-  }, seed);
-  
-  // Use the hash to create a predictable ID for an image
-  const imageId = Math.abs(hash % 1000); // Get a number between 0-999
-  
-  // Return a URL with the ID embedded
-  return `https://picsum.photos/seed/${imageId}/800/600`;
+  // This is now implemented in the primary image config
+  return ImageConfig.primary.getUrl(term, 800, 600);
 };

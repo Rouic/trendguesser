@@ -254,15 +254,37 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Start a new game
   const startGame = async (category: SearchCategory, customTerm?: string) => {
-    if (!gameId || !userUid) {
-      setError("No game ID or user ID");
-      return;
-    }
-
     try {
+      // Reset any previous error
+      setError(null);
+      
+      // Get the current game ID - either from state or from session storage
+      let currentGameId = gameId;
+      if (!currentGameId && process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" && typeof window !== "undefined") {
+        currentGameId = sessionStorage.getItem("current_game_id");
+        if (currentGameId) {
+          console.log("Retrieved game ID from session storage:", currentGameId);
+          // Update state to match
+          setGameId(currentGameId);
+        }
+      }
+      
+      // Check if we have necessary data
+      if (!currentGameId) {
+        console.warn("No game ID available for starting game");
+        // Don't set an error since the game might already be started through direct service call
+        return;
+      }
+      
+      if (!userUid) {
+        console.warn("No user ID available for starting game");
+        // Don't set an error since the game might already be started through direct service call
+        return;
+      }
+
       setLoading(true);
       console.log(
-        `Starting game with ID: ${gameId}, category: ${category}, customTerm: ${
+        `Starting game with ID: ${currentGameId}, category: ${category}, customTerm: ${
           customTerm || "none"
         }`
       );
@@ -272,46 +294,73 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" &&
         typeof window !== "undefined"
       ) {
-        sessionStorage.setItem("current_game_id", gameId);
-        console.log("Ensured current_game_id is set to:", gameId);
+        sessionStorage.setItem("current_game_id", currentGameId);
+        console.log("Ensured current_game_id is set to:", currentGameId);
       }
 
-      // Start the game - this should return the initial game state
-      const initialGameState = await TrendGuesserService.startGame(
-        gameId,
-        category,
-        customTerm
-      );
-
-      if (initialGameState) {
-        // Set the game state directly from the return value for immediate use
-        setGameState(initialGameState);
-
-        // Update player data if needed
-        if (
-          process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" &&
-          typeof window !== "undefined"
-        ) {
-          const mockUserUid =
-            sessionStorage.getItem("mock_user_uid") || userUid;
-          const gameData = sessionStorage.getItem(`game_${gameId}`);
-
-          if (gameData) {
-            try {
-              const parsedData = JSON.parse(gameData);
+      // Check if game is already started in session storage to avoid redundant calls
+      let shouldCallService = true;
+      if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" && typeof window !== "undefined") {
+        const storedGameData = sessionStorage.getItem(`game_${currentGameId}`);
+        if (storedGameData) {
+          try {
+            const parsedData = JSON.parse(storedGameData);
+            if (parsedData["__trendguesser.state"]?.started) {
+              console.log("Game already started in session storage, skipping service call");
+              setGameState(parsedData["__trendguesser.state"]);
+              shouldCallService = false;
+              
+              // Update player data
+              const mockUserUid = sessionStorage.getItem("mock_user_uid") || userUid;
               if (parsedData[mockUserUid]) {
                 setCurrentPlayer(parsedData[mockUserUid]);
               }
-            } catch (e) {
-              console.error("Error getting player data after game start:", e);
             }
+          } catch (e) {
+            console.error("Error checking game state in session storage:", e);
           }
         }
-      } else {
-        console.error(
-          "No game state returned from TrendGuesserService.startGame"
+      }
+
+      // Only call the service if not already started
+      if (shouldCallService) {
+        // Start the game - this should return the initial game state
+        const initialGameState = await TrendGuesserService.startGame(
+          currentGameId,
+          category,
+          customTerm
         );
-        setError("Failed to initialize game state");
+
+        if (initialGameState) {
+          // Set the game state directly from the return value for immediate use
+          setGameState(initialGameState);
+
+          // Update player data if needed
+          if (
+            process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" &&
+            typeof window !== "undefined"
+          ) {
+            const mockUserUid =
+              sessionStorage.getItem("mock_user_uid") || userUid;
+            const gameData = sessionStorage.getItem(`game_${currentGameId}`);
+
+            if (gameData) {
+              try {
+                const parsedData = JSON.parse(gameData);
+                if (parsedData[mockUserUid]) {
+                  setCurrentPlayer(parsedData[mockUserUid]);
+                }
+              } catch (e) {
+                console.error("Error getting player data after game start:", e);
+              }
+            }
+          }
+        } else {
+          console.error(
+            "No game state returned from TrendGuesserService.startGame"
+          );
+          setError("Failed to initialize game state");
+        }
       }
 
       setLoading(false);

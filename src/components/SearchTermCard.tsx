@@ -6,12 +6,14 @@ interface SearchTermCardProps {
   term: SearchTerm;
   showVolume: boolean;
   position: "top" | "bottom";
+  isNext?: boolean; // Flag to indicate if this is the preloaded "next" card
 }
 
 const SearchTermCard: React.FC<SearchTermCardProps> = ({
   term,
   showVolume,
   position,
+  isNext = false,
 }) => {
   // Format the search volume nicely
   const formattedVolume = term.volume.toLocaleString();
@@ -21,12 +23,20 @@ const SearchTermCard: React.FC<SearchTermCardProps> = ({
     ? `url("${term.imageUrl}")`
     : `linear-gradient(45deg, rgba(0,0,0,0.7), rgba(20,20,30,0.8))`;
 
+  // Determine opacity and transform based on whether this is the current or next card
+  const opacity = isNext ? 0 : 1;
+  const y = isNext 
+    ? (position === "top" ? -200 : 200) 
+    : 0;
+  
   return (
     <motion.div
       initial={{ y: position === "top" ? -20 : 20, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
+      animate={{ y, opacity }}
       transition={{ type: "spring", damping: 15 }}
-      className="w-full max-w-md rounded-2xl overflow-hidden shadow-xl relative"
+      className={`w-full max-w-7xl rounded-2xl overflow-hidden shadow-xl relative ${
+        isNext ? "absolute top-0 left-0 right-0 mx-auto" : ""
+      }`}
     >
       {/* Background image with overlay */}
       <div

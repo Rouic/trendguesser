@@ -92,8 +92,8 @@ const GamePage = () => {
           initialGameState
         );
 
-        // Update the context with the game state
-        await startGame(selectedCategory);
+        // Set game state directly in context to avoid the "No game ID" error
+        // The service call already updated the backend/storage
 
         // In mock mode, ensure consistent state across sources
         if (
@@ -215,8 +215,8 @@ const GamePage = () => {
           initialGameState
         );
 
-        // Update the context with the game state
-        await startGame("custom", customTerm);
+        // Set game state directly in context to avoid the "No game ID" error
+        // The service call already updated the backend/storage
 
         // In mock mode, ensure consistent state across sources
         if (

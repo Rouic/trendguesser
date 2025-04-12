@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/router";
 import { useGame } from "@/contexts/GameContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,12 +17,11 @@ const GameScreen = () => {
   } = useGame();
 
   const [showResult, setShowResult] = useState(false);
-  const [lastGuessCorrect, setLastGuessCorrect] = useState<boolean | null>(
-    null
-  );
+  const [lastGuessCorrect, setLastGuessCorrect] = useState<boolean | null>(null);
   const [isGuessing, setIsGuessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [recoveryAttempted, setRecoveryAttempted] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // Display any errors from the game context
   useEffect(() => {
@@ -94,6 +93,37 @@ const GameScreen = () => {
     }
   }, [gameState, recoveryAttempted]);
 
+  // Get the next term that will be revealed (if available)
+  const getNextTerm = useMemo(() => {
+    if (!gameState || !gameState.terms || gameState.terms.length === 0) {
+      return null;
+    }
+    return gameState.terms[0];
+  }, [gameState]);
+
+  // Handle correct guess animation
+  const handleCorrectGuess = () => {
+    // Show success notification
+    setShowResult(true);
+    
+    // Start animation after a brief delay
+    setTimeout(() => {
+      setIsAnimating(true);
+      
+      // Hide success notification after 500ms
+      setTimeout(() => {
+        setShowResult(false);
+      }, 500);
+      
+      // Complete animation and reset states after 1000ms
+      setTimeout(() => {
+        setIsAnimating(false);
+        setLastGuessCorrect(null);
+        setIsGuessing(false);
+      }, 1000);
+    }, 300);
+  };
+
   // Handle player making a guess
   const handleGuess = async (isHigher: boolean) => {
     if (!gameState || isGuessing) return;
@@ -109,16 +139,12 @@ const GameScreen = () => {
       console.log("Guess result:", result);
       setLastGuessCorrect(result);
 
-      // Show the result animation
-      setShowResult(true);
-
-      // Hide result after 2 seconds if guess was correct
       if (result) {
-        setTimeout(() => {
-          setShowResult(false);
-          setLastGuessCorrect(null);
-          setIsGuessing(false);
-        }, 2000);
+        // Handle successful guess with new animation
+        handleCorrectGuess();
+      } else {
+        // For incorrect guess, show the game over screen
+        setShowResult(true);
       }
     } catch (err) {
       console.error("Error in handleGuess:", err);
@@ -210,11 +236,24 @@ const GameScreen = () => {
       <div className="flex-1 flex flex-col">
         {/* Known term - top half */}
         <div className="flex-1 flex flex-col justify-center items-center p-4 relative overflow-hidden">
-          <SearchTermCard
-            term={gameState.knownTerm}
-            showVolume={true}
-            position="top"
-          />
+          <div className="w-full max-w-7xl mx-auto relative">
+            {/* Current top card */}
+            <SearchTermCard
+              term={gameState.knownTerm}
+              showVolume={true}
+              position="top"
+            />
+            
+            {/* Next top card (will be visible after animation) */}
+            {isAnimating && getNextTerm && (
+              <SearchTermCard
+                term={gameState.hiddenTerm}
+                showVolume={true}
+                position="top"
+                isNext={true}
+              />
+            )}
+          </div>
         </div>
 
         {/* Higher/Lower buttons - middle */}
@@ -242,17 +281,45 @@ const GameScreen = () => {
 
         {/* Hidden term - bottom half */}
         <div className="flex-1 flex flex-col justify-center items-center p-4 relative overflow-hidden">
-          <SearchTermCard
-            term={gameState.hiddenTerm}
-            showVolume={showResult}
-            position="bottom"
-          />
+          <div className="w-full max-w-7xl mx-auto relative">
+            {/* Current bottom card */}
+            <SearchTermCard
+              term={gameState.hiddenTerm}
+              showVolume={showResult}
+              position="bottom"
+            />
+            
+            {/* Next bottom card (preloaded) */}
+            {!isAnimating && getNextTerm && (
+              <SearchTermCard
+                term={getNextTerm}
+                showVolume={false}
+                position="bottom"
+                isNext={true}
+              />
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Result overlay */}
+      {/* Correct guess notification (smaller, less intrusive) */}
       <AnimatePresence>
-        {showResult && (
+        {showResult && lastGuessCorrect && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -50 }}
+            transition={{ duration: 0.3 }}
+            className="fixed top-20 left-1/2 transform -translate-x-1/2 px-6 py-4 bg-game-neon-green/20 backdrop-blur-md rounded-xl border border-game-neon-green/50 text-game-neon-green font-bold text-xl shadow-lg z-50"
+          >
+            CORRECT!
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Game over overlay */}
+      <AnimatePresence>
+        {showResult && lastGuessCorrect === false && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -264,26 +331,14 @@ const GameScreen = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ type: "spring", damping: 15 }}
-              className={`p-8 rounded-2xl ${
-                lastGuessCorrect
-                  ? "bg-game-neon-green/20 border-2 border-game-neon-green/50"
-                  : "bg-game-neon-red/20 border-2 border-game-neon-red/50"
-              } flex flex-col items-center justify-center text-center max-w-md mx-4`}
+              className="p-8 rounded-2xl bg-game-neon-red/20 border-2 border-game-neon-red/50 flex flex-col items-center justify-center text-center max-w-md mx-4"
             >
-              <h2
-                className={`text-4xl font-bold mb-4 ${
-                  lastGuessCorrect
-                    ? "text-game-neon-green"
-                    : "text-game-neon-red"
-                }`}
-              >
-                {lastGuessCorrect ? "CORRECT!" : "GAME OVER!"}
+              <h2 className="text-4xl font-bold mb-4 text-game-neon-red">
+                GAME OVER!
               </h2>
 
               <p className="text-white text-xl mb-6 font-game-fallback">
-                {lastGuessCorrect
-                  ? "Great guess! Keep going..."
-                  : `Final score: ${currentPlayer?.score || 0}`}
+                Final score: {currentPlayer?.score || 0}
               </p>
 
               <div className="flex flex-col items-center mb-6">
@@ -301,20 +356,18 @@ const GameScreen = () => {
                 </p>
               </div>
 
-              {!lastGuessCorrect && (
-                <button
-                  onClick={() => {
-                    // Reset the game and go back to game selection
-                    endGame().then(() => {
-                      resetGame();
-                      router.push("/game");
-                    });
-                  }}
-                  className="px-8 py-3 bg-black/60 rounded-xl border border-white/30 text-white font-game-fallback hover:bg-black/80 hover:scale-105 transition-all duration-300"
-                >
-                  Play Again
-                </button>
-              )}
+              <button
+                onClick={() => {
+                  // Reset the game and go back to game selection
+                  endGame().then(() => {
+                    resetGame();
+                    router.push("/game");
+                  });
+                }}
+                className="px-8 py-3 bg-black/60 rounded-xl border border-white/30 text-white font-game-fallback hover:bg-black/80 hover:scale-105 transition-all duration-300"
+              >
+                Play Again
+              </button>
             </motion.div>
           </motion.div>
         )}

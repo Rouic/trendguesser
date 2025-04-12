@@ -19,6 +19,7 @@ import { db } from './firebase';
 import { v4 as uuidv4 } from 'uuid';
 import { SearchCategory, SearchTerm, TrendGuesserGameState, TrendGuesserPlayer } from '@/types';
 import { sampleSearchTerms, sampleLeaderboard } from './mockData';
+import { ImageConfig } from '@/utils/imageUtils';
 
 // Development mode flag
 const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA === 'true' || 
@@ -750,7 +751,7 @@ export class TrendGuesserService {
         term: customTerm,
         volume: Math.floor(Math.random() * 100) + 1, // Placeholder volume
         category: 'custom',
-        imageUrl: `https://source.unsplash.com/featured/?${encodeURIComponent(customTerm)}`,
+        imageUrl: ImageConfig.primary.getUrl(customTerm, 800, 600),
         timestamp: Timestamp.now()
       };
       
@@ -792,7 +793,7 @@ export class TrendGuesserService {
           term: customTerm,
           volume: Math.floor(Math.random() * 100) + 1,
           category: 'custom',
-          imageUrl: `https://source.unsplash.com/featured/?${encodeURIComponent(customTerm)}`,
+          imageUrl: ImageConfig.primary.getUrl(customTerm, 800, 600),
           timestamp: Timestamp.now()
         };
         
