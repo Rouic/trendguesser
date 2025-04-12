@@ -119,14 +119,8 @@ const GameScreen = () => {
     setLastGuessCorrect(true);
     setShowResult(true);
 
-    // Capture the current game state terms for the animation
-    if (gameState) {
-      setAnimationState({
-        knownTerm: { ...gameState.knownTerm },
-        hiddenTerm: { ...gameState.hiddenTerm },
-        isTransitioning: true
-      });
-    }
+    // NOTE: We don't need to capture game state here anymore since we're
+    // already using the captured state from handleGuess
 
     // Start animation after revealing the volume
     const animationTimer = setTimeout(() => {
@@ -142,15 +136,15 @@ const GameScreen = () => {
         // These need to happen last to avoid showing game over
         setShowResult(false);
         setLastGuessCorrect(null);
-        
+
         // Animation is complete, now we can stop using the frozen values
-        setAnimationState(prev => ({
+        setAnimationState((prev) => ({
           ...prev,
-          isTransitioning: false
+          isTransitioning: false,
         }));
       }, 1000); // Match animation duration (slightly increased)
     }, 1000); // Time to show the result before animation
-  }, [gameState]);
+  }, []);
 
   // Handle player making a guess
   const handleGuess = async (isHigher: boolean) => {
@@ -160,39 +154,48 @@ const GameScreen = () => {
     setError(null);
 
     try {
-      // Log the current state before guessing
+      // IMPORTANT FIX: Capture the current terms BEFORE making any changes
+      // This ensures we use the correct state for comparison and animation
+      const currentKnownTerm = { ...gameState.knownTerm };
+      const currentHiddenTerm = { ...gameState.hiddenTerm };
+
+      // Log the current state before guessing using the captured terms
       console.log(`Making ${isHigher ? "HIGHER" : "LOWER"} guess...`, {
-        knownTerm: gameState.knownTerm.term,
-        knownVolume: gameState.knownTerm.volume,
-        hiddenTerm: gameState.hiddenTerm.term,
-        hiddenVolume: gameState.hiddenTerm.volume
+        knownTerm: currentKnownTerm.term,
+        knownVolume: currentKnownTerm.volume,
+        hiddenTerm: currentHiddenTerm.term,
+        hiddenVolume: currentHiddenTerm.volume,
       });
 
       // Process the guess
       const result = await makeGuess(isHigher);
       console.log("Guess result:", result);
 
-      // Check the actual comparison result
-      const actuallyHigher = gameState.hiddenTerm.volume > gameState.knownTerm.volume;
-      const actuallyLower = gameState.hiddenTerm.volume < gameState.knownTerm.volume;
-      const actuallyEqual = gameState.hiddenTerm.volume === gameState.knownTerm.volume;
-      
-      console.log(`Verification: Hidden term is ${
-        actuallyEqual ? "EQUAL to" : actuallyHigher ? "HIGHER than" : "LOWER than"
-      } known term. Player guessed ${isHigher ? "HIGHER" : "LOWER"}. 
-      Service said guess was ${result ? "CORRECT" : "INCORRECT"}.`);
+      // Check the actual comparison using the CAPTURED terms, not the potentially updated game state
+      const actuallyHigher = currentHiddenTerm.volume > currentKnownTerm.volume;
+      const actuallyLower = currentHiddenTerm.volume < currentKnownTerm.volume;
+      const actuallyEqual =
+        currentHiddenTerm.volume === currentKnownTerm.volume;
 
-      // Explicitly set if the guess was correct or not 
-      // and capture the game state BEFORE any changes happen
+      console.log(`Verification: Hidden term is ${
+        actuallyEqual
+          ? "EQUAL to"
+          : actuallyHigher
+          ? "HIGHER than"
+          : "LOWER than"
+      } known term. Player guessed ${isHigher ? "HIGHER" : "LOWER"}. 
+    Service said guess was ${result ? "CORRECT" : "INCORRECT"}.`);
+
+      // Explicitly set if the guess was correct or not
       const wasCorrect = result === true;
-      
-      // Save the current state information before any animations or changes
+
+      // FIX: Save the CAPTURED state for animations, not the potentially updated game state
       setAnimationState({
-        knownTerm: { ...gameState.knownTerm },
-        hiddenTerm: { ...gameState.hiddenTerm },
-        isTransitioning: true
+        knownTerm: currentKnownTerm,
+        hiddenTerm: currentHiddenTerm,
+        isTransitioning: true,
       });
-      
+
       // Only after capturing state, update lastGuessCorrect which triggers UI changes
       setLastGuessCorrect(wasCorrect);
 
