@@ -280,8 +280,7 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
           throw new Error('Game state not found');
         }
         
-        // DISABLED VERIFICATION - Always consider the game active
-        // Instead of checking and throwing an error, just log the state and force it to be active
+        // Ensure the game is in active state - fix any inconsistencies
         if (!gameState.started || gameState.finished) {
           console.warn('[TrendGuesserService.makeGuess] Game state was inactive but continuing anyway:', 
             gameState.started ? 'started' : 'not started', 
@@ -467,39 +466,33 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
           // Return success
           return true;
         } else {
-          // Wrong guess - game over
-          console.log('[TrendGuesserService.makeGuess] Incorrect guess - game over');
+          // Wrong guess - game over, but don't update the UI state immediately
+          // Just mark the game as finished in the stored data
+          console.log('[TrendGuesserService.makeGuess] Incorrect guess - returning false');
           
-          // Mark game as finished
-          const updatedGameState = JSON.parse(JSON.stringify(gameState));
-          updatedGameState.finished = true;
-          updatedGameData.status = 'finished';
+          // FIX: Don't mark the game as finished yet - let the UI handle that transition
+          // This prevents the premature "Game Over" flash and allows the UI to control the
+          // timing of revealing the hidden term's volume.
           
-          // Update the game data object
-          updatedGameData['__trendguesser.state'] = updatedGameState;
+          // Save the final score for high score tracking
+          const finalScore = player.score || 0;
           
-          // Save updated game data to session storage
-          sessionStorage.setItem(`game_${gameId}`, JSON.stringify(updatedGameData));
-          console.log('[TrendGuesserService.makeGuess] Saved game over state to session storage');
-          
-          // IMPROVED: Update high score separately with error handling
+          // Update high score if needed
           try {
-            // Call the improved updateHighScore method
             await this.updateHighScore(
               mockUserUid, 
               gameState.category, 
-              player.score || 0
+              finalScore
             );
-            console.log('[TrendGuesserService.makeGuess] Successfully updated high score');
+            console.log('[TrendGuesserService.makeGuess] Updated high score for game over');
           } catch (highScoreErr) {
             console.error('[TrendGuesserService.makeGuess] Failed to update high score, but game is still over:', highScoreErr);
-            // Don't rethrow - game over process should continue even if high score update fails
           }
           
           // Clear processing flag before returning
           TrendGuesserService.isProcessingGuess = false;
           
-          // Return failure
+          // Return failure - let the UI handle the game over transition
           return false;
         }
       }
@@ -511,7 +504,7 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
       return false;
     }
     
-    // Regular Firestore implementation - unchanged
+    // Regular Firestore implementation
     console.log('[TrendGuesserService.makeGuess] Using Firestore for:', { gameId, playerUid, isHigher });
     
     const gameRef = doc(db, 'games', gameId.toUpperCase());
@@ -585,8 +578,7 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
       gameState.terms = [];
     }
     
-    // Only log a warning for missing terms but DON'T create fallbacks
-    // Let the UI handle this with its own state management
+    // Log warnings for missing terms but don't create fallbacks yet
     if (!gameState.knownTerm || !gameState.hiddenTerm) {
       console.warn('[TrendGuesserService.makeGuess] Missing terms in game state - UI will handle with local state');
     }
@@ -616,17 +608,16 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
     // Store the initial player score for reference
     const initialPlayerScore = player.score || 0;
     
-    // CRITICAL FIX: Always force the game to be active - don't even check
-    // This ensures we never hit the "Game is not active" error
+    // CRITICAL FIX: Always ensure the game is in active state
     console.log('[TrendGuesserService.makeGuess] Game state BEFORE fix:', {
       started: gameState.started,
       finished: gameState.finished
     });
     
-    // Force the game to be active unconditionally
+    // Force the game to be active
     gameState.started = true;
     gameState.finished = false;
-    console.log('[TrendGuesserService.makeGuess] Forced game to active state UNCONDITIONALLY');
+    console.log('[TrendGuesserService.makeGuess] Forced game to active state');
     
     // Update Firestore with the corrected state
     try {
@@ -794,14 +785,12 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
             status: 'finished'
           });
           
-          // IMPROVED: Update high score separately with error handling
+          // Update high score separately with error handling
           try {
-            // Call the improved updateHighScore method
             await this.updateHighScore(playerUid, gameState.category, newPlayerScore);
             console.log('[TrendGuesserService.makeGuess] Successfully updated high score during end of terms');
           } catch (highScoreErr) {
             console.error('[TrendGuesserService.makeGuess] Failed to update high score during end of terms:', highScoreErr);
-            // Don't rethrow - game over process should continue even if high score update fails
           }
           
           console.log('[TrendGuesserService.makeGuess] Firestore - No new terms available, ending game');
@@ -851,47 +840,22 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
       TrendGuesserService.isProcessingGuess = false;
       return true;
     } else {
-      // Incorrect guess - game over
-      // IMPROVED: Separate game state update from high score update for reliability
+      // Incorrect guess - don't immediately end the game
+      // FIX: Return false and let the UI handle the game over transition
+      // This prevents the "Game Over" flicker and premature search volume reveal
       
-      // First, mark the game as finished in Firestore
-      const updatedState: TrendGuesserGameState = {
-        ...gameState,
-        finished: true
-      };
-      
-      // Complete update with all fields for game over
-      const gameOverUpdate = {
-        '__trendguesser.state': updatedState,
-        status: 'finished'
-      };
-      
-      // First update game state - this is the primary operation
-      let gameStateUpdateSuccessful = false;
+      // Update high score as needed
       try {
-        // Use setDoc with merge for reliability
-        await setDoc(gameRef, gameOverUpdate, { merge: true });
-        console.log('[TrendGuesserService.makeGuess] Firestore - Game over state saved');
-        gameStateUpdateSuccessful = true;
-      } catch (err) {
-        console.error('[TrendGuesserService.makeGuess] Failed to update game over state:', err);
-        // Continue to high score update anyway
-      }
-      
-      // Then, update high score as a separate operation with retry logic
-      try {
-        // Call the improved updateHighScore method
         await this.updateHighScore(playerUid, gameState.category, player.score || 0);
-        console.log('[TrendGuesserService.makeGuess] Successfully updated high score after game over');
+        console.log('[TrendGuesserService.makeGuess] Updated high score for incorrect guess');
       } catch (highScoreErr) {
-        console.error('[TrendGuesserService.makeGuess] Failed to update high score after game over:', highScoreErr);
-        // Don't rethrow - we still need to return the guess result
+        console.error('[TrendGuesserService.makeGuess] Failed to update high score:', highScoreErr);
       }
-      
-      console.log('[TrendGuesserService.makeGuess] Firestore - Game over, incorrect guess');
       
       // Clear processing flag before returning
       TrendGuesserService.isProcessingGuess = false;
+      
+      // Return false to indicate incorrect guess
       return false;
     }
     

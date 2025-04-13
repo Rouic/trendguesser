@@ -141,42 +141,6 @@ const GameScreen = () => {
         `[handleGuess] Making ${isHigher ? "HIGHER" : "LOWER"} guess...`
       );
 
-      // FIREBASE-FIRST APPROACH WITH LOCAL FALLBACK
-      // We'll try to use Firebase first, but have a local fallback if it fails temporarily
-      // This ensures data integrity while making the app resilient
-      
-      // Verify we have a valid game state before proceeding
-      if (!gameState.knownTerm || !gameState.hiddenTerm) {
-        console.error("[handleGuess] Invalid game state - missing terms");
-        
-        // Create fallback terms if needed rather than throwing an error
-        if (!gameState.knownTerm) {
-          console.log("[handleGuess] Creating fallback knownTerm");
-          gameState.knownTerm = {
-            term: "Fallback Term 1",
-            volume: 100,
-            id: "fallback-1",
-            category: gameState.category || ("technology" as SearchCategory),
-            imageUrl: "https://via.placeholder.com/800x600?text=Fallback+Term+1",
-            timestamp: Timestamp.fromDate(new Date())
-          };
-        }
-        
-        if (!gameState.hiddenTerm) {
-          console.log("[handleGuess] Creating fallback hiddenTerm");
-          gameState.hiddenTerm = {
-            term: "Fallback Term 2",
-            volume: 200,
-            id: "fallback-2",
-            category: gameState.category || ("technology" as SearchCategory),
-            imageUrl: "https://via.placeholder.com/800x600?text=Fallback+Term+2",
-            timestamp: Timestamp.fromDate(new Date())
-          };
-        }
-        
-        console.log("[handleGuess] Created fallback terms to continue game");
-      }
-
       // Store the current game state values for comparison
       const currentRound = gameState.currentRound;
       const knownTermName = gameState.knownTerm.term;
@@ -191,7 +155,7 @@ const GameScreen = () => {
         hiddenVolume: hiddenTermVolume,
       });
 
-      // Determine if the guess is correct
+      // Determine if the guess is correct locally
       const actuallyHigher = hiddenTermVolume > knownTermVolume;
       const actuallyEqual = hiddenTermVolume === knownTermVolume;
       const isCorrect = actuallyEqual ? true : isHigher === actuallyHigher;
@@ -200,148 +164,144 @@ const GameScreen = () => {
         actuallyHigher,
         actuallyEqual,
         userGuessedHigher: isHigher,
-        isCorrect
+        isCorrect,
       });
 
-      // ATTEMPT FIREBASE FIRST, WITH LOCAL FALLBACK
+      // IMPORTANT: Wait to show the result until AFTER we get the Firebase result
+      // This prevents the flicker and premature reveal
       let result;
       let usedLocalFallback = false;
-      
+
       if (gameId) {
         try {
-          // First try Firebase (primary source of truth)
           console.log("[handleGuess] Attempting to make guess via Firebase...");
           result = await makeGuess(isHigher);
           console.log("[handleGuess] Firebase operation succeeded:", result);
-          
+
           // If Firebase returned false but our calculation says true - OVERRIDE Firebase result
           if (result === false && isCorrect === true) {
-            console.warn("[handleGuess] Firebase disagrees with local calculation - OVERRIDING Firebase result!");
+            console.warn(
+              "[handleGuess] Firebase disagrees with local calculation - OVERRIDING Firebase result!"
+            );
             result = true; // Trust our local calculation instead
           }
         } catch (err) {
-          // If Firebase fails, use our local calculation as fallback
-          console.error("[handleGuess] Firebase error, using local fallback:", err);
+          console.error(
+            "[handleGuess] Firebase error, using local fallback:",
+            err
+          );
           result = isCorrect;
           usedLocalFallback = true;
         }
       } else {
-        // No game ID available, use local calculation
-        console.warn("[handleGuess] No gameId available, using local calculation");
+        console.warn(
+          "[handleGuess] No gameId available, using local calculation"
+        );
         result = isCorrect;
         usedLocalFallback = true;
       }
-      
-      console.log(`[handleGuess] Final result (used fallback: ${usedLocalFallback}):`, result);
 
-      // LOCAL STATE HANDLING - This is where the magic happens
-      const localStateHandler = () => {
-        console.log(`[handleGuess] Handling result locally: ${result ? "CORRECT" : "INCORRECT"}`);
-        
-        if (result) {
-          // Correct guess
-          // Update score locally (in the UI only)
-          const newScore = (currentPlayer?.score || 0) + 1;
-          console.log("[handleGuess] Updating local score to:", newScore);
+      console.log(
+        `[handleGuess] Final result (used fallback: ${usedLocalFallback}):`,
+        result
+      );
 
-          // Create an updated player with the new score and update the state
-          if (currentPlayer) {
-            const updatedPlayer = {
-              ...currentPlayer,
-              score: newScore,
-            };
-            // Update the local state immediately so UI shows correct score
-            setCurrentPlayer(updatedPlayer);
-          }
+      // NOW it's safe to show the result - AFTER we've determined the outcome
+      setLastGuessCorrect(result);
+      setShowResult(true);
 
-          // Show success UI
-          setLastGuessCorrect(true);
-          setShowResult(true);
+      // LOCAL STATE HANDLING
+      if (result) {
+        // Correct guess
+        // Update score locally (in the UI only)
+        const newScore = (currentPlayer?.score || 0) + 1;
+        console.log("[handleGuess] Updating local score to:", newScore);
 
-          // Wait before moving to next round
-          setTimeout(() => {
-            // First verify we still have a valid game state before hiding result
-            if (gameState && !gameState.finished) {
-              // CRITICAL FIX: ALWAYS swap the terms locally for reliable term rotation
-              // This ensures the current hidden term becomes the next known term
-              // We need to take control of the UI state to ensure a good experience
-              {
+        // Create an updated player with the new score and update the state
+        if (currentPlayer) {
+          const updatedPlayer = {
+            ...currentPlayer,
+            score: newScore,
+          };
+          // Update the local state immediately so UI shows correct score
+          setCurrentPlayer(updatedPlayer);
+        }
+
+        // Wait before moving to next round
+        setTimeout(() => {
+          // First verify we still have a valid game state before hiding result
+          if (gameState && !gameState.finished) {
+            // CRITICAL FIX: ALWAYS swap the terms locally for reliable term rotation
+            console.log(
+              "[handleGuess] Local term rotation - manually updating UI state"
+            );
+
+            // Create a copy of the current game state to modify
+            const updatedState = { ...gameState };
+
+            // Ensure both terms exist
+            if (updatedState.knownTerm && updatedState.hiddenTerm) {
+              // Setup next round
+              updatedState.currentRound = updatedState.currentRound + 1;
+
+              // Move the hidden term to the known term position
+              updatedState.knownTerm = { ...updatedState.hiddenTerm };
+
+              // Use next term from the terms array if available
+              if (updatedState.terms && updatedState.terms.length > 0) {
+                updatedState.hiddenTerm = { ...updatedState.terms[0] };
+                updatedState.terms = updatedState.terms.slice(1);
+                // Make sure usedTerms is initialized
+                updatedState.usedTerms = Array.isArray(updatedState.usedTerms)
+                  ? [...updatedState.usedTerms, updatedState.hiddenTerm.id]
+                  : [updatedState.knownTerm.id, updatedState.hiddenTerm.id];
+              } else {
+                // No more terms - end the game with a win
                 console.log(
-                  "[handleGuess] Local term rotation - manually updating UI state"
+                  "[handleGuess] No more terms available, ending game with a win"
                 );
+                updatedState.finished = true;
 
-                // Create a copy of the current game state to modify
-                const updatedState = { ...gameState };
+                // Show a message to the user
+                setError("You won! No more terms available.");
 
-                // Ensure both terms exist
-                if (updatedState.knownTerm && updatedState.hiddenTerm) {
-                  // Setup next round
-                  updatedState.currentRound = updatedState.currentRound + 1;
-
-                  // Move the hidden term to the known term position
-                  updatedState.knownTerm = { ...updatedState.hiddenTerm };
-
-                  // Use next term from the terms array if available
-                  if (updatedState.terms && updatedState.terms.length > 0) {
-                    updatedState.hiddenTerm = { ...updatedState.terms[0] };
-                    updatedState.terms = updatedState.terms.slice(1);
-                    // Make sure usedTerms is initialized
-                    updatedState.usedTerms = Array.isArray(
-                      updatedState.usedTerms
-                    )
-                      ? [...updatedState.usedTerms, updatedState.hiddenTerm.id]
-                      : [updatedState.knownTerm.id, updatedState.hiddenTerm.id];
-                  } else {
-                    // No more terms - end the game with a win
-                    console.log(
-                      "[handleGuess] No more terms available, ending game with a win"
-                    );
-                    updatedState.finished = true;
-
-                    // Show a message to the user
-                    setError("You won! No more terms available.");
-
-                    // Skip setting a new term
-                    setGameState(updatedState);
-                    return;
-                  }
-
-                  // Update the game state in context
-                  console.log(
-                    "[handleGuess] Setting updated game state with term rotation:",
-                    {
-                      newRound: updatedState.currentRound,
-                      newKnownTerm: updatedState.knownTerm.term,
-                      newHiddenTerm: updatedState.hiddenTerm.term,
-                    }
-                  );
-
-                  // Skip this UI update if the game is no longer active
-                  if (!gameState.finished) {
-                    setGameState(updatedState);
-                  }
-                }
+                // Skip setting a new term
+                setGameState(updatedState);
+                return;
               }
 
-              // Important: Reset showResult first to ensure the next hidden term is hidden
-              setShowResult(false);
+              // Update the game state in context
+              console.log(
+                "[handleGuess] Setting updated game state with term rotation:",
+                {
+                  newRound: updatedState.currentRound,
+                  newKnownTerm: updatedState.knownTerm.term,
+                  newHiddenTerm: updatedState.hiddenTerm.term,
+                }
+              );
 
-              // Add a small delay before allowing new guesses
-              setTimeout(() => {
-                setLastGuessCorrect(null);
-                setIsGuessing(false);
-              }, 150);
+              // IMPORTANT: Only set the new game state if not finished
+              if (!gameState.finished) {
+                setGameState(updatedState);
+              }
             }
-          }, 1500);
-        } else {
-          // Wrong guess - game over
-          setLastGuessCorrect(false);
-          setShowResult(true);
-        }
-      };
-      
-      // Execute the local state handler to update UI
-      localStateHandler();
+
+            // Reset UI states with a clean-up timeout
+            // First hide result BEFORE showing new hidden term
+            setShowResult(false);
+
+            // Then wait a bit to allow state update to propagate
+            setTimeout(() => {
+              setLastGuessCorrect(null);
+              setIsGuessing(false);
+            }, 200);
+          }
+        }, 1500);
+      } else {
+        // Wrong guess - game over
+        // Just keep the showResult true and lastGuessCorrect false
+        // Firebase will handle marking the game as finished
+      }
     } catch (err) {
       console.error("Error in handleGuess:", err);
       setError("Error processing guess. Please try again.");

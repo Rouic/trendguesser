@@ -1,121 +1,78 @@
 # 🎮 TrendGuesser
 
-A higher/lower guessing game based on trending search terms. Players guess whether a new term has higher or lower search volume than the previous term.
+Welcome to **TrendGuesser** – the ultimate higher/lower guessing game where you predict which trending search term has the higher search volume! 🚀 Whether you're a casual player or a tech aficionado, get ready to have fun, challenge your intuition, and climb the leaderboards!
 
-![TrendGuesser Screenshot](web/public/images/social-cover.png) 
+![TrendGuesser Screenshot](/public/images/social-cover.png)
 
-## Project Structure
+---
 
-This project uses Turborepo to manage the monorepo containing:
+## Table of Contents
 
-- **web/**: Next.js application for the frontend
-- **functions/**: Firebase Cloud Functions backend
-- **packages/**: Shared packages (if needed)
+- [Overview](#overview)
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Development](#development)
+- [Firebase Functions](#firebase-functions)
+- [Deployment](#deployment)
+- [CLAUDE.md](#claudemd)
+- [License & Acknowledgements](#license--acknowledgements)
+
+---
+
+## Overview
+
+**TrendGuesser** is a fun and engaging game that challenges players to guess whether a hidden search term has a higher or lower search volume compared to a revealed term. With a visually appealing and mobile-friendly design inspired by Balatro, this game offers quick play sessions, customizable challenges, and competitive score-tracking across various categories.
+
+---
 
 ## Features
 
-- **Game Mechanics**: Guess if hidden search terms have higher or lower search volume than the revealed term
-- **Categories**: Choose from various categories (animals, celebrities, technology, etc.) or create custom games
-- **Score Tracking**: Keep track of high scores for each category
-- **Mobile-Friendly**: Fully responsive design works on all devices
-- **Leaderboards**: See top players by category
+- **Game Mechanics** 🎲:
+  - Start with one revealed term displaying its search volume.
+  - Guess whether a hidden term has a *higher* or *lower* search volume.
+  - On a correct guess: the hidden term becomes the new known term and a new challenge term is presented.
+  - On an incorrect guess: the game ends, and your score (the count of consecutive correct guesses) is recorded.
 
-## Tech Stack
+- **Categories & Customization** 🎯:
+  - Choose from predefined categories like animals, celebrities, technology, games, and more!
+  - Play in *custom mode* by entering your own search term.
+  - Track high scores for each category per player.
 
-- **Frontend**: NextJS with TypeScript, TailwindCSS, Framer Motion
-- **Backend**: Firebase (Authentication, Firestore, Functions)
-- **Data**: Search volume data collected from trending searches
-- **Styling**: Balatro-inspired design with neon colors and card-based UI
+- **Sleek UI/UX** 💫:
+  - Balatro-inspired neon design with a card-based UI.
+  - Fully responsive layout – play comfortably on any device.
+  - Dynamic backgrounds with royalty-free images for each term.
+
+- **Backend & Data** 🔥:
+  - **Firebase Authentication**: Seamless user sign-in.
+  - **Firestore Database**: Manage and track trending terms, scores, and leaderboards.
+  - **Firebase Cloud Functions**:
+    - **fetchSearchVolume**: Get search volume data for custom terms.
+    - **updateTrendingTerms**: Refresh trending terms daily.
+  - Note: Search volume data is simulated, reminiscent of services like Google Trends.
+
+---
+
+## Project Structure
+
+This project uses **Turborepo** to manage a monorepo, consisting of:
+
+- **`web/`**  
+  A Next.js application for the frontend built with TypeScript, TailwindCSS, and Framer Motion.
+
+- **`functions/`**  
+  Firebase Cloud Functions serving as the backend for search volume fetching and trending term updates.
+
+- **`packages/`**  
+  Shared packages for utilities or components used across the project.
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v18+)
-- npm or yarn
-- Firebase account
-
-### Installation
-
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/trendguesser.git
-cd trendguesser
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Configure local environment:
-   Create a `.env.local` file with the following variables:
-   ```
-   NEXT_PUBLIC_USE_FIREBASE_EMULATOR=true
-   NEXT_PUBLIC_SKIP_AUTH=true
-   NEXT_PUBLIC_USE_MOCK_DATA=true
-   ```
-
-4. Start all development servers with emulators:
-```bash
-npm run dev
-```
-
-This will start:
-- Next.js at [http://localhost:3000](http://localhost:3000)
-- Firebase Functions emulator at [http://localhost:5001](http://localhost:5001)
-- Firestore emulator at [http://localhost:8080](http://localhost:8080)
-- Firebase Auth emulator at [http://localhost:9099](http://localhost:9099)
-- Firebase emulator UI at [http://localhost:4000](http://localhost:4000)
-
-### Development
-
-You can also run different configurations:
-
-```bash
-# Run without emulators (using mock data only)
-npm run dev:no-emulator
-
-# Just the Next.js app
-npm run dev:web
-
-# Just the Firebase Functions
-cd functions && npm run serve
-
-# Start emulators manually
-npm run emulators
-
-# Populate emulators with sample data
-npm run emulators:setup
-```
-
-## Firebase Functions
-
-TrendGuesser uses Firebase Cloud Functions for:
-
-1. **fetchSearchVolume**: Fetches search volume data for custom terms
-2. **updateTrendingTerms**: Updates the database with fresh trending terms daily
-
-## Deployment
-
-Deploy to Vercel:
-
-```bash
-vercel
-```
-
-Deploy Firebase Functions:
-
-```bash
-cd functions
-npm run deploy
-```
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Acknowledgements
-
-- Search volume data is simulated but would typically come from services like Google Trends
-- Images are sourced from Unsplash
+- **Node.js**: v18+
+- **npm** or **yarn**
+- A **Firebase account**
