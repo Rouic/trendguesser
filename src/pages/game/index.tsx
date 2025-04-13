@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { useAuth } from "@/contexts/AuthContext";
@@ -36,6 +36,8 @@ const GamePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [initRetryCount, setInitRetryCount] = useState(0);
 
+  const hasLoadedHighScores = useRef(false);
+
   // Handle auth on page load
   useEffect(() => {
     if (!user && !authLoading) {
@@ -45,9 +47,16 @@ const GamePage = () => {
   
   // Load high scores when user is authenticated
   useEffect(() => {
-    if (user && userUid) {
-      // Load high scores from Firestore (or localStorage in mock mode)
-      console.log("Loading high scores for user:", userUid);
+    if (user && userUid && !hasLoadedHighScores.current) {
+      // Only try to load high scores once per component instance
+      hasLoadedHighScores.current = true;
+
+      // Only log in development
+      if (process.env.NODE_ENV === "development") {
+        console.log("GamePage: Loading high scores once");
+      }
+
+      // Call the original loadHighScores
       loadHighScores();
     }
   }, [user, userUid, loadHighScores]);

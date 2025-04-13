@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/router";
 import {
   doc,
@@ -63,6 +63,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   const lastGameData = useRef<string | null>(null);
   const isResetting = useRef<boolean>(false);
   const isEndingGame = useRef<boolean>(false);
+
+  const lastHighScoreLoadTime = useRef(0);
+  const isLoadingHighScores = useRef(false);
+  const loadedHighScoreCategories = useRef<Set<string>>(new Set());
+
 
   const [gameId, _setGameId] = useState<string | null>(getInitialGameId());
   const [gameData, setGameData] = useState<GameData | null>(null);
@@ -783,18 +788,46 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   // Load high scores from Firestore
- const loadHighScores = async () => {
+ const loadHighScores = useCallback(async () => {
+   // Skip if no user ID
    if (!userUid) {
      console.warn("Cannot load high scores - no user ID");
      return;
    }
 
+   // Skip if already loading
+   if (isLoadingHighScores.current) {
+     return; // Silent return to reduce console spam
+   }
+
+   // Get current category from gameState
+   const currentCategory = gameState?.category;
+
+   // Implement throttling - don't reload too frequently
+   const now = Date.now();
+   if (now - lastHighScoreLoadTime.current < 3000) {
+     // 3 second throttle
+     return; // Silent return to reduce console spam
+   }
+
+   // If we have a category and already loaded it recently, skip
+   if (
+     currentCategory &&
+     loadedHighScoreCategories.current.has(currentCategory)
+   ) {
+     return; // Silent return to reduce console spam
+   }
+
    try {
-     console.log("Loading high scores for user:", userUid);
+     // Set loading flag
+     isLoadingHighScores.current = true;
+
+     // Only log in development
+     if (process.env.NODE_ENV === "development") {
+       console.log("Loading high scores for user:", userUid);
+     }
 
      if (USE_MOCK_DATA) {
-       console.log("Using mock data for high scores");
-
        // Try to get high scores from localStorage for persistence
        if (typeof window !== "undefined") {
          const highScoresKey = `tg_highscores_${userUid}`;
@@ -803,89 +836,101 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
          if (storedScores) {
            try {
              const parsedScores = JSON.parse(storedScores);
-             console.log("Found high scores in localStorage:", parsedScores);
 
-             // Create an immediately updated player with high scores
-             // Deep clone to ensure we're creating a new reference
-             const updatedPlayer = currentPlayer
-               ? {
-                   ...JSON.parse(JSON.stringify(currentPlayer)),
-                   highScores: parsedScores,
+             // Only update if we actually have scores and current player
+             if (Object.keys(parsedScores).length > 0 && currentPlayer) {
+               // Check if the high scores are different before updating
+               const currentHighScores = currentPlayer.highScores || {};
+               let hasChanges = false;
+
+               // Compare if there are any actual changes
+               for (const cat in parsedScores) {
+                 if (parsedScores[cat] !== currentHighScores[cat]) {
+                   hasChanges = true;
+                   break;
                  }
-               : null;
+               }
 
-             if (updatedPlayer) {
-               // Update the player state
-               setCurrentPlayer(updatedPlayer);
-               console.log(
-                 "Updated current player with high scores:",
-                 updatedPlayer
-               );
+               if (hasChanges) {
+                 // Create a new player object with the high scores
+                 const updatedPlayer = {
+                   ...currentPlayer,
+                   highScores: parsedScores,
+                 };
+
+                 // Update the player state
+                 setCurrentPlayer(updatedPlayer);
+               }
              }
            } catch (e) {
              console.error("Error parsing high scores from localStorage:", e);
            }
-         } else {
-           console.log("No high scores found in localStorage");
          }
-       }
-
-       return;
-     }
-
-     // Real Firestore implementation
-     const playerRef = doc(db, "players", userUid);
-     const playerDoc = await getDoc(playerRef);
-
-     if (playerDoc.exists()) {
-       const playerData = playerDoc.data();
-
-       if (playerData.highScores) {
-         console.log("Found high scores in Firestore:", playerData.highScores);
-
-         // Create an immediately updated player object with high scores
-         const updatedPlayer = currentPlayer
-           ? {
-               ...JSON.parse(JSON.stringify(currentPlayer)),
-               highScores: playerData.highScores,
-             }
-           : null;
-
-         if (updatedPlayer) {
-           // Update the player state with a completely new object to trigger re-renders
-           setCurrentPlayer(updatedPlayer);
-           console.log(
-             "Updated current player with high scores from Firestore",
-             updatedPlayer
-           );
-         }
-
-         // Save to localStorage for faster access next time
-         if (typeof window !== "undefined") {
-           try {
-             const highScoresKey = `tg_highscores_${userUid}`;
-             localStorage.setItem(
-               highScoresKey,
-               JSON.stringify(playerData.highScores)
-             );
-             console.log("Saved high scores to localStorage for future use");
-
-             // Trigger storage event for components to react
-             window.dispatchEvent(new Event("storage"));
-           } catch (e) {
-             console.error("Error saving high scores to localStorage:", e);
-           }
-         }
-       } else {
-         console.log("Player document exists but has no high scores");
        }
      } else {
-       console.log("No player document found in Firestore");
+       // Real Firestore implementation
+       const playerRef = doc(db, "players", userUid);
+       const playerDoc = await getDoc(playerRef);
+
+       if (playerDoc.exists()) {
+         const playerData = playerDoc.data();
+
+         if (playerData.highScores) {
+           // Only update if current player exists and high scores differ
+           if (currentPlayer) {
+             const currentHighScores = currentPlayer.highScores || {};
+             let hasChanges = false;
+
+             // Compare if there are any actual changes
+             for (const cat in playerData.highScores) {
+               if (playerData.highScores[cat] !== currentHighScores[cat]) {
+                 hasChanges = true;
+                 break;
+               }
+             }
+
+             if (hasChanges) {
+               // Create a new player object with the high scores
+               const updatedPlayer = {
+                 ...currentPlayer,
+                 highScores: playerData.highScores,
+               };
+
+               // Update the player state
+               setCurrentPlayer(updatedPlayer);
+             }
+           }
+
+           // Save to localStorage for faster access next time
+           if (typeof window !== "undefined") {
+             try {
+               const highScoresKey = `tg_highscores_${userUid}`;
+               localStorage.setItem(
+                 highScoresKey,
+                 JSON.stringify(playerData.highScores)
+               );
+             } catch (e) {
+               console.error("Error saving high scores to localStorage:", e);
+             }
+           }
+         }
+       }
      }
+
+     // Record that we've loaded this category
+     if (currentCategory) {
+       loadedHighScoreCategories.current.add(currentCategory);
+     }
+
+     // Update last load time
+     lastHighScoreLoadTime.current = now;
    } catch (error) {
      console.error("Error loading high scores:", error);
+   } finally {
+     // Always clear loading flag when done
+     isLoadingHighScores.current = false;
    }
- };
+ }, [userUid, currentPlayer, gameState?.category, setCurrentPlayer]);
 
   const value: GameContextType = {
     gameId,

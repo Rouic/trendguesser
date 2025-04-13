@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/router";
 import { useGame } from "@/contexts/GameContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,6 +32,9 @@ const GameScreen = () => {
   const [error, setError] = useState<string | null>(null);
   const [recoveryAttempted, setRecoveryAttempted] = useState(false);
 
+  const loadedCategoriesInScreen = useRef<Set<string>>(new Set());
+
+
   // Display any errors from the game context
   useEffect(() => {
     if (gameError) {
@@ -41,8 +44,22 @@ const GameScreen = () => {
   
   // Load high scores when component mounts
   useEffect(() => {
-    if (gameState?.category) {
-      console.log("GameScreen: Loading high scores for category:", gameState.category);
+    if (
+      gameState?.category &&
+      !loadedCategoriesInScreen.current.has(gameState.category)
+    ) {
+      // Only try to load each category once per component instance
+      loadedCategoriesInScreen.current.add(gameState.category);
+
+      // Only log in development
+      if (process.env.NODE_ENV === "development") {
+        console.log(
+          "GameScreen: Loading high scores for category:",
+          gameState.category
+        );
+      }
+
+      // Call the original loadHighScores without parameters
       loadHighScores();
     }
   }, [gameState?.category, loadHighScores]);

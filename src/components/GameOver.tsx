@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/router";
 import { useGame } from "@/contexts/GameContext";
 import { motion } from "framer-motion";
@@ -12,189 +12,67 @@ const GameOver = () => {
   const [highScore, setHighScore] = useState<number | null>(null);
   const [isNewHighScore, setIsNewHighScore] = useState(false);
 
-  // Load high scores and check if current score is a new high score
-  useEffect(() => {
-    const loadScores = async () => {
-      if (gameState && currentPlayer) {
-        console.log("GameOver: Loading high scores first...");
-        // Ensure high scores are loaded
-        await loadHighScores();
+  const hasLoadedHighScores = useRef(false);
 
-        // Now check if we have high scores for this category
-        if (typeof window !== "undefined" && userUid && gameState.category) {
-          // Directly check localStorage for most up-to-date data
+  // Load high scores
+  useEffect(() => {
+    if (gameState && currentPlayer && !hasLoadedHighScores.current) {
+      // Only try to load once
+      hasLoadedHighScores.current = true;
+      console.log("GameOver: Loading high scores");
+
+      // Call the optimized loadHighScores
+      loadHighScores();
+    }
+  }, [gameState, currentPlayer, loadHighScores]);
+
+  // Set local high score state based on currentPlayer high scores
+  useEffect(() => {
+    if (gameState?.category && currentPlayer) {
+      const category = gameState.category;
+      const currentScore = currentPlayer.score || 0;
+
+      // Get high score from currentPlayer after it's been loaded
+      const playerHighScore = currentPlayer.highScores?.[category] || 0;
+
+      // Update the local state
+      setHighScore(playerHighScore);
+
+      // Determine if this is a new high score
+      setIsNewHighScore(currentScore > playerHighScore);
+
+      // Also check localStorage as a backup source of truth
+      if (typeof window !== "undefined" && userUid) {
+        try {
           const highScoresKey = `tg_highscores_${userUid}`;
           const storedScores = localStorage.getItem(highScoresKey);
 
-          let loadedHighScore = 0;
           if (storedScores) {
-            try {
-              const parsedScores = JSON.parse(storedScores);
-              loadedHighScore = parsedScores[gameState.category] || 0;
-              console.log(
-                `GameOver: Loaded high score from localStorage: ${loadedHighScore}`
-              );
-            } catch (e) {
-              console.error(
-                "GameOver: Error parsing high scores from localStorage:",
-                e
-              );
-            }
-          } else {
-            console.log(
-              "GameOver: No high scores found in localStorage, checking currentPlayer"
-            );
-            // Fallback to currentPlayer's high scores if available
-            if (
-              currentPlayer.highScores &&
-              currentPlayer.highScores[gameState.category]
-            ) {
-              loadedHighScore =
-                currentPlayer.highScores[gameState.category] || 0;
-              console.log(
-                `GameOver: Loaded high score from currentPlayer: ${loadedHighScore}`
-              );
+            const parsedScores = JSON.parse(storedScores);
+            const storedHighScore = parsedScores[category] || 0;
+
+            // If localStorage has a different (higher) value, use that instead
+            if (storedHighScore > playerHighScore) {
+              setHighScore(storedHighScore);
+              setIsNewHighScore(currentScore > storedHighScore);
             }
           }
-
-          const currentScore = currentPlayer.score || 0;
-          console.log(
-            `GameOver: Current score: ${currentScore}, High score: ${loadedHighScore}`
-          );
-
-          setHighScore(loadedHighScore);
-          setIsNewHighScore(currentScore > loadedHighScore);
-
-          // If this is a new high score, explicitly save it again to ensure it's properly saved
-          if (currentScore > loadedHighScore) {
-            console.log(
-              `GameOver: New high score detected (${currentScore} > ${loadedHighScore}), performing direct update`
-            );
-
-            try {
-              // Import the necessary Firestore functions
-              const { getDoc, setDoc, updateDoc, doc } = await import(
-                "firebase/firestore"
-              );
-
-              // Use the existing Firebase setup
-              const { db } = await import("@/lib/firebase/firebase");
-
-              if (!db) {
-                console.error("GameOver: Firestore instance not available");
-                return;
-              }
-
-              // Update the player document directly
-              const playerRef = doc(db, "players", userUid);
-
-              // First, try to get the current document
-              console.log("GameOver: Getting current player document");
-              const playerDoc = await getDoc(playerRef);
-
-              if (playerDoc.exists()) {
-                console.log(
-                  "GameOver: Player document exists, updating high score"
-                );
-                const playerData = playerDoc.data();
-                const existingHighScores = playerData.highScores || {};
-
-                console.log(
-                  "GameOver: Current high scores:",
-                  existingHighScores
-                );
-
-                // Create updated high scores object with all existing scores preserved
-                const updatedHighScores = {
-                  ...existingHighScores,
-                  [gameState.category]: currentScore,
-                };
-
-                console.log(
-                  "GameOver: Updating with new high scores:",
-                  updatedHighScores
-                );
-
-                // Update using updateDoc for an atomic update
-                await updateDoc(playerRef, {
-                  highScores: updatedHighScores,
-                });
-
-                console.log(
-                  `GameOver: Successfully updated high score in Firestore to ${currentScore}`
-                );
-
-                // Verify the update
-                const verifyDoc = await getDoc(playerRef);
-                if (verifyDoc.exists()) {
-                  console.log(
-                    "GameOver: Verified updated high scores:",
-                    verifyDoc.data().highScores
-                  );
-                }
-
-                // Also update localStorage for immediate UI feedback
-                const highScoresKey = `tg_highscores_${userUid}`;
-                localStorage.setItem(
-                  highScoresKey,
-                  JSON.stringify(updatedHighScores)
-                );
-                console.log(
-                  "GameOver: Updated localStorage with new high score"
-                );
-
-                // Trigger storage event to notify other components
-                window.dispatchEvent(new Event("storage"));
-              } else {
-                console.log(
-                  "GameOver: Player document doesn't exist, creating new one"
-                );
-
-                // Create a new player document with this high score
-                await setDoc(playerRef, {
-                  uid: userUid,
-                  name: currentPlayer?.name || "Player",
-                  highScores: {
-                    [gameState.category]: currentScore,
-                  },
-                });
-
-                console.log(
-                  `GameOver: Created new player document with high score ${currentScore}`
-                );
-
-                // Update localStorage
-                const highScoresKey = `tg_highscores_${userUid}`;
-                localStorage.setItem(
-                  highScoresKey,
-                  JSON.stringify({
-                    [gameState.category]: currentScore,
-                  })
-                );
-              }
-            } catch (err) {
-              console.error(
-                "GameOver: Error during direct Firestore update:",
-                err
-              );
-            }
-          }
-
-          console.log(
-            `GameOver: Is new high score: ${currentScore > loadedHighScore}`
-          );
-        } else {
-          // If no high scores exist yet, any score is a new high score
-          console.log(
-            "GameOver: Missing required data - marking as new high score"
-          );
-          setIsNewHighScore(true);
+        } catch (e) {
+          console.error("Error checking localStorage high scores:", e);
         }
       }
-    };
 
-    loadScores();
-  }, [gameState, currentPlayer, loadHighScores, userUid, endGame]);
+      // If the current score is higher than the high score we found,
+      // this might be a case where the high score wasn't properly saved
+      // Let's ensure it's properly reflected in UI
+      if (currentScore > playerHighScore) {
+        console.log(
+          `Current score ${currentScore} is higher than recorded high score ${playerHighScore}`
+        );
+        setIsNewHighScore(true);
+      }
+    }
+  }, [gameState?.category, currentPlayer, userUid]);
 
   // Handle return to category selection
   const handlePlayAgain = () => {
