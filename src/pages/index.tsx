@@ -100,8 +100,8 @@ const HomePage = () => {
               className="w-full h-full object-contain"
             />
           </div>
-          <h1 className="text-[25px] xxs:text-3xl xs:text-3xl sm:text-4xl md:text-5xl xl:text-7xl font-display text-game-neon-blue tracking-tight xs:tracking-normal sm:tracking-wider mb-0 animate-glow font-display-fallback w-full px-2">
-            TRENDGUESSER
+          <h1 className="text-[25px] xxs:text-3xl xs:text-3xl sm:text-4xl md:text-5xl xl:text-7xl font-display text-game-neon-yellow tracking-tight xs:tracking-normal sm:tracking-wider mb-0 animate-glow font-display-fallback w-full px-2">
+            TREND GUESSER
           </h1>
         </div>
 

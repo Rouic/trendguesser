@@ -283,6 +283,16 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       // Reset any previous error
       setError(null);
       
+      // Reset current player score for new game
+      if (currentPlayer) {
+        const resetPlayer = {
+          ...currentPlayer,
+          score: 0
+        };
+        setCurrentPlayer(resetPlayer);
+        console.log("Reset player score for new game");
+      }
+      
       // Get the current game ID - either from state or from session storage
       let currentGameId = gameId;
       if (!currentGameId && process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" && typeof window !== "undefined") {
@@ -441,6 +451,22 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     try {
+      // IMPORTANT: Get any previously set localGameState for this game
+      // This ensures we maintain term continuity even if Firebase fails
+      let localGameStateStore = {};
+      
+      try {
+        if (typeof window !== "undefined") {
+          const storedLocalState = localStorage.getItem(`tg_local_state_${currentGameId}`);
+          if (storedLocalState) {
+            localGameStateStore = JSON.parse(storedLocalState);
+            console.log("Retrieved local game state from localStorage");
+          }
+        }
+      } catch (e) {
+        console.error("Error reading local game state:", e);
+      }
+      
       // In mock mode, ensure the current game state is loaded properly
       if (
         process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" &&
@@ -469,6 +495,25 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
                 console.log("Saved fixed game state to session storage");
               }
               
+              // CONTINUITY: Try to match up the terms with our local state
+              // This ensures we don't lose track of the actual game terms
+              if (localGameStateStore && typeof localGameStateStore === 'object') {
+                const localState = localGameStateStore;
+                if (localState[`round_${parsedData["__trendguesser.state"].currentRound}`]) {
+                  const localRoundData = localState[`round_${parsedData["__trendguesser.state"].currentRound}`];
+                  
+                  // Update the game state with our saved term data for this round
+                  if (localRoundData.knownTerm && localRoundData.hiddenTerm) {
+                    console.log("Restoring terms from local storage for continuity");
+                    parsedData["__trendguesser.state"].knownTerm = localRoundData.knownTerm;
+                    parsedData["__trendguesser.state"].hiddenTerm = localRoundData.hiddenTerm;
+                    
+                    // Save the updated data back to session storage
+                    sessionStorage.setItem(`game_${currentGameId}`, JSON.stringify(parsedData));
+                  }
+                }
+              }
+              
               // Set game state in React context
               setGameState(parsedData["__trendguesser.state"]);
               console.log("Loaded game state from session storage");
@@ -486,119 +531,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
                 // Save the updated data with player info
                 sessionStorage.setItem(`game_${currentGameId}`, JSON.stringify(parsedData));
               }
-            } else if (parsedData.id) {
-              // Game data exists but no game state - create a minimal game state
-              console.log("Game data exists but no game state - creating default state");
-              
-              // Create a default game state with proper SearchCategory type
-              const defaultState: TrendGuesserGameState = {
-                currentRound: 1,
-                category: "technology" as SearchCategory,
-                started: true,
-                finished: false,
-                knownTerm: { 
-                  term: "Default Term 1", 
-                  volume: 100, 
-                  id: "default-1", 
-                  category: "technology" as SearchCategory,
-                  imageUrl: "https://via.placeholder.com/800x600?text=Default+Term+1",
-                },
-                hiddenTerm: { 
-                  term: "Default Term 2", 
-                  volume: 200, 
-                  id: "default-2", 
-                  category: "technology" as SearchCategory,
-                  imageUrl: "https://via.placeholder.com/800x600?text=Default+Term+2", 
-                },
-                usedTerms: ["default-1", "default-2"],
-                terms: [],
-                customTerm: null
-              };
-              
-              // Set the default state
-              parsedData["__trendguesser.state"] = defaultState;
-              parsedData.status = "active";
-              
-              // Make sure createdAt exists
-              if (!parsedData.createdAt) {
-                parsedData.createdAt = Timestamp.now();
-              }
-              
-              // Create player data if missing
-              const mockUserUid = sessionStorage.getItem("mock_user_uid") || userUid;
-              if (!parsedData[mockUserUid]) {
-                parsedData[mockUserUid] = {
-                  uid: mockUserUid,
-                  name: "Player",
-                  score: 0
-                };
-              }
-              
-              // Save the updated data
-              sessionStorage.setItem(`game_${currentGameId}`, JSON.stringify(parsedData));
-              
-              // Update React state
-              setGameState(defaultState);
-              setGameData(parsedData as GameData);
-              setCurrentPlayer(parsedData[mockUserUid]);
-              console.log("Created and loaded default game state");
+            } else {
+              // Game exists but no game state - nothing to do here
+              // We'll handle this after with our local state calculation
+              console.log("Game data exists but no game state");
             }
           } catch (e) {
             console.error("Error parsing stored game data:", e);
           }
-        } else {
-          // No stored game data for this ID - create a minimal game data object
-          console.log("No game data found in session storage, creating minimal game data");
-          
-          // Create a default game state with proper SearchCategory type
-          const defaultState: TrendGuesserGameState = {
-            currentRound: 1,
-            category: "technology" as SearchCategory,
-            started: true,
-            finished: false,
-            knownTerm: { 
-              term: "Default Term 1", 
-              volume: 100, 
-              id: "default-1", 
-              category: "technology" as SearchCategory,
-              imageUrl: "https://via.placeholder.com/800x600?text=Default+Term+1",
-            },
-            hiddenTerm: { 
-              term: "Default Term 2", 
-              volume: 200, 
-              id: "default-2", 
-              category: "technology" as SearchCategory, 
-              imageUrl: "https://via.placeholder.com/800x600?text=Default+Term+2",
-            },
-            usedTerms: ["default-1", "default-2"],
-            terms: [],
-            customTerm: null
-          };
-          
-          // Create minimal game data
-          const mockUserUid = sessionStorage.getItem("mock_user_uid") || userUid;
-          const minimalGameData = {
-            id: currentGameId,
-            status: "active",
-            gameType: "trendguesser",
-            createdBy: mockUserUid,
-            createdAt: Timestamp.now(), // Add createdAt field
-            "__trendguesser.state": defaultState,
-            [mockUserUid]: {
-              uid: mockUserUid,
-              name: "Player",
-              score: 0
-            }
-          } as GameData;
-          
-          // Save to session storage
-          sessionStorage.setItem(`game_${currentGameId}`, JSON.stringify(minimalGameData));
-          
-          // Update React state
-          setGameState(defaultState);
-          setGameData(minimalGameData);
-          setCurrentPlayer(minimalGameData[mockUserUid]);
-          console.log("Created minimal game data with default state");
         }
       }
 
@@ -607,48 +547,112 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         currentGameId
       );
       
-      // Make the guess with enhanced retry logic
+      // IMPORTANT: When Firebase is failing, we need to use local game state logic
+      // instead of trying to make server calls that will fail
+      // Calculate the result locally first before attempting any server calls
+      let localCalculatedResult = false;
+      
+      // Ensure we have valid gameState
+      if (!gameState || !gameState.knownTerm || !gameState.hiddenTerm) {
+        console.error("Invalid game state for local calculation", {
+          hasState: !!gameState,
+          hasKnownTerm: gameState?.knownTerm ? true : false,
+          hasHiddenTerm: gameState?.hiddenTerm ? true : false
+        });
+        setError("Game state is corrupted. Please try restarting the game.");
+        return false;
+      }
+      
+      // Calculate result based on local game state
+      const knownVolume = gameState.knownTerm.volume;
+      const hiddenVolume = gameState.hiddenTerm.volume;
+      
+      // Equal volumes always count as correct
+      if (hiddenVolume === knownVolume) {
+        localCalculatedResult = true;
+      } else {
+        const actuallyHigher = hiddenVolume > knownVolume;
+        localCalculatedResult = isHigher === actuallyHigher;
+      }
+      
+      console.log("Local calculation result:", {
+        knownTerm: gameState.knownTerm.term,
+        knownVolume,
+        hiddenTerm: gameState.hiddenTerm.term,
+        hiddenVolume,
+        userGuess: isHigher ? "HIGHER" : "LOWER",
+        result: localCalculatedResult
+      });
+      
+      // STORE CURRENT TERMS IN LOCAL STORAGE FOR CONTINUITY
+      try {
+        if (typeof window !== "undefined") {
+          const roundKey = `round_${gameState.currentRound}`;
+          const updatedLocalStore = {
+            ...localGameStateStore,
+            [roundKey]: {
+              knownTerm: gameState.knownTerm,
+              hiddenTerm: gameState.hiddenTerm,
+              isHigherGuess: isHigher,
+              result: localCalculatedResult
+            }
+          };
+          
+          localStorage.setItem(`tg_local_state_${currentGameId}`, JSON.stringify(updatedLocalStore));
+          console.log(`Stored local state for round ${gameState.currentRound} in localStorage`);
+        }
+      } catch (e) {
+        console.error("Error storing local game state:", e);
+      }
+      
+      // Now try Firebase, but be prepared to use our local calculation
       let result: boolean;
       let retryCount = 0;
       const maxRetries = 2;
       
       while (true) {
         try {
-          // Attempt to make the guess via Firebase service
-          result = await TrendGuesserService.makeGuess(
-            currentGameId,
-            userUid,
-            isHigher
-          );
-          console.log("Guess result:", result);
-          break; // Success, exit the retry loop
+          // Make a deep copy of the current game state
+          const localGameStateCopy = gameState ? JSON.parse(JSON.stringify(gameState)) : null;
+          
+          // Attempt Firebase call only if we have valid game state to send
+          if (localGameStateCopy && 
+              localGameStateCopy.knownTerm && 
+              localGameStateCopy.hiddenTerm &&
+              typeof localGameStateCopy.knownTerm.volume === 'number' &&
+              typeof localGameStateCopy.hiddenTerm.volume === 'number') {
+            
+            result = await TrendGuesserService.makeGuess(
+              currentGameId,
+              userUid,
+              isHigher,
+              localGameStateCopy // Pass the local state as an extra parameter
+            );
+            console.log("Firebase guess result:", result);
+            
+            // If Firebase disagrees with our local calculation, trust our local result
+            // This is important for consistent gameplay
+            if (result !== localCalculatedResult) {
+              console.warn("Firebase result differs from local calculation. Using local result for consistency.");
+              result = localCalculatedResult;
+            }
+            
+            break; // Success, exit the retry loop
+          } else {
+            // Invalid game state, skip Firebase and use local calculation
+            console.warn("Invalid game state for Firebase, using local calculation only");
+            result = localCalculatedResult;
+            break;
+          }
         } catch (err) {
           retryCount++;
           console.warn(`Error in makeGuess (attempt ${retryCount}/${maxRetries}):`, err);
           
           if (retryCount >= maxRetries) {
-            // We've reached max retries, let's calculate the result locally instead
-            console.error("Max retries reached, falling back to local calculation");
-            
-            if (gameState) {
-              // Calculate result based on local game state
-              const knownVolume = gameState.knownTerm?.volume || 0;
-              const hiddenVolume = gameState.hiddenTerm?.volume || 0;
-              
-              // Equal volumes always count as correct
-              if (hiddenVolume === knownVolume) {
-                result = true;
-              } else {
-                const actuallyHigher = hiddenVolume > knownVolume;
-                result = isHigher === actuallyHigher;
-              }
-              
-              console.log("Locally calculated result:", result);
-              break; // Exit the retry loop with our local result
-            } else {
-              // No game state available, can't calculate locally
-              throw new Error("Cannot make guess: game state unavailable");
-            }
+            // We've reached max retries, use our local calculation
+            console.error("Max retries reached, using local calculation");
+            result = localCalculatedResult;
+            break;
           }
           
           // If we're still in retry attempts, wait a bit before trying again
@@ -739,6 +743,24 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Store game ID before clearing it
   const currentGameId = gameId;
+  
+  // First, ensure that high scores are saved before reset
+  try {
+    if (gameState?.category && currentPlayer?.score && currentPlayer.score > 0) {
+      console.log(`Ensuring high score is saved before reset: ${currentPlayer.score} in ${gameState.category}`);
+      
+      // Try to call the TrendGuesserService directly for reliability
+      if (userUid) {
+        TrendGuesserService.updateHighScore(
+          userUid,
+          gameState.category,
+          currentPlayer.score
+        ).catch(err => console.error("Error saving final high score during reset:", err));
+      }
+    }
+  } catch (e) {
+    console.error("Error during pre-reset high score save:", e);
+  }
 
   // Clear state
   setGameId(null);

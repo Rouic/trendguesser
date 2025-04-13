@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { useGame } from "@/contexts/GameContext";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
+import { TrendGuesserService } from "@/lib/firebase/trendGuesserService";
 
 const GameOver = () => {
   const router = useRouter();
@@ -76,12 +77,50 @@ const GameOver = () => {
 
   // Handle return to category selection
   const handlePlayAgain = () => {
+    // Ensure high score is saved before resetting
+    try {
+      if (gameState?.category && currentPlayer?.score && currentPlayer.score > 0) {
+        console.log(`Ensuring high score is saved before play again: ${currentPlayer.score} in ${gameState.category}`);
+        const mockUserUid = sessionStorage.getItem('mock_user_uid') || userUid;
+        const playerToUse = mockUserUid || userUid;
+        if (playerToUse) {
+          // Import from trendGuesserService to call directly
+          TrendGuesserService.updateHighScore(
+            playerToUse,
+            gameState.category,
+            currentPlayer.score
+          ).catch(err => console.error("Error saving final high score for play again:", err));
+        }
+      }
+    } catch (e) {
+      console.error("Error during pre-reset high score save for play again:", e);
+    }
+    
     resetGame();
     router.push("/game");
   };
 
   // Handle return to home
   const handleReturnHome = () => {
+    // Ensure high score is saved before going home
+    try {
+      if (gameState?.category && currentPlayer?.score && currentPlayer.score > 0) {
+        console.log(`Ensuring high score is saved before going home: ${currentPlayer.score} in ${gameState.category}`);
+        const mockUserUid = sessionStorage.getItem('mock_user_uid') || userUid;
+        const playerToUse = mockUserUid || userUid;
+        if (playerToUse) {
+          // Import from trendGuesserService to call directly
+          TrendGuesserService.updateHighScore(
+            playerToUse,
+            gameState.category,
+            currentPlayer.score
+          ).catch(err => console.error("Error saving final high score before going home:", err));
+        }
+      }
+    } catch (e) {
+      console.error("Error during pre-reset high score save before going home:", e);
+    }
+    
     resetGame();
     router.push("/");
   };

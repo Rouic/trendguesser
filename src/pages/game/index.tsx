@@ -497,8 +497,8 @@ const GamePage = () => {
 
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
-          <h1 className="text-4xl font-display text-game-neon-blue tracking-wider mb-2 animate-glow font-display-fallback">
-            TRENDGUESSER
+          <h1 className="text-4xl font-display text-game-neon-yellow tracking-wider mb-2 animate-glow font-display-fallback">
+            TREND GUESSER
           </h1>
           <p className="text-xl text-white mb-6 font-game-fallback">
             Choose a category to start

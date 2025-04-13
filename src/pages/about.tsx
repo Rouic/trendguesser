@@ -6,7 +6,7 @@ import Footer from "@/components/layout/Footer";
 const AboutPage = () => {
   return (
     <div className="min-h-screen bg-game-bg flex flex-col items-center justify-between py-4 sm:py-7 px-4 sm:px-8 relative overflow-hidden">
-      {/* Background patterns similar to Balatro */}
+      {/* Background patterns */}
       <div
         className="absolute inset-0"
         style={{
@@ -16,7 +16,7 @@ const AboutPage = () => {
         }}
       ></div>
 
-      {/* Glowing orb effect similar to Balatro */}
+      {/* Glowing orb effect */}
       <div
         className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full opacity-10"
         style={{
@@ -27,10 +27,10 @@ const AboutPage = () => {
       ></div>
 
       <Head>
-        <title>About Pyramid.Ninja - The Card Drinking Game</title>
+        <title>About Trend Guesser - The Ultimate Trend Prediction Game</title>
         <meta
           name="description"
-          content="Learn about the Pyramid card drinking game and how to play it"
+          content="Learn about Trend Guesser, the higher/lower guessing game where you predict which trending search term has a higher search volume!"
         />
       </Head>
 
@@ -40,12 +40,12 @@ const AboutPage = () => {
           <div className="w-8 h-8 sm:w-10 sm:h-10 mr-2 sm:mr-3 group-hover:scale-110 transition-transform duration-300">
             <img
               src="/icon.png"
-              alt="Pyramid Ninja Logo"
+              alt="Trend Guesser Logo"
               className="w-full h-full object-contain"
             />
           </div>
           <span className="font-game-fallback text-game-neon-yellow text-base sm:text-xl group-hover:text-game-neon-red transition-colors duration-300">
-            PYRAMID.NINJA
+            TREND GUESSER
           </span>
         </Link>
         <div className="flex space-x-2 sm:space-x-4">
@@ -69,11 +69,11 @@ const AboutPage = () => {
         {/* Header */}
         <div className="flex flex-col items-center mb-8 sm:mb-16 px-4">
           <h1 className="text-xl sm:text-5xl lg:text-6xl font-display text-game-neon-red tracking-wider mb-4 sm:mb-8 animate-glow font-display-fallback text-center">
-            ABOUT PYRAMID.NINJA
+            ABOUT TREND GUESSER
           </h1>
           <div className="w-full max-w-3xl mx-auto h-1 bg-gradient-to-r from-transparent via-game-neon-red to-transparent mb-4 sm:mb-8"></div>
-          <h2 className="text-lg sm:text-xl md:text-2xl text-white max-w-3xl mx-auto font-game-fallback tracking-wide text-center w-full">
-            PYRAMID IS A MEMORY-BASED DRINKING CARD GAME WITH BLUFFING MECHANICS
+          <h2 className="text-lg sm:text-xl md:text-2xl text-white max-w-3xl mx-auto font-game-fallback tracking-wide text-center">
+            The Ultimate Higher/Lower Trend Prediction Game
           </h2>
         </div>
 
@@ -83,7 +83,7 @@ const AboutPage = () => {
             <div className="w-8 h-8 sm:w-12 sm:h-12 mr-3 sm:mr-4 rotate-12 flex-shrink-0">
               <img
                 src="/icon.png"
-                alt="Pyramid Ninja Logo"
+                alt="Trend Guesser Logo"
                 className="w-full h-full object-contain"
               />
             </div>
@@ -91,280 +91,120 @@ const AboutPage = () => {
               GAME OVERVIEW
             </h3>
           </div>
-
           <div className="space-y-3 sm:space-y-4 text-white">
             <p className="text-base sm:text-lg">
-              Pyramid is a memory-based drinking card game featuring bluffing
-              mechanics. Players receive hidden cards they must memorize, then
-              strategically assign drinks or challenge opponents during rounds
-              based on pyramid card reveals.
+              Trend Guesser is a fun and engaging higher/lower guessing game
+              where you predict whether a hidden trending search term has a
+              higher or lower search volume than a revealed term. Whether you're
+              a casual player or a tech enthusiast, get ready for quick
+              sessions, customizable challenges, and competitive leaderboard
+              action!
             </p>
           </div>
         </div>
 
-        {/* Setup section */}
+        {/* How To Play section */}
         <div className="w-full max-w-4xl bg-black/30 backdrop-blur-sm p-4 sm:p-10 rounded-xl border border-game-neon-blue/20 mb-6 sm:mb-10 transform rotate-0.5 shadow-neon-blue-sm mx-4 sm:mx-auto">
           <h3 className="text-xl sm:text-2xl text-game-neon-blue font-game-fallback mb-4 sm:mb-6">
-            SETUP
+            HOW TO PLAY
           </h3>
-
           <ol className="space-y-3 sm:space-y-4 text-white list-decimal pl-5 sm:pl-8">
             <li className="text-base sm:text-lg">
-              Create a 15-card face-down pyramid (5 rows: 5-4-3-2-1)
+              Begin with one revealed search term and its known search volume.
             </li>
             <li className="text-base sm:text-lg">
-              Deal 4 cards face-down to each player
+              Guess whether the hidden term has a <strong>higher</strong> or{" "}
+              <strong>lower</strong> search volume.
             </li>
             <li className="text-base sm:text-lg">
-              Allow each player 10 seconds to memorize their cards before hiding
-              them again
+              A correct guess will replace the revealed term with the hidden
+              term and earn you a point.
             </li>
             <li className="text-base sm:text-lg">
-              Players may reorder their own cards during memorization to aid
-              recall
+              The game continues until you make an incorrect guess. Your final
+              score is recorded on the leaderboards.
             </li>
           </ol>
-
-          <div className="mt-6 bg-black/40 p-4 rounded-lg border border-white/10">
-            <div className="flex items-center mb-2">
-              <div className="w-6 h-6 bg-game-neon-blue/20 rounded-full flex items-center justify-center mr-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 text-game-neon-blue"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <span className="text-game-neon-blue font-game-fallback text-sm sm:text-base">
-                PRO TIP
-              </span>
-            </div>
-            <p className="text-sm sm:text-base text-white">
-              Try to remember both your card values and their positions.
-              Creating a mental pattern or story can help you memorize them more
-              effectively!
-            </p>
-          </div>
         </div>
 
-        {/* Core Gameplay Loop section */}
+        {/* Features section */}
         <div className="w-full max-w-4xl bg-black/30 backdrop-blur-sm p-4 sm:p-10 rounded-xl border border-game-neon-green/20 mb-6 sm:mb-10 transform -rotate-0.5 shadow-neon-green-sm mx-4 sm:mx-auto">
           <h3 className="text-xl sm:text-2xl text-game-neon-green font-game-fallback mb-4 sm:mb-6">
-            GAMEPLAY
+            FEATURES
           </h3>
-
-          <div className="space-y-6">
-            <div>
-              <h4 className="text-lg font-game-fallback text-white mb-2 border-b border-white/20 pb-1">
-                ROUND STRUCTURE
-              </h4>
-              <ol className="space-y-2 text-white list-decimal pl-5 sm:pl-8">
-                <li className="text-base sm:text-lg">
-                  Host reveals one pyramid card to begin each round
-                </li>
-                <li className="text-base sm:text-lg">
-                  Players may assign drinks based on matching cards or bluff
-                </li>
-                <li className="text-base sm:text-lg">
-                  Recipients may accept or challenge assignments
-                </li>
-                <li className="text-base sm:text-lg">
-                  After all assignments are resolved, host reveals the next
-                  pyramid card
-                </li>
-                <li className="text-base sm:text-lg">
-                  Game ends when all pyramid cards are revealed
-                </li>
-              </ol>
-            </div>
-
-            <div>
-              <h4 className="text-lg font-game-fallback text-white mb-2 border-b border-white/20 pb-1">
-                DRINK VALUES
-              </h4>
-              <ul className="space-y-2 text-white list-disc pl-5 sm:pl-8">
-                <li className="text-base sm:text-lg">
-                  Row 1 (bottom): 1 drink
-                </li>
-                <li className="text-base sm:text-lg">Row 2: 2 drinks</li>
-                <li className="text-base sm:text-lg">Row 3: 3 drinks</li>
-                <li className="text-base sm:text-lg">Row 4: 4 drinks</li>
-                <li className="text-base sm:text-lg">Row 5 (top): 5 drinks</li>
-                <li className="text-base sm:text-lg text-game-neon-yellow">
-                  Failed or successful challenges: Double the row value (e.g.,
-                  10 drinks for row 5)
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        {/* Assignment Mechanism section */}
-        <div className="w-full max-w-4xl bg-black/30 backdrop-blur-sm p-4 sm:p-10 rounded-xl border border-game-neon-red/20 mb-6 sm:mb-10 transform rotate-0.5 shadow-neon-red-sm mx-4 sm:mx-auto">
-          <h3 className="text-xl sm:text-2xl text-game-neon-red font-game-fallback mb-4 sm:mb-6">
-            ASSIGNMENTS & CHALLENGES
-          </h3>
-
-          <div className="space-y-6">
-            <div>
-              <h4 className="text-lg font-game-fallback text-white mb-2 border-b border-white/20 pb-1">
-                ASSIGNMENT MECHANISM
-              </h4>
-              <ol className="space-y-2 text-white list-decimal pl-5 sm:pl-8">
-                <li className="text-base sm:text-lg">
-                  When assigning, player indicates a target player (implicitly
-                  claiming to have a matching card)
-                </li>
-                <li className="text-base sm:text-lg">
-                  Target player must either:
-                  <ul className="pl-5 space-y-1 mt-1">
-                    <li className="text-base sm:text-lg">
-                      <span className="text-game-neon-green">Accept:</span>{" "}
-                      Consume assigned drinks based on current row value
-                    </li>
-                    <li className="text-base sm:text-lg">
-                      <span className="text-game-neon-purple">Challenge:</span>{" "}
-                      Force assigner to reveal one of their cards
-                    </li>
-                  </ul>
-                </li>
-              </ol>
-            </div>
-
-            <div>
-              <h4 className="text-lg font-game-fallback text-white mb-2 border-b border-white/20 pb-1">
-                CHALLENGE RESOLUTION
-              </h4>
-              <ol className="space-y-2 text-white list-decimal pl-5 sm:pl-8">
-                <li className="text-base sm:text-lg">
-                  Assigner selects and reveals one of their hidden cards
-                </li>
-                <li className="text-base sm:text-lg">
-                  If revealed card matches pyramid card:
-                  <ul className="pl-5 space-y-1 mt-1">
-                    <li className="text-base sm:text-lg">
-                      Challenger drinks double the current row value
-                    </li>
-                    <li className="text-base sm:text-lg">
-                      Assigner receives a replacement card (15-second viewing)
-                    </li>
-                  </ul>
-                </li>
-                <li className="text-base sm:text-lg">
-                  If revealed card does not match:
-                  <ul className="pl-5 space-y-1 mt-1">
-                    <li className="text-base sm:text-lg">
-                      Assigner drinks double the current row value
-                    </li>
-                    <li className="text-base sm:text-lg">
-                      Assigner receives a replacement card (15-second viewing)
-                    </li>
-                  </ul>
-                </li>
-                <li className="text-base sm:text-lg">
-                  All new cards receive 15 seconds of viewing time before being
-                  hidden
-                </li>
-              </ol>
-            </div>
-          </div>
-        </div>
-
-        {/* Edge Cases section */}
-        <div className="w-full max-w-4xl bg-black/30 backdrop-blur-sm p-4 sm:p-10 rounded-xl border border-game-neon-purple/20 mb-6 sm:mb-10 transform -rotate-0.5 shadow-neon-purple-sm mx-4 sm:mx-auto">
-          <h3 className="text-xl sm:text-2xl text-game-neon-purple font-game-fallback mb-4 sm:mb-6">
-            EDGE CASES
-          </h3>
-
-          <ol className="space-y-3 sm:space-y-4 text-white list-decimal pl-5 sm:pl-8">
+          <ul className="space-y-2 sm:space-y-4 text-white list-disc pl-5 sm:pl-6">
             <li className="text-base sm:text-lg">
-              <span className="text-game-neon-purple font-bold">
-                Deck Depletion:
-              </span>{" "}
-              When replacement cards are no longer available, players continue
-              with fewer than 4 cards
+              <strong>Dynamic Gameplay:</strong> Challenge your intuition by
+              predicting trending search volumes.
             </li>
             <li className="text-base sm:text-lg">
-              <span className="text-game-neon-purple font-bold">
-                Multiple Assignments:
-              </span>{" "}
-              Process each assignment sequentially until all are resolved
+              <strong>Custom Categories & Modes:</strong> Choose from predefined
+              categories like celebrities, technology, games, and more or enter
+              your own search term.
             </li>
             <li className="text-base sm:text-lg">
-              <span className="text-game-neon-purple font-bold">
-                Round Transition:
-              </span>{" "}
-              Any unresolved challenges from previous round are canceled when a
-              new card is revealed
+              <strong>Sleek UI/UX:</strong> Enjoy a neon-inspired design with
+              responsive layouts and dynamic backgrounds.
             </li>
             <li className="text-base sm:text-lg">
-              <span className="text-game-neon-purple font-bold">Game End:</span>{" "}
-              Reveal all players&apos; remaining cards after the final pyramid
-              card is processed
-            </li>
-          </ol>
-        </div>
-
-        {/* Pyramid.Ninja Specific Differences */}
-        <div className="w-full max-w-4xl bg-black/30 backdrop-blur-sm p-4 sm:p-10 rounded-xl border border-game-neon-blue/20 mb-6 sm:mb-16 transform rotate-0.5 shadow-neon-blue-sm mx-4 sm:mx-auto">
-          <h3 className="text-xl sm:text-2xl text-game-neon-blue font-game-fallback mb-4 sm:mb-6">
-            PYRAMID.NINJA SPECIFIC DIFFERENCES
-          </h3>
-
-          <ul className="space-y-3 sm:space-y-4 text-white list-disc pl-5 sm:pl-6">
-            <li className="text-base sm:text-lg">
-              There are currently{" "}
-              <span className="text-game-neon-red font-bold">no</span> jokers
-              (normally worth 10 drinks anywhere) in this. (coming soon)
-            </li>
-            <li className="text-base sm:text-lg">
-              The pyramid is statically built but only ever has 5 rows. However
-              you can click any card in any order allowing for &quot;reverse
-              pyramid&quot;.
-            </li>
-            <li className="text-base sm:text-lg">
-              The game will only tell you who needs to drink what{" "}
-              <em>per round</em>, so make sure everyone is up to speed before
-              you move on!
+              <strong>Real-Time Leaderboards:</strong> Compete against friends
+              and players worldwide.
             </li>
           </ul>
         </div>
 
-        {/* Contributors */}
+        {/* Technology & Data section */}
+        <div className="w-full max-w-4xl bg-black/30 backdrop-blur-sm p-4 sm:p-10 rounded-xl border border-game-neon-purple/20 mb-6 sm:mb-16 transform rotate-0.5 shadow-neon-purple-sm mx-4 sm:mx-auto">
+          <h3 className="text-xl sm:text-2xl text-game-neon-purple font-game-fallback mb-4 sm:mb-6">
+            TECHNOLOGY & DATA
+          </h3>
+          <div className="space-y-3 sm:space-y-4 text-white">
+            <p className="text-base sm:text-lg">
+              Trend Guesser leverages modern web technologies to deliver a
+              smooth gaming experience:
+            </p>
+            <ul className="space-y-2 list-disc pl-5 sm:pl-8">
+              <li className="text-base sm:text-lg">
+                <strong>Firebase Authentication:</strong> Secure and seamless
+                user sign-in.
+              </li>
+              <li className="text-base sm:text-lg">
+                <strong>Firestore Database:</strong> Real-time storage for
+                scores and trending terms.
+              </li>
+              <li className="text-base sm:text-lg">
+                <strong>Firebase Cloud Functions:</strong> Functions such as{" "}
+                <code>fetchSearchVolume</code> and{" "}
+                <code>updateTrendingTerms</code> simulate dynamic search volume
+                data.
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Contributors & Special Thanks section */}
         <div className="w-full max-w-4xl bg-black/30 backdrop-blur-sm p-4 sm:p-10 rounded-xl border border-game-neon-green/20 mb-6 sm:mb-8 transform -rotate-0.5 shadow-neon-green-sm mx-4 sm:mx-auto">
           <h3 className="text-xl sm:text-2xl text-game-neon-green font-game-fallback mb-4 sm:mb-6">
-            CONTRIBUTORS AND SPECIAL THANKS
+            CONTRIBUTORS &amp; SPECIAL THANKS
           </h3>
-
           <p className="text-base sm:text-lg text-white mb-3 sm:mb-4">
             Check out the{" "}
             <a
-              href="https://github.com/Rouic/pyramid.ninja"
+              href="https://github.com/yourusername/trend-guesser"
               rel="noreferrer"
               target="_blank"
               className="text-game-neon-yellow underline hover:text-game-neon-green transition-colors"
             >
-              GitHub page
+              GitHub repository
             </a>{" "}
             for a full list of contributors.
           </p>
-
           <ul className="space-y-2 text-white list-disc pl-5 sm:pl-6">
             <li className="text-base sm:text-lg">
-              Written, refactored and fiddled with over the years by Alex Cottenham (@Rouic)
+              Developed and continuously enhanced by [Your Name/Team].
             </li>
             <li className="text-base sm:text-lg">
-              Special thanks to Will Nield for finding bugs :)
-            </li>
-            <li className="text-base sm:text-lg">
-              Special thanks to Nick Roberts for finding bugs and heavily
-              critiquing everything :)
+              Special thanks to our community for valuable feedback and support!
             </li>
           </ul>
         </div>
@@ -373,7 +213,7 @@ const AboutPage = () => {
       {/* Footer */}
       <Footer />
 
-      {/* Card decorations in corners like Balatro - hide on mobile */}
+      {/* Decorative cards in corners */}
       <div className="absolute bottom-24 right-24 w-52 h-72 rounded-lg bg-game-card opacity-10 transform rotate-12 hidden sm:block"></div>
       <div className="absolute top-24 left-24 w-52 h-72 rounded-lg bg-game-card opacity-10 transform -rotate-12 hidden sm:block"></div>
     </div>

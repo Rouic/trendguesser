@@ -1,14 +1,17 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/router";
 import { useGame } from "@/contexts/GameContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { useWindowSize } from "@/hooks/useWindowSize";
-import { SearchCategory } from "@/types";
+import { SearchCategory, TrendGuesserGameState } from "@/types";
 import { Timestamp } from "firebase/firestore";
+import { TrendGuesserService } from "@/lib/firebase/trendGuesserService";
 
 const GameScreen = () => {
   const router = useRouter();
   const windowSize = useWindowSize();
+  const { userUid } = useAuth();
   const {
     gameState,
     gameData,
@@ -84,7 +87,67 @@ const GameScreen = () => {
   useEffect(() => {
     if (!gameState && !recoveryAttempted) {
       setRecoveryAttempted(true);
-
+      
+      // First, try to recover from localStorage (best source of continuity)
+      try {
+        if (typeof window !== "undefined") {
+          // Find the most recent game ID
+          const currentGameId = sessionStorage.getItem("current_game_id") || gameId;
+          
+          if (currentGameId) {
+            // Check if we have local state data for this game
+            const storedLocalState = localStorage.getItem(`tg_local_state_${currentGameId}`);
+            if (storedLocalState) {
+              console.log("[Recovery] Found local state data in localStorage");
+              
+              // Parse the local state
+              const localStateStore = JSON.parse(storedLocalState);
+              
+              // Find the latest round data
+              let latestRound = 0;
+              let latestRoundData = null;
+              
+              // Find the latest round in our saved data
+              Object.keys(localStateStore).forEach(key => {
+                if (key.startsWith('round_')) {
+                  const roundNum = parseInt(key.replace('round_', ''));
+                  if (roundNum > latestRound) {
+                    latestRound = roundNum;
+                    latestRoundData = localStateStore[key];
+                  }
+                }
+              });
+              
+              if (latestRoundData && latestRoundData.knownTerm && latestRoundData.hiddenTerm) {
+                console.log(`[Recovery] Found data for round ${latestRound}`);
+                
+                // Create a reconstructed game state
+                const reconstructedState: TrendGuesserGameState = {
+                  currentRound: latestRound,
+                  category: latestRoundData.knownTerm.category || "technology" as SearchCategory,
+                  started: true,
+                  finished: false,
+                  knownTerm: latestRoundData.knownTerm,
+                  hiddenTerm: latestRoundData.hiddenTerm,
+                  usedTerms: [latestRoundData.knownTerm.id, latestRoundData.hiddenTerm.id],
+                  terms: [],
+                  customTerm: null
+                };
+                
+                // Update the game state in context
+                setGameState(reconstructedState);
+                console.log("[Recovery] Successfully reconstructed game state from localStorage");
+                
+                return; // Successfully recovered, exit early
+              }
+            }
+          }
+        }
+      } catch (e) {
+        console.error("[Recovery] Error recovering from localStorage:", e);
+      }
+      
+      // If localStorage recovery fails, try sessionStorage
       if (
         process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" &&
         typeof window !== "undefined"
@@ -92,7 +155,7 @@ const GameScreen = () => {
         console.log("Attempting to recover game state from session storage...");
 
         // Get the current game ID
-        const currentGameId = sessionStorage.getItem("current_game_id");
+        const currentGameId = sessionStorage.getItem("current_game_id") || gameId;
         if (!currentGameId) {
           setError("Game session not found. Please start a new game.");
           return;
@@ -107,18 +170,15 @@ const GameScreen = () => {
 
         try {
           const parsedData = JSON.parse(gameData);
-          if (
-            !parsedData["__trendguesser.state"] ||
-            !parsedData["__trendguesser.state"].started
-          ) {
+          if (parsedData["__trendguesser.state"]) {
+            // We have game state data, let's use it directly
+            console.log("[Recovery] Found game state in session storage");
+            setGameState(parsedData["__trendguesser.state"]);
+            return;
+          } else {
             setError("Game not properly initialized. Please start a new game.");
             return;
           }
-
-          // If we found valid game data, suggest refreshing the page
-          setError(
-            "Game state disrupted. Please refresh the page to continue or start a new game."
-          );
         } catch (e) {
           console.error("Error recovering game state:", e);
           setError("Error loading game data. Please start a new game.");
@@ -127,11 +187,56 @@ const GameScreen = () => {
         setError("Game state not found. Please start a new game.");
       }
     }
-  }, [gameState, recoveryAttempted]);
+  }, [gameState, recoveryAttempted, gameId]);
 
   // Handle player making a guess
   const handleGuess = async (isHigher: boolean) => {
     if (!gameState || isGuessing) return;
+
+    // Verify we have valid term data before proceeding
+    if (!gameState.knownTerm || !gameState.hiddenTerm) {
+      console.error("[handleGuess] Missing term data in game state:", 
+        {knownTerm: !!gameState.knownTerm, hiddenTerm: !!gameState.hiddenTerm});
+      
+      // Try to recover from locally stored state
+      try {
+        if (typeof window !== "undefined" && gameId) {
+          const storedLocalState = localStorage.getItem(`tg_local_state_${gameId}`);
+          if (storedLocalState) {
+            const localStateStore = JSON.parse(storedLocalState);
+            const currentRoundKey = `round_${gameState.currentRound || 1}`;
+            
+            if (localStateStore[currentRoundKey]) {
+              console.log("[handleGuess] Recovering game state from local storage");
+              
+              // Create a reconstructed state
+              const recoveredState = {...gameState};
+              
+              // Add missing terms from local storage
+              if (!recoveredState.knownTerm && localStateStore[currentRoundKey].knownTerm) {
+                recoveredState.knownTerm = localStateStore[currentRoundKey].knownTerm;
+              }
+              
+              if (!recoveredState.hiddenTerm && localStateStore[currentRoundKey].hiddenTerm) {
+                recoveredState.hiddenTerm = localStateStore[currentRoundKey].hiddenTerm;
+              }
+              
+              // Update the game state
+              setGameState(recoveredState);
+              console.log("[handleGuess] Recovered missing terms from local storage");
+              
+              // Continue with updated state
+              return handleGuess(isHigher);
+            }
+          }
+        }
+      } catch (e) {
+        console.error("[handleGuess] Error recovering from local state:", e);
+      }
+      
+      setError("Missing game data. Please restart the game.");
+      return;
+    }
 
     setIsGuessing(true);
     setError(null);
@@ -142,11 +247,12 @@ const GameScreen = () => {
       );
 
       // Store the current game state values for comparison
-      const currentRound = gameState.currentRound;
-      const knownTermName = gameState.knownTerm.term;
-      const knownTermVolume = gameState.knownTerm.volume;
-      const hiddenTermName = gameState.hiddenTerm.term;
-      const hiddenTermVolume = gameState.hiddenTerm.volume;
+      // Also safely access properties with fallbacks for error prevention
+      const currentRound = gameState.currentRound || 1;
+      const knownTermName = gameState.knownTerm?.term || 'Unknown Term';
+      const knownTermVolume = gameState.knownTerm?.volume ?? 0;
+      const hiddenTermName = gameState.hiddenTerm?.term || 'Unknown Term';
+      const hiddenTermVolume = gameState.hiddenTerm?.volume ?? 0;
 
       console.log(`[handleGuess] Round ${currentRound} comparison:`, {
         knownTerm: knownTermName,
@@ -239,18 +345,53 @@ const GameScreen = () => {
             // Create a copy of the current game state to modify
             const updatedState = { ...gameState };
 
-            // Ensure both terms exist
-            if (updatedState.knownTerm && updatedState.hiddenTerm) {
-              // Setup next round
-              updatedState.currentRound = updatedState.currentRound + 1;
+            // Setup next round
+            updatedState.currentRound = (updatedState.currentRound || 1) + 1;
 
+            // Check for locally cached terms for the next round
+            let foundNextTerms = false;
+            
+            try {
+              // Try to get locally cached terms for continuity
+              if (typeof window !== "undefined" && gameId) {
+                const storedLocalState = localStorage.getItem(`tg_local_state_${gameId}`);
+                if (storedLocalState) {
+                  const localStateStore = JSON.parse(storedLocalState);
+                  const nextRoundKey = `round_${updatedState.currentRound}`;
+                  
+                  // Check if we have pre-cached terms for the next round
+                  if (localStateStore[nextRoundKey] && 
+                      localStateStore[nextRoundKey].knownTerm && 
+                      localStateStore[nextRoundKey].hiddenTerm) {
+                    
+                    console.log(`[handleGuess] Found cached terms for round ${updatedState.currentRound}`);
+                    
+                    // Use the cached terms
+                    updatedState.knownTerm = localStateStore[nextRoundKey].knownTerm;
+                    updatedState.hiddenTerm = localStateStore[nextRoundKey].hiddenTerm;
+                    
+                    foundNextTerms = true;
+                  }
+                }
+              }
+            } catch (e) {
+              console.error("[handleGuess] Error checking local term cache:", e);
+            }
+            
+            // If we didn't find terms in the cache, do standard rotation
+            if (!foundNextTerms) {
+              console.log("[handleGuess] Standard term rotation - move hidden to known");
+              
               // Move the hidden term to the known term position
-              updatedState.knownTerm = { ...updatedState.hiddenTerm };
+              if (updatedState.hiddenTerm) {
+                updatedState.knownTerm = { ...updatedState.hiddenTerm };
+              }
 
               // Use next term from the terms array if available
-              if (updatedState.terms && updatedState.terms.length > 0) {
+              if (updatedState.terms && Array.isArray(updatedState.terms) && updatedState.terms.length > 0) {
                 updatedState.hiddenTerm = { ...updatedState.terms[0] };
                 updatedState.terms = updatedState.terms.slice(1);
+                
                 // Make sure usedTerms is initialized
                 updatedState.usedTerms = Array.isArray(updatedState.usedTerms)
                   ? [...updatedState.usedTerms, updatedState.hiddenTerm.id]
@@ -269,21 +410,21 @@ const GameScreen = () => {
                 setGameState(updatedState);
                 return;
               }
+            }
 
-              // Update the game state in context
-              console.log(
-                "[handleGuess] Setting updated game state with term rotation:",
-                {
-                  newRound: updatedState.currentRound,
-                  newKnownTerm: updatedState.knownTerm.term,
-                  newHiddenTerm: updatedState.hiddenTerm.term,
-                }
-              );
-
-              // IMPORTANT: Only set the new game state if not finished
-              if (!gameState.finished) {
-                setGameState(updatedState);
+            // Update the game state in context
+            console.log(
+              "[handleGuess] Setting updated game state with term rotation:",
+              {
+                newRound: updatedState.currentRound,
+                newKnownTerm: updatedState.knownTerm.term,
+                newHiddenTerm: updatedState.hiddenTerm.term,
               }
+            );
+
+            // IMPORTANT: Only set the new game state if not finished
+            if (!gameState.finished) {
+              setGameState(updatedState);
             }
 
             // Reset UI states with a clean-up timeout
@@ -299,6 +440,25 @@ const GameScreen = () => {
         }, 1500);
       } else {
         // Wrong guess - game over
+        // Save high score on game over before showing GameOver screen
+        if (currentPlayer && currentPlayer.score > 0 && gameState.category) {
+          console.log(`Saving high score for game over: ${currentPlayer.score} in ${gameState.category}`);
+          try {
+            // Call static method directly for reliability
+            const mockUserUid = sessionStorage.getItem('mock_user_uid') || userUid;
+            const playerToUse = mockUserUid || userUid;
+            if (playerToUse) {
+              await TrendGuesserService.updateHighScore(
+                playerToUse,
+                gameState.category,
+                currentPlayer.score
+              );
+            }
+          } catch (e) {
+            console.error("Error saving high score during game over:", e);
+          }
+        }
+        
         // Just keep the showResult true and lastGuessCorrect false
         // Firebase will handle marking the game as finished
       }
@@ -334,6 +494,25 @@ const GameScreen = () => {
   // Handle player quitting the game
   const handleQuit = async () => {
     try {
+      // Save high score before quitting
+      if (currentPlayer && currentPlayer.score > 0 && gameState.category) {
+        console.log(`Saving high score during quit: ${currentPlayer.score} in ${gameState.category}`);
+        try {
+          // Call static method directly for reliability
+          const mockUserUid = sessionStorage.getItem('mock_user_uid') || userUid;
+          const playerToUse = mockUserUid || userUid;
+          if (playerToUse) {
+            await TrendGuesserService.updateHighScore(
+              playerToUse,
+              gameState.category,
+              currentPlayer.score
+            );
+          }
+        } catch (e) {
+          console.error("Error saving high score during quit:", e);
+        }
+      }
+      
       // Try Firebase first, then fall back to local navigation
       if (gameId) {
         try {
@@ -631,6 +810,25 @@ const GameScreen = () => {
                   
                   // Try Firebase first, then fall back to local restart
                   if (gameId) {
+                    // Save high score first
+                    if (currentPlayer && currentPlayer.score > 0 && gameState.category) {
+                      console.log(`Saving final score before restart: ${currentPlayer.score} in ${gameState.category}`);
+                      try {
+                        // Call static method directly for reliability
+                        const mockUserUid = sessionStorage.getItem('mock_user_uid') || userUid;
+                        const playerToUse = mockUserUid || userUid;
+                        if (playerToUse) {
+                          TrendGuesserService.updateHighScore(
+                            playerToUse,
+                            gameState.category,
+                            currentPlayer.score
+                          ).catch(err => console.error("Error saving final high score for restart:", err));
+                        }
+                      } catch (e) {
+                        console.error("Error saving final score before restart:", e);
+                      }
+                    }
+                    
                     // End game in Firebase and then restart with the same category
                     endGame()
                       .then(() => {
@@ -665,6 +863,25 @@ const GameScreen = () => {
                 onClick={() => {
                   // Try Firebase first, then fall back to local navigation
                   if (gameId) {
+                    // Save high score first
+                    if (currentPlayer && currentPlayer.score > 0 && gameState.category) {
+                      console.log(`Saving final score before changing category: ${currentPlayer.score} in ${gameState.category}`);
+                      try {
+                        // Call static method directly for reliability
+                        const mockUserUid = sessionStorage.getItem('mock_user_uid') || userUid;
+                        const playerToUse = mockUserUid || userUid;
+                        if (playerToUse) {
+                          TrendGuesserService.updateHighScore(
+                            playerToUse,
+                            gameState.category,
+                            currentPlayer.score
+                          ).catch(err => console.error("Error saving final high score before changing category:", err));
+                        }
+                      } catch (e) {
+                        console.error("Error saving final score before changing category:", e);
+                      }
+                    }
+                    
                     // End game in Firebase and then navigate
                     endGame()
                       .then(() => {

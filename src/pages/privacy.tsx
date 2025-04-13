@@ -28,10 +28,10 @@ const PrivacyPage = () => {
       ></div>
 
       <Head>
-        <title>Privacy Policy - Pyramid.Ninja</title>
+        <title>Privacy Policy - Trend Guesser</title>
         <meta
           name="description"
-          content="Privacy policy for Pyramid.Ninja, the digital card drinking game"
+          content="Privacy policy for Trend Guesser, the digital card drinking game"
         />
       </Head>
 
@@ -41,12 +41,12 @@ const PrivacyPage = () => {
           <div className="w-8 h-8 sm:w-10 sm:h-10 mr-2 sm:mr-3 group-hover:scale-110 transition-transform duration-300">
             <img
               src="/icon.png"
-              alt="Pyramid Ninja Logo"
+              alt="Trend Guesser Logo"
               className="w-full h-full object-contain"
             />
           </div>
           <span className="font-game-fallback text-game-neon-yellow text-base sm:text-xl group-hover:text-game-neon-red transition-colors duration-300">
-            PYRAMID.NINJA
+            Trend Guesser
           </span>
         </Link>
         <div className="flex space-x-2 sm:space-x-4">
@@ -87,7 +87,7 @@ const PrivacyPage = () => {
                 INTRODUCTION
               </h3>
               <p className="mb-4">
-                Welcome to Pyramid.Ninja! This Privacy Policy explains how we
+                Welcome to Trend Guesser! This Privacy Policy explains how we
                 collect, use, disclose, and safeguard your information when you
                 use our digital card drinking game application.
               </p>
@@ -109,7 +109,7 @@ const PrivacyPage = () => {
                     Game Information
                   </h4>
                   <p>
-                    When you use Pyramid.Ninja, we collect game-related
+                    When you use Trend Guesser, we collect game-related
                     information such as:
                   </p>
                   <ul className="list-disc pl-8 mt-2 space-y-1">
@@ -146,7 +146,7 @@ const PrivacyPage = () => {
               </h3>
               <p className="mb-4">We use the information we collect to:</p>
               <ul className="list-disc pl-8 space-y-2">
-                <li>Provide, maintain, and improve Pyramid.Ninja</li>
+                <li>Provide, maintain, and improve Trend Guesser</li>
                 <li>Create and manage game sessions</li>
                 <li>Monitor and analyze usage patterns and trends</li>
                 <li>Diagnose technical issues and optimize performance</li>
@@ -161,7 +161,7 @@ const PrivacyPage = () => {
                 THIRD-PARTY SERVICES
               </h3>
               <p className="mb-4">
-                We use several third-party services to operate Pyramid.Ninja.
+                We use several third-party services to operate Trend Guesser.
                 Each of these services may collect and process data according to
                 their own privacy policies:
               </p>
@@ -194,7 +194,7 @@ const PrivacyPage = () => {
                     Vercel
                   </h4>
                   <p className="mb-2">
-                    Pyramid.Ninja is hosted on Vercel, which provides hosting
+                    Trend Guesser is hosted on Vercel, which provides hosting
                     and deployment services.
                   </p>
                   <p className="text-sm text-gray-400">
@@ -287,7 +287,7 @@ const PrivacyPage = () => {
                 COOKIES & LOCAL STORAGE
               </h3>
               <p className="mb-4">
-                Pyramid.Ninja uses cookies and local storage to enhance your
+                Trend Guesser uses cookies and local storage to enhance your
                 experience and enable certain functionality:
               </p>
 
@@ -319,7 +319,7 @@ const PrivacyPage = () => {
                     Cookie Consent
                   </h4>
                   <p>
-                    When you first visit Pyramid.Ninja, you&apos;ll be asked to
+                    When you first visit Trend Guesser, you&apos;ll be asked to
                     consent to our use of cookies and local storage. You can
                     change your preferences at any time.
                   </p>
@@ -425,7 +425,7 @@ const PrivacyPage = () => {
                 CHILDREN&apos;S PRIVACY
               </h3>
               <p className="mb-4">
-                Pyramid.Ninja is a drinking game application and is not intended
+                Trend Guesser is a drinking game application and is not intended
                 for children under the legal drinking age in their respective
                 jurisdictions. We do not knowingly collect personal information
                 from children under the legal drinking age.
