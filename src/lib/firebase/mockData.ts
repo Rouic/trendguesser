@@ -1,12 +1,26 @@
+//mockData.ts
+
 import { SearchTerm, TrendGuesserPlayer } from '@/types';
 import { Timestamp } from 'firebase/firestore';
 
 import { ImageConfig } from '@/utils/imageUtils';
 
-// Function to generate a consistent image URL for a term
-const getImageUrl = (term: string): string => {
-  return ImageConfig.primary.getUrl(term, 800, 600);
+/**
+ * For mock data, we need to use a synchronous version that doesn't make actual API calls
+ * This creates deterministic URLs that mimic what the Pexels images would look like
+ */
+const getMockImageUrl = (term: string): string => {
+  // Create a deterministic hash from the term
+  const hash = term.split('').reduce((acc, char, i) => acc + char.charCodeAt(0) * (i + 1), 0);
+  
+  // Create a deterministic Pexels photo ID between 1 and 1000
+  const photoId = Math.abs(hash % 1000) + 1;
+  
+  // Return a mock Pexels URL with deterministic width/height
+  // Note: These aren't real Pexels URLs, just mocks for development
+  return `https://images.pexels.com/photos/${photoId}/pexels-photo-${photoId}.jpeg?auto=compress&cs=tinysrgb&w=800&h=600`;
 };
+
 
 // Sample search terms for development
 export const sampleSearchTerms: SearchTerm[] = [
@@ -15,7 +29,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'Artificial Intelligence',
     volume: 850000,
     category: 'technology',
-    imageUrl: getImageUrl('artificial intelligence technology'),
+    imageUrl: getMockImageUrl('artificial intelligence technology'),
     timestamp: Timestamp.now()
   },
   {
@@ -23,7 +37,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'Machine Learning',
     volume: 650000,
     category: 'technology',
-    imageUrl: getImageUrl('machine learning code'),
+    imageUrl: getMockImageUrl('machine learning code'),
     timestamp: Timestamp.now()
   },
   {
@@ -31,7 +45,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'Blockchain',
     volume: 450000,
     category: 'technology',
-    imageUrl: getImageUrl('blockchain digital'),
+    imageUrl: getMockImageUrl('blockchain digital'),
     timestamp: Timestamp.now()
   },
   {
@@ -39,7 +53,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'PlayStation 5',
     volume: 950000,
     category: 'gaming',
-    imageUrl: getImageUrl('playstation 5 console'),
+    imageUrl: getMockImageUrl('playstation 5 console'),
     timestamp: Timestamp.now()
   },
   {
@@ -47,7 +61,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'Xbox Series X',
     volume: 750000,
     category: 'gaming',
-    imageUrl: getImageUrl('xbox series x console'),
+    imageUrl: getMockImageUrl('xbox series x console'),
     timestamp: Timestamp.now()
   },
   {
@@ -55,7 +69,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'Elden Ring',
     volume: 550000,
     category: 'gaming',
-    imageUrl: getImageUrl('elden ring game'),
+    imageUrl: getMockImageUrl('elden ring game'),
     timestamp: Timestamp.now()
   },
   {
@@ -63,7 +77,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'Taylor Swift',
     volume: 1000000,
     category: 'entertainment',
-    imageUrl: getImageUrl('taylor swift concert'),
+    imageUrl: getMockImageUrl('taylor swift concert'),
     timestamp: Timestamp.now()
   },
   {
@@ -71,7 +85,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'Dune Part 2',
     volume: 700000,
     category: 'entertainment',
-    imageUrl: getImageUrl('dune movie desert'),
+    imageUrl: getMockImageUrl('dune movie desert'),
     timestamp: Timestamp.now()
   },
   {
@@ -79,7 +93,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'Stranger Things',
     volume: 500000,
     category: 'entertainment',
-    imageUrl: getImageUrl('stranger things tv show'),
+    imageUrl: getMockImageUrl('stranger things tv show'),
     timestamp: Timestamp.now()
   },
   {
@@ -87,7 +101,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'Climate Change',
     volume: 900000,
     category: 'news',
-    imageUrl: getImageUrl('climate change earth'),
+    imageUrl: getMockImageUrl('climate change earth'),
     timestamp: Timestamp.now()
   },
   {
@@ -95,7 +109,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'COVID-19',
     volume: 600000,
     category: 'news',
-    imageUrl: getImageUrl('covid healthcare mask'),
+    imageUrl: getMockImageUrl('covid healthcare mask'),
     timestamp: Timestamp.now()
   },
   {
@@ -103,7 +117,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'US Elections',
     volume: 800000,
     category: 'news',
-    imageUrl: getImageUrl('us election voting'),
+    imageUrl: getMockImageUrl('us election voting'),
     timestamp: Timestamp.now()
   },
   {
@@ -111,7 +125,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'NBA Playoffs',
     volume: 850000,
     category: 'sports',
-    imageUrl: getImageUrl('nba basketball game'),
+    imageUrl: getMockImageUrl('nba basketball game'),
     timestamp: Timestamp.now()
   },
   {
@@ -119,7 +133,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'World Cup',
     volume: 950000,
     category: 'sports',
-    imageUrl: getImageUrl('soccer world cup'),
+    imageUrl: getMockImageUrl('soccer world cup'),
     timestamp: Timestamp.now()
   },
   {
@@ -127,7 +141,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'Formula 1',
     volume: 750000,
     category: 'sports',
-    imageUrl: getImageUrl('formula 1 racing'),
+    imageUrl: getMockImageUrl('formula 1 racing'),
     timestamp: Timestamp.now()
   },
   // Additional terms for better diversity in categories
@@ -136,7 +150,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'Giraffes',
     volume: 250000,
     category: 'animals',
-    imageUrl: getImageUrl('giraffe wildlife'),
+    imageUrl: getMockImageUrl('giraffe wildlife'),
     timestamp: Timestamp.now()
   },
   {
@@ -144,7 +158,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'Pandas',
     volume: 420000,
     category: 'animals',
-    imageUrl: getImageUrl('panda bear'),
+    imageUrl: getMockImageUrl('panda bear'),
     timestamp: Timestamp.now()
   },
   {
@@ -152,7 +166,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'Dolphins',
     volume: 380000,
     category: 'animals',
-    imageUrl: getImageUrl('dolphin ocean'),
+    imageUrl: getMockImageUrl('dolphin ocean'),
     timestamp: Timestamp.now()
   },
   {
@@ -160,7 +174,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'Dogs',
     volume: 890000,
     category: 'animals',
-    imageUrl: getImageUrl('dog puppy cute'),
+    imageUrl: getMockImageUrl('dog puppy cute'),
     timestamp: Timestamp.now()
   },
   {
@@ -168,7 +182,7 @@ export const sampleSearchTerms: SearchTerm[] = [
     term: 'Cats',
     volume: 920000,
     category: 'animals',
-    imageUrl: getImageUrl('cat kitten'),
+    imageUrl: getMockImageUrl('cat kitten'),
     timestamp: Timestamp.now()
   }
 ];

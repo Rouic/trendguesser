@@ -540,7 +540,7 @@ const GameScreen = () => {
   // No game state - show error
   if (!gameState) {
     return (
-      <div className="min-h-screen bg-game-bg flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-md bg-black/40 rounded-xl border border-white/20 p-6 text-center">
           <h2 className="text-2xl font-display text-game-neon-blue mb-4">
             Game Not Found
@@ -568,7 +568,7 @@ const GameScreen = () => {
   const isDesktop = windowSize.width >= 768;
 
   return (
-    <div className="min-h-screen bg-game-bg flex flex-col">
+    <div className="min-h-screen flex flex-col">
       {/* Top bar with score */}
       <div className="p-4 bg-black/30 backdrop-blur-sm flex justify-between items-center border-b border-white/10">
         <div className="flex items-center gap-3">
@@ -602,7 +602,7 @@ const GameScreen = () => {
       <div className="flex-1 grid grid-rows-[1fr_auto_1fr] h-[calc(100vh-64px)]">
         {/* Top card (known term) */}
         <div className="flex items-center justify-center p-4">
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-lg">
             <div
               className="w-full rounded-xl overflow-hidden shadow-xl relative h-[250px]"
               style={{
@@ -656,7 +656,7 @@ const GameScreen = () => {
 
         {/* Bottom card (hidden term) */}
         <div className="flex items-center justify-center p-4">
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-lg">
             <div
               className="w-full rounded-xl overflow-hidden shadow-xl relative h-[250px]"
               style={{

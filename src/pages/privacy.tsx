@@ -6,7 +6,7 @@ import Footer from "@/components/layout/Footer";
 
 const PrivacyPage = () => {
   return (
-    <div className="min-h-screen bg-game-bg flex flex-col items-center justify-between py-4 sm:py-7 px-4 sm:px-8 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-between py-4 sm:py-7 px-4 sm:px-8 relative overflow-hidden">
       {/* Background patterns similar to Balatro */}
       <div
         className="absolute inset-0"

@@ -46,7 +46,7 @@ const LeaderboardPage = () => {
   }, [category]);
 
   return (
-    <div className="min-h-screen bg-game-bg flex flex-col items-center justify-between px-4 sm:px-8 py-4 sm:py-8 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-between px-4 sm:px-8 py-4 sm:py-8 relative overflow-hidden">
       {/* Background elements (reused from homepage) */}
       <div
         className="absolute inset-0"

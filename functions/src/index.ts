@@ -1,38 +1,361 @@
 import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 import { OpenAI } from 'openai';
+import fetch from 'node-fetch';
+
+// Pexels API response types
+type PexelsPhoto = {
+  id: number;
+  width: number;
+  height: number;
+  url: string;
+  src: {
+    original: string;
+    large2x: string;
+    large: string;
+    medium: string;
+    small: string;
+    portrait: string;
+    landscape: string;
+    tiny: string;
+  };
+  alt: string;
+  photographer: string;
+  photographer_url: string;
+  avg_color: string;
+};
+
+type PexelsSearchResponse = {
+  page: number;
+  per_page: number;
+  photos: PexelsPhoto[];
+  total_results: number;
+  next_page?: string;
+  prev_page?: string;
+};
 
 // Image configuration
 // IMPORTANT: Keep this in sync with the frontend config in src/utils/imageUtils.ts
 const ImageConfig = {
-  // Primary image service configuration
-  primary: {
-    baseUrl: 'https://picsum.photos',
-    getUrl: (term: string, width = 800, height = 600): string => {
-      // Create a hash from the term for deterministic images
-      const hash = term.split('').reduce((acc, char, i) => acc + char.charCodeAt(0) * (i + 1), 0);
-      // Use the hash to create a predictable ID for an image
-      const imageId = Math.abs(hash % 1000); // Get a number between 0-999
-      return `${ImageConfig.primary.baseUrl}/seed/${imageId}/${width}/${height}`;
+  // Primary image service configuration using Pexels
+  pexels: {
+    baseUrl: 'https://api.pexels.com/v1',
+    apiKey: functions.config().pexels?.key || '', // Get from Firebase config
+    
+    // Get an image URL from Pexels based on the search term
+    getUrl: async (term: string, widthOrCategory?: number | string, height?: number): Promise<string> => {
+      // Handle different parameter combinations for backward compatibility
+      let width = 800;
+      let category: string | undefined = undefined;
+      
+      if (typeof widthOrCategory === 'number') {
+        width = widthOrCategory;
+        height = height || 600;
+      } else if (typeof widthOrCategory === 'string') {
+        category = widthOrCategory;
+        height = height || 600;
+      }
+      try {
+        // Create enhanced search terms based on the original term and category
+        const enhancedSearchTerm = enhanceSearchTerm(term, category);
+        
+        // Determine the best orientation based on dimensions
+        const actualHeight = height || 600;
+        const orientation = width > actualHeight ? 'landscape' : (width < actualHeight ? 'portrait' : 'square');
+        
+        // API call with enhanced parameters
+        const url = `${ImageConfig.pexels.baseUrl}/search?query=${encodeURIComponent(enhancedSearchTerm)}&per_page=15&size=medium&orientation=${orientation}`;
+        
+        const response = await fetch(url, {
+          headers: {
+            Authorization: ImageConfig.pexels.apiKey
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Pexels API error: ${response.status}`);
+        }
+        
+        const data = await response.json() as PexelsSearchResponse;
+        
+        if (data.photos && data.photos.length > 0) {
+          // Sort photos by relevance to the original term
+          const sortedPhotos = sortPhotosByRelevance(data.photos, term);
+          
+          // Take the most relevant photo
+          const photo = sortedPhotos[0];
+          
+          // Get the appropriate sized image
+          let imageUrl = '';
+          
+          // Choose an appropriate size based on requested dimensions
+          if (width <= 400) {
+            imageUrl = photo.src.small;
+          } else if (width <= 800) {
+            imageUrl = photo.src.medium;
+          } else if (width <= 1200) {
+            imageUrl = photo.src.large;
+          } else {
+            imageUrl = photo.src.large2x;
+          }
+          
+          return imageUrl;
+        }
+        
+        // If no photos found, try a more simplified search
+        return await ImageConfig.pexels.getSimplifiedSearch(term, width, height);
+      } catch (error) {
+        console.error('Error fetching from Pexels API:', error);
+        // Try the fallback approach - this returns a Pexels API endpoint, not an actual image URL
+        return await ImageConfig.fallback.getUrl(term, width, height);
+      }
+    },
+    
+    // Simplified search when enhanced search returns no results
+    getSimplifiedSearch: async (term: string, width = 800, height = 600): Promise<string> => {
+      try {
+        // Extract key nouns from the term
+        const keyTerms = term.split(' ')
+          .filter(word => word.length > 3) // Only keep words longer than 3 chars
+          .slice(0, 2)                     // Use at most 2 key terms
+          .join(' ');
+          
+        const url = `${ImageConfig.pexels.baseUrl}/search?query=${encodeURIComponent(keyTerms)}&per_page=15`;
+        
+        const response = await fetch(url, {
+          headers: {
+            Authorization: ImageConfig.pexels.apiKey || ''
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Pexels API error: ${response.status}`);
+        }
+        
+        const data = await response.json() as PexelsSearchResponse;
+        
+        if (data.photos && data.photos.length > 0) {
+          // Pick the first photo from simplified search
+          const photo = data.photos[0];
+          
+          let imageUrl = '';
+          
+          // Choose an appropriate size based on requested dimensions
+          if (width <= 400) {
+            imageUrl = photo.src.small;
+          } else if (width <= 800) {
+            imageUrl = photo.src.medium;
+          } else if (width <= 1200) {
+            imageUrl = photo.src.large;
+          } else {
+            imageUrl = photo.src.large2x;
+          }
+          
+          return imageUrl;
+        }
+        
+        throw new Error('No images found in simplified search');
+      } catch (error) {
+        console.error('Error in simplified Pexels search:', error);
+        throw error;
+      }
     }
   },
   
-  // Fallback image service configuration (for consistency with frontend)
+  // Fallback image service configuration (still Pexels but with a simpler approach)
   fallback: {
-    baseUrl: 'https://picsum.photos',
-    getUrl: (term: string, width = 800, height = 600): string => {
-      return `${ImageConfig.fallback.baseUrl}/id/${Math.floor(Math.random() * 1000)}/${width}/${height}`;
-    }
-  },
-  
-  // Unsplash configuration (currently not working reliably)
-  unsplash: {
-    baseUrl: 'https://source.unsplash.com',
-    getUrl: (term: string, width = 800, height = 600): string => {
-      return `${ImageConfig.unsplash.baseUrl}/random/${width}x${height}?${encodeURIComponent(term)}`;
+    baseUrl: 'https://api.pexels.com/v1',
+    getUrl: async (term: string, width = 800, height = 600): Promise<string> => {
+      try {
+        // For fallback, try to match with general category terms
+        const generalCategory = determineGeneralCategory(term);
+        
+        const url = `${ImageConfig.pexels.baseUrl}/search?query=${encodeURIComponent(generalCategory)}&per_page=15`;
+        
+        const response = await fetch(url, {
+          headers: {
+            Authorization: ImageConfig.pexels.apiKey
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Fallback Pexels API error: ${response.status}`);
+        }
+        
+        const data = await response.json() as PexelsSearchResponse;
+        
+        if (data.photos && data.photos.length > 0) {
+          // Create a seed based on the term for deterministic selection
+          const seed = term.split('').reduce((acc, char, i) => acc + char.charCodeAt(0) * (i + 1), 0);
+          const photoIndex = seed % data.photos.length;
+          const photo = data.photos[photoIndex];
+          
+          let imageUrl = '';
+          
+          // Choose an appropriate size based on requested dimensions
+          if (width <= 400) {
+            imageUrl = photo.src.small;
+          } else if (width <= 800) {
+            imageUrl = photo.src.medium;
+          } else if (width <= 1200) {
+            imageUrl = photo.src.large;
+          } else {
+            imageUrl = photo.src.large2x;
+          }
+          
+          return imageUrl;
+        }
+        
+        // Last resort: curated photos
+        return await getBackupFromCurated(term, width, height);
+      } catch (error) {
+        console.error('Fallback search also failed:', error);
+        return `https://via.placeholder.com/${width}x${height}?text=${encodeURIComponent(term)}`;
+      }
     }
   }
 };
+
+// Helper function: Get backup from curated collection
+async function getBackupFromCurated(term: string, width = 800, height = 600): Promise<string> {
+  try {
+    const seed = term.split('').reduce((acc, char, i) => acc + char.charCodeAt(0) * (i + 1), 0);
+    const page = (seed % 30) + 1; // Get a page between 1-30
+    
+    const url = `${ImageConfig.pexels.baseUrl}/curated?per_page=15&page=${page}`;
+    
+    const response = await fetch(url, {
+      headers: {
+        Authorization: ImageConfig.pexels.apiKey
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Curated Pexels API error: ${response.status}`);
+    }
+    
+    const data = await response.json() as PexelsSearchResponse;
+    
+    if (data.photos && data.photos.length > 0) {
+      const photoIndex = seed % data.photos.length;
+      const photo = data.photos[photoIndex];
+      
+      let imageUrl = '';
+      
+      if (width <= 400) {
+        imageUrl = photo.src.small;
+      } else if (width <= 800) {
+        imageUrl = photo.src.medium;
+      } else if (width <= 1200) {
+        imageUrl = photo.src.large;
+      } else {
+        imageUrl = photo.src.large2x;
+      }
+      
+      return imageUrl;
+    }
+    
+    throw new Error('No curated images found');
+  } catch (error) {
+    console.error('Error fetching from curated collection:', error);
+    return `https://via.placeholder.com/${width}x${height}?text=${encodeURIComponent(term)}`;
+  }
+}
+
+// Helper function: Enhance search term based on term and category
+function enhanceSearchTerm(term: string, category?: string): string {
+  // Remove common stop words
+  const stopWords = ['a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'with', 'about'];
+  const cleanedTerm = term.split(' ')
+    .filter(word => !stopWords.includes(word.toLowerCase()))
+    .join(' ');
+  
+  // Add category-specific enhancements
+  if (category) {
+    switch (category.toLowerCase()) {
+      case 'news':
+        return `${cleanedTerm} news event current affairs journalism`;
+      case 'entertainment':
+        return `${cleanedTerm} entertainment celebrity media`;
+      case 'technology':
+        return `${cleanedTerm} technology digital electronics`;
+      case 'sports':
+        return `${cleanedTerm} sports athletic competition`;
+      case 'gaming':
+        return `${cleanedTerm} game gaming video-game`;
+      default:
+        return `${cleanedTerm} clear high-quality`;
+    }
+  }
+  
+  // Add general quality terms if no category
+  return `${cleanedTerm} high-quality`;
+}
+
+// Helper function: Sort photos by relevance to the original term
+function sortPhotosByRelevance(photos: PexelsPhoto[], term: string): PexelsPhoto[] {
+  const termWords = term.toLowerCase().split(' ');
+  
+  return photos.sort((a, b) => {
+    const aScore = calculateRelevanceScore(a, termWords);
+    const bScore = calculateRelevanceScore(b, termWords);
+    
+    return bScore - aScore; // Sort by highest score first
+  });
+}
+
+// Helper function: Calculate relevance score based on alt text and other metadata
+function calculateRelevanceScore(photo: PexelsPhoto, termWords: string[]): number {
+  let score = 0;
+  
+  // Check if alt text contains any of the term words
+  if (photo.alt) {
+    const altWords = photo.alt.toLowerCase().split(' ');
+    
+    termWords.forEach(word => {
+      if (altWords.includes(word)) {
+        score += 3; // High score for exact alt text match
+      } else if (altWords.some(altWord => altWord.includes(word) || word.includes(altWord))) {
+        score += 1; // Lower score for partial match
+      }
+    });
+  }
+  
+  // Prefer photos with alt text (higher quality metadata)
+  if (photo.alt && photo.alt.length > 0) {
+    score += 1;
+  }
+  
+  return score;
+}
+
+// Helper function: Determine a general category for fallback
+function determineGeneralCategory(term: string): string {
+  const termLower = term.toLowerCase();
+  
+  // Map of keywords to categories
+  const categoryKeywords: Record<string, string[]> = {
+    'technology': ['tech', 'iphone', 'android', 'computer', 'software', 'hardware', 'digital', 'ai', 'artificial intelligence', 'app'],
+    'business': ['business', 'finance', 'economy', 'market', 'stock', 'company', 'startup', 'entrepreneur'],
+    'entertainment': ['movie', 'film', 'music', 'celebrity', 'actor', 'actress', 'hollywood', 'tv', 'television', 'star'],
+    'sports': ['sport', 'football', 'soccer', 'basketball', 'tennis', 'baseball', 'golf', 'olympic', 'athlete'],
+    'politics': ['politics', 'government', 'election', 'president', 'congress', 'senate', 'democracy', 'law'],
+    'science': ['science', 'research', 'study', 'scientist', 'space', 'astronomy', 'physics', 'biology', 'chemistry'],
+    'health': ['health', 'medical', 'doctor', 'hospital', 'disease', 'medicine', 'wellness', 'fitness', 'diet'],
+    'travel': ['travel', 'vacation', 'tourism', 'destination', 'hotel', 'flight', 'beach', 'resort'],
+    'gaming': ['game', 'gaming', 'playstation', 'xbox', 'nintendo', 'esports', 'fortnite', 'minecraft']
+  };
+  
+  // Find matching category
+  for (const [category, keywords] of Object.entries(categoryKeywords)) {
+    if (keywords.some(keyword => termLower.includes(keyword))) {
+      return category;
+    }
+  }
+  
+  // Default fallback
+  return 'contemporary';
+}
 
 // Initialize Firebase
 admin.initializeApp();
@@ -62,6 +385,11 @@ const volumeCache: Record<string, { volume: number; timestamp: number; expires: 
 // Cache TTL in milliseconds (12 hours)
 const CACHE_TTL = 12 * 60 * 60 * 1000;
 
+// Cache for image URLs
+const imageCache: Record<string, { url: string; timestamp: number; expires: number }> = {};
+// Image cache TTL (24 hours)
+const IMAGE_CACHE_TTL = 24 * 60 * 60 * 1000;
+
 // Interface for trend data
 interface TrendData {
   term: string;
@@ -75,9 +403,54 @@ const openai = new OpenAI({
   apiKey: functions.config().openai.key,
 });
 
+// Helper function to get an image URL with caching
+async function getImageUrlWithCaching(term: string, category?: string, width = 800, height = 600): Promise<string> {
+  const cacheKey = `pexels_${term}_${category || ''}_${width}x${height}`;
+  
+  // Check if we have a cached URL that hasn't expired
+  if (imageCache[cacheKey] && imageCache[cacheKey].expires > Date.now()) {
+    return imageCache[cacheKey].url;
+  }
+  
+  try {
+    // Get new URL from Pexels
+    const imageUrl = await ImageConfig.pexels.getUrl(term, category);
+    
+    // Cache the result
+    imageCache[cacheKey] = {
+      url: imageUrl,
+      timestamp: Date.now(),
+      expires: Date.now() + IMAGE_CACHE_TTL
+    };
+    
+    return imageUrl;
+  } catch (error) {
+    console.error(`Error getting image URL for term ${term}:`, error);
+    
+    // Try the fallback approach
+    try {
+      const fallbackUrl = await ImageConfig.fallback.getUrl(term, width, height);
+      
+      // Cache the result
+      imageCache[cacheKey] = {
+        url: fallbackUrl,
+        timestamp: Date.now(),
+        expires: Date.now() + IMAGE_CACHE_TTL
+      };
+      
+      return fallbackUrl;
+    } catch (fallbackError) {
+      console.error('Fallback image fetch also failed:', fallbackError);
+      
+      // Return a generic placeholder image as absolute last resort
+      return `https://via.placeholder.com/${width}x${height}?text=${encodeURIComponent(term)}`;
+    }
+  }
+}
+
 // Cloud Function to fetch search volume for a term
 export const fetchSearchVolume = functions.https.onCall(async (data, context) => {
-  const { term } = data;
+  const { term, category } = data;
   
   if (!term || typeof term !== 'string') {
     throw new functions.https.HttpsError('invalid-argument', 'The function must be called with a valid search term.');
@@ -85,14 +458,14 @@ export const fetchSearchVolume = functions.https.onCall(async (data, context) =>
   
   try {
     // Fetch the search volume using ChatGPT lookup
-    const trendData = await getSearchVolume(term);
+    const trendData = await getSearchVolume(term, category);
     
     // Store data in Firestore
     const termId = term.toLowerCase().replace(/[^a-z0-9]/g, '-');
     await db.collection('searchTerms').doc(termId).set({
       term,
       volume: trendData.volume,
-      category: 'custom',
+      category: category || 'custom',
       imageUrl: trendData.imageUrl,
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
@@ -102,13 +475,13 @@ export const fetchSearchVolume = functions.https.onCall(async (data, context) =>
       const batch = db.batch();
       for (const relatedTerm of trendData.relatedTerms) {
         if (relatedTerm) {
-          const relatedTermData = await getSearchVolume(relatedTerm);
+          const relatedTermData = await getSearchVolume(relatedTerm, category);
           const relatedTermId = relatedTerm.toLowerCase().replace(/[^a-z0-9]/g, '-');
           const docRef = db.collection('searchTerms').doc(relatedTermId);
           batch.set(docRef, {
             term: relatedTerm,
             volume: relatedTermData.volume,
-            category: 'custom',
+            category: category || 'custom',
             imageUrl: relatedTermData.imageUrl,
             timestamp: admin.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
@@ -255,7 +628,7 @@ async function updateSearchVolumesForTerms(category: string, termsToUpdate: stri
     
     for (const term of termsToUpdate) {
       // Get the search volume for the term
-      const trendData = await getSearchVolume(term);
+      const trendData = await getSearchVolume(term, category);
       
       // Generate a document ID
       const termId = term.toLowerCase().replace(/[^a-z0-9]/g, '-');
@@ -357,28 +730,32 @@ export const updateTrendingTerms = functions.pubsub
   });
 
 // Primary function to get search volume for a term using ChatGPT
-async function getSearchVolume(term: string): Promise<TrendData> {
+async function getSearchVolume(term: string, category?: string): Promise<TrendData> {
   if (volumeCache[term] && volumeCache[term].expires > Date.now()) {
     console.log(`Using cached data for term: ${term}`);
+    
+    // Get a fresh image URL (or from cache)
+    const imageUrl = await getImageUrlWithCaching(term, category);
+    
     return {
       term,
       volume: volumeCache[term].volume,
-      imageUrl: ImageConfig.primary.getUrl(term),
+      imageUrl,
       relatedTerms: generateRelatedTerms(term)
     };
   }
   
   try {
-    return await getSearchVolumeViaChatGPT(term);
+    return await getSearchVolumeViaChatGPT(term, category);
   } catch (error) {
     console.error('Error fetching search volume using ChatGPT:', error);
     // Fallback to a deterministic mock value if ChatGPT lookup fails
-    return getMockSearchVolume(term);
+    return getMockSearchVolume(term, category);
   }
 }
 
 // Function to look up search volume via ChatGPT using the OpenAI Node API
-async function getSearchVolumeViaChatGPT(term: string): Promise<TrendData> {
+async function getSearchVolumeViaChatGPT(term: string, category?: string): Promise<TrendData> {
   const prompt = `Provide the latest trend search volume number for the search term "${term}" as an integer, and if available, list up to 3 related search terms separated by commas. Format your answer as: "Volume: <number>; Related: <term1, term2, term3>".`;
   
   const completion = await openai.chat.completions.create({
@@ -408,7 +785,8 @@ async function getSearchVolumeViaChatGPT(term: string): Promise<TrendData> {
     expires: Date.now() + CACHE_TTL
   };
   
-  const imageUrl = ImageConfig.primary.getUrl(term);
+  // Get image URL from Pexels
+  const imageUrl = await getImageUrlWithCaching(term, category);
   
   return {
     term,
@@ -419,7 +797,7 @@ async function getSearchVolumeViaChatGPT(term: string): Promise<TrendData> {
 }
 
 // Fallback function to generate a mock search volume if ChatGPT call fails
-function getMockSearchVolume(term: string): TrendData {
+async function getMockSearchVolume(term: string, category?: string): Promise<TrendData> {
   const seed = term.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
   const rng = seedRandom(seed);
   const randomVolume = Math.floor(rng() * 10000000) + 1000;
@@ -432,7 +810,8 @@ function getMockSearchVolume(term: string): TrendData {
     };
   }
   
-  const imageUrl = ImageConfig.primary.getUrl(term);
+  // Get image URL from Pexels
+  const imageUrl = await getImageUrlWithCaching(term, category);
   const relatedTerms = generateRelatedTerms(term);
   
   return {
@@ -460,7 +839,7 @@ async function getTrendingTermsForCategory(category: string): Promise<TrendData[
     // If no terms found, use the built-in pool as fallback
     if (terms.length === 0 && BUILTIN_TERMS_POOL[category]) {
       return Promise.all(BUILTIN_TERMS_POOL[category].map(async (term) => {
-        return await getSearchVolume(term);
+        return await getSearchVolume(term, category);
       }));
     }
     
@@ -471,7 +850,7 @@ async function getTrendingTermsForCategory(category: string): Promise<TrendData[
     
     // Get the search volume for each term
     return Promise.all(selectedTerms.map(async (term) => {
-      return await getSearchVolume(term);
+      return await getSearchVolume(term, category);
     }));
   } catch (error) {
     console.error(`Error getting trending terms for category ${category}:`, error);
@@ -479,7 +858,7 @@ async function getTrendingTermsForCategory(category: string): Promise<TrendData[
     // Fallback to built-in terms if there's an error
     if (BUILTIN_TERMS_POOL[category]) {
       return Promise.all(BUILTIN_TERMS_POOL[category].map(async (term) => {
-        return await getSearchVolume(term);
+        return await getSearchVolume(term, category);
       }));
     }
     

@@ -6,7 +6,7 @@ import Footer from "@/components/layout/Footer";
 const HomePage = () => {
 
   return (
-    <div className="min-h-screen bg-game-bg flex flex-col items-center justify-between px-4 sm:px-8 py-4 sm:py-8 relative overflow-hidden">
+    <div className="min-h-screen flex flex-col items-center justify-between px-4 sm:px-8 py-4 sm:py-8 relative overflow-hidden">
       {/* Background patterns similar to Balatro */}
       <div
         className="absolute inset-0"
@@ -90,7 +90,7 @@ const HomePage = () => {
       {/* Main content - positioned in the center */}
       <div className="max-w-5xl w-full mx-auto text-center relative z-10 flex flex-col items-center py-4 sm:py-8">
         <div className="flex flex-col items-center w-full px-1">
-          <div
+          {/* <div
             className="w-28 h-28 sm:w-40 sm:h-40 mb-2 sm:mb-4 animate-float-slow cursor-pointer"
             aria-label="Click me three times for a surprise"
           >
@@ -99,7 +99,7 @@ const HomePage = () => {
               alt="Pyramid Ninja Logo"
               className="w-full h-full object-contain"
             />
-          </div>
+          </div> */}
           <h1 className="text-[25px] xxs:text-3xl xs:text-3xl sm:text-4xl md:text-5xl xl:text-7xl font-display text-game-neon-yellow tracking-tight xs:tracking-normal sm:tracking-wider mb-0 animate-glow font-display-fallback w-full px-2">
             TREND GUESSER
           </h1>
@@ -162,11 +162,6 @@ const HomePage = () => {
       {/* Footer - at the bottom */}
       <Footer />
 
-      {/* Card decorations in corners like Balatro - hide some on mobile */}
-      <div className="absolute bottom-24 right-24 w-40 h-56 rounded-lg bg-game-card opacity-10 transform rotate-12 hidden sm:block"></div>
-      <div className="absolute top-24 left-24 w-40 h-56 rounded-lg bg-game-card opacity-10 transform -rotate-12 hidden sm:block"></div>
-      <div className="absolute bottom-48 left-48 w-32 h-44 rounded-lg bg-game-card opacity-10 transform rotate-45 hidden md:block"></div>
-      <div className="absolute top-48 right-48 w-32 h-44 rounded-lg bg-game-card opacity-10 transform -rotate-45 hidden md:block"></div>
     </div>
   );
 };

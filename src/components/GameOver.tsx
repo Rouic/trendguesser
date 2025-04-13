@@ -127,7 +127,7 @@ const GameOver = () => {
 
   if (!gameState) {
     return (
-      <div className="min-h-screen bg-game-bg flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-md bg-black/40 rounded-xl border border-white/20 p-6 text-center">
           <h2 className="text-2xl font-display text-game-neon-red mb-4">
             Game Data Not Found
@@ -151,7 +151,7 @@ const GameOver = () => {
   }
 
   return (
-    <div className="min-h-screen bg-game-bg flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
       {/* Game over content */}
       <motion.div
         initial={{ y: 30, opacity: 0 }}

@@ -466,7 +466,7 @@ const GamePage = () => {
   // Show custom term input if custom category selected
   if (category === "custom") {
     return (
-      <div className="min-h-screen bg-game-bg flex flex-col items-center justify-center p-4">
+      <div className="min-h-screen flex flex-col items-center justify-center p-4">
         <Head>
           <title>TrendGuesser - Custom Term</title>
         </Head>
@@ -490,7 +490,7 @@ const GamePage = () => {
 
   // Show category selection by default
   return (
-    <div className="min-h-screen bg-game-bg flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <Head>
         <title>TrendGuesser - Choose Category</title>
       </Head>

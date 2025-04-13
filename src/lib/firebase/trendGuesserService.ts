@@ -456,7 +456,7 @@ static async makeGuess(
                   term: `Trending Topic ${i+1}`,
                   volume: Math.floor(Math.random() * 900000) + 100000,
                   category: gameState.category,
-                  imageUrl: ImageConfig.primary.getUrl(`Trending Topic ${i+1}`, 800, 600),
+                  imageUrl: ImageConfig.pexels.getUrl(`Trending Topic ${i+1}`, 800, 600), // Using sync fallback for immediate UI response
                   timestamp: Timestamp.now()
                 };
                 newTerms.push(backupTerm);
@@ -893,12 +893,13 @@ static async makeGuess(
             // Create fallback terms if fetch fails
             newTerms = [];
             for (let i = 0; i < 5; i++) {
+              const image = await ImageConfig.pexels.getUrl(`New Term ${i+1}`, 800, 600)
               newTerms.push({
                 id: `fallback-fetch-${Date.now()}-${i}`,
                 term: `New Term ${i+1}`,
                 volume: Math.floor(Math.random() * 900000) + 100000,
                 category: gameState.category || ('technology' as SearchCategory),
-                imageUrl: ImageConfig.primary.getUrl(`New Term ${i+1}`, 800, 600),
+                imageUrl: image, // Using sync fallback for immediate UI response
                 timestamp: Timestamp.now()
               });
             }
@@ -922,12 +923,13 @@ static async makeGuess(
           // If an error occurs, create some backup terms
           newTerms = [];
           for (let i = 0; i < 5; i++) {
+            const image = await ImageConfig.pexels.getUrl(`Trending Topic ${i+1}`, 800, 600)
             const backupTerm: SearchTerm = {
               id: `backup-${Date.now()}-${i}`,
               term: `Trending Topic ${i+1}`,
               volume: Math.floor(Math.random() * 900000) + 100000,
               category: gameState.category,
-              imageUrl: ImageConfig.primary.getUrl(`Trending Topic ${i+1}`, 800, 600),
+              imageUrl: image, // Using sync fallback for immediate UI response
               timestamp: Timestamp.now()
             };
             newTerms.push(backupTerm);
@@ -1569,12 +1571,13 @@ static async updateHighScore(
       // Create some fallback terms
       const fallbackTerms: SearchTerm[] = [];
       for (let i = 0; i < 10; i++) {
+        const image = await ImageConfig.pexels.getUrl(`Fallback Term ${i+1}`, 800, 600);
         fallbackTerms.push({
           id: `fallback-${Date.now()}-${i}`,
           term: `Fallback Term ${i+1}`,
           volume: Math.floor(Math.random() * 900000) + 100000,
           category: category || ('technology' as SearchCategory),
-          imageUrl: ImageConfig.primary.getUrl(`Fallback Term ${i+1}`, 800, 600),
+          imageUrl: image, // Using sync fallback for immediate UI response
           timestamp: Timestamp.now()
         });
       }
@@ -1588,13 +1591,22 @@ static async updateHighScore(
       // This would typically call a Firebase Function to get the custom term data
       // For now, we'll simulate it with a placeholder
       
-      // First term will be the custom one
+      // First term will be the custom one - use async image loading
+      let customImageUrl;
+      try {
+        // Try to get a better image from Pexels
+        customImageUrl = await this.getImageUrlForTerm(customTerm);
+      } catch (imgError) {
+        console.error('Error getting custom term image, using fallback:', imgError);
+        customImageUrl = ImageConfig.pexels.getUrl(customTerm, 800, 600);
+      }
+      
       const customSearchTerm: SearchTerm = {
         id: uuidv4(),
         term: customTerm,
         volume: Math.floor(Math.random() * 100) + 1, // Placeholder volume
         category: 'custom',
-        imageUrl: ImageConfig.primary.getUrl(customTerm, 800, 600),
+        imageUrl: customImageUrl,
         timestamp: Timestamp.now()
       };
       
@@ -1631,12 +1643,21 @@ static async updateHighScore(
       if (USE_MOCK_DATA) {
         console.log('Falling back to mock data for custom term');
         
+        // Still try to get a better image if possible
+        let fallbackImageUrl;
+        try {
+          fallbackImageUrl = await this.getImageUrlForTerm(customTerm);
+        } catch (imgError) {
+          console.error('Error getting fallback image, using deterministic fallback:', imgError);
+          fallbackImageUrl = ImageConfig.pexels.getUrl(customTerm, 800, 600);
+        }
+        
         const customSearchTerm: SearchTerm = {
           id: uuidv4(),
           term: customTerm,
           volume: Math.floor(Math.random() * 100) + 1,
           category: 'custom',
-          imageUrl: ImageConfig.primary.getUrl(customTerm, 800, 600),
+          imageUrl: fallbackImageUrl,
           timestamp: Timestamp.now()
         };
         
@@ -1647,6 +1668,18 @@ static async updateHighScore(
       }
       
       throw error;
+    }
+  }
+  
+  // Helper method to get an image URL for a term
+  private static async getImageUrlForTerm(term: string): Promise<string> {
+    try {
+      // First try to get an image from Pexels API
+      return await ImageConfig.pexels.getUrl(term, 800, 600);
+    } catch (error) {
+      console.error(`Error getting Pexels image for term "${term}":`, error);
+      // Fallback to deterministic picsum
+      return ImageConfig.pexels.getUrl(term, 800, 600);
     }
   }
   
