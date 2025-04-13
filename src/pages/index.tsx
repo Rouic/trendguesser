@@ -84,6 +84,12 @@ const HomePage = () => {
           >
             PRIVACY
           </Link>
+          <Link
+            href="/leaderboard"
+            className="px-3 sm:px-6 py-2 bg-black/30 backdrop-blur-sm rounded-full border border-game-neon-green/30 text-game-neon-green font-game-fallback text-xs sm:text-sm hover:bg-black/50 hover:scale-105 transition-all duration-300 shadow-neon-green-sm"
+          >
+            LEADERBOARD
+          </Link>
         </div>
       </div>
 
@@ -105,29 +111,22 @@ const HomePage = () => {
           </h1>
         </div>
 
-        <div className="w-full max-w-3xl mx-auto h-1.5 bg-gradient-to-r from-transparent via-game-neon-red to-transparent mb-2 mt-2"></div>
+        <div className="w-full max-w-3xl mx-auto h-1.5 bg-gradient-to-r from-transparent via-game-neon-yellow to-transparent mb-2 mt-2"></div>
 
         <p className="text-lg sm:text-2xl md:text-3xl text-white mb-6 sm:mb-12 max-w-3xl mx-auto font-game-fallback tracking-wide text-center w-full leading-relaxed px-6 sm:px-0">
-          THE HIGHER OR LOWER GAME WITH TRENDING SEARCH TERMS 
+          GUESS WHICH TRENDING TERM HAS MORE SEARCHES!
         </p>
 
         {/* Game buttons */}
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mb-6 sm:mb-12 justify-center">
-          <Link 
-            href="/game" 
-            className="px-8 py-4 bg-black/30 backdrop-blur-sm rounded-xl border-2 border-game-neon-blue/70 text-game-neon-blue font-bold font-game-fallback text-xl hover:bg-black/50 hover:scale-105 transition-all duration-300 shadow-neon-blue-sm flex-1 text-center"
+          <Link
+            href="/game"
+            className="px-8 py-4 bg-black/30 backdrop-blur-sm rounded-xl border-2 border-game-neon-yellow/70 text-game-neon-yellow font-bold font-game-fallback text-xl hover:bg-black/50 hover:scale-105 transition-all duration-300 shadow-neon-yellow-sm flex-1 text-center"
           >
             PLAY NOW
           </Link>
-          
-          <Link 
-            href="/leaderboard" 
-            className="px-8 py-4 bg-black/30 backdrop-blur-sm rounded-xl border-2 border-game-neon-green/70 text-game-neon-green font-bold font-game-fallback text-xl hover:bg-black/50 hover:scale-105 transition-all duration-300 shadow-neon-green-sm flex-1 text-center"
-          >
-            LEADERBOARD
-          </Link>
         </div>
-        
+
         {/* Features section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
           <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-black/40 transition-colors">
@@ -138,7 +137,7 @@ const HomePage = () => {
               Choose from animals, celebrities, technology, and more.
             </p>
           </div>
-          
+
           <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-black/40 transition-colors">
             <h3 className="text-game-neon-pink font-bold text-xl mb-3 font-game-fallback">
               CUSTOM TERMS
@@ -147,7 +146,7 @@ const HomePage = () => {
               Enter your own search term and see how it compares.
             </p>
           </div>
-          
+
           <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-black/40 transition-colors sm:col-span-2 lg:col-span-1">
             <h3 className="text-game-neon-green font-bold text-xl mb-3 font-game-fallback">
               HIGH SCORES
@@ -161,7 +160,6 @@ const HomePage = () => {
 
       {/* Footer - at the bottom */}
       <Footer />
-
     </div>
   );
 };

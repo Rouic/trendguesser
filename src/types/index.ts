@@ -32,6 +32,12 @@ export type SearchCategory =
   | 'entertainment'
   | 'news'
   | 'technology' 
+  | 'british snacks'
+  | 'celebrities'
+  | 'car brands'
+  | 'historical figureheads'
+  | 'famous landmarks'
+  | 'fashion'
   | 'questions' 
   | 'custom';
 

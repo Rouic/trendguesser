@@ -570,31 +570,39 @@ const GameScreen = () => {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Top bar with score */}
-      <div className="p-4 bg-black/30 backdrop-blur-sm flex justify-between items-center border-b border-white/10">
-        <div className="flex items-center gap-3">
-          <span className="text-white font-game-fallback">SCORE:</span>
-          <span className="text-2xl text-game-neon-green font-bold font-game-fallback">
-            {currentPlayer?.score || 0}
-          </span>
-          
-          {/* Show high score if available */}
-          {currentPlayer?.highScores && gameState.category && currentPlayer.highScores[gameState.category] ? (
-            <span className="text-sm text-white/70 font-game-fallback ml-2">
-              HIGH: {currentPlayer.highScores[gameState.category]}
-            </span>
-          ) : null}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-white/70 font-game-fallback text-sm">
-            {(gameState.category || 'technology').toUpperCase()}
-          </span>
+      <div className="p-4 bg-black/30 backdrop-blur-sm grid grid-cols-3 items-center border-b border-white/10">
+        <div className="flex items-center justify-start gap-2">
           <button
             onClick={handleQuit}
             className="px-4 py-1 bg-black/40 rounded-full border border-game-neon-red/30 text-game-neon-red text-sm font-game-fallback hover:bg-black/60"
           >
             QUIT
           </button>
+          <span className="text-white/70 font-game-fallback text-sm">
+            {(gameState.category || "technology").toUpperCase()}
+          </span>
+        </div>
+
+        <div className="flex justify-center">
+          <h1 className="text-xl font-display text-game-neon-yellow tracking-wider animate-glow font-display-fallback">
+            TREND GUESSER
+          </h1>
+        </div>
+
+        <div className="flex items-center justify-end gap-3">
+          <span className="text-white font-game-fallback">SCORE:</span>
+          <span className="text-2xl text-game-neon-green font-bold font-game-fallback">
+            {currentPlayer?.score || 0}
+          </span>
+
+          {/* Show high score if available */}
+          {currentPlayer?.highScores &&
+          gameState.category &&
+          currentPlayer.highScores[gameState.category] ? (
+            <span className="text-sm text-white/70 font-game-fallback ml-2">
+              HIGH: {currentPlayer.highScores[gameState.category]}
+            </span>
+          ) : null}
         </div>
       </div>
 
@@ -602,7 +610,7 @@ const GameScreen = () => {
       <div className="flex-1 grid grid-rows-[1fr_auto_1fr] h-[calc(100vh-64px)]">
         {/* Top card (known term) */}
         <div className="flex items-center justify-center p-4">
-          <div className="w-full max-w-lg">
+          <div className="w-full max-w-lg" id="higher-card">
             <div
               className="w-full rounded-xl overflow-hidden shadow-xl relative h-[250px]"
               style={{
@@ -624,7 +632,7 @@ const GameScreen = () => {
                   <p className="text-sm text-white/70 font-game-fallback mb-1">
                     Monthly Search Volume
                   </p>
-                  <p className="text-xl font-bold text-game-neon-blue font-game-fallback">
+                  <p className="text-4xl font-bold text-white font-game-fallback font-display">
                     {gameState.knownTerm.volume.toLocaleString()}
                   </p>
                 </div>
@@ -639,7 +647,7 @@ const GameScreen = () => {
             <button
               onClick={() => handleGuess(false)}
               disabled={isGuessing}
-              className="px-8 py-3 bg-black/60 rounded-xl border-2 border-game-neon-blue/70 text-game-neon-blue font-bold font-game-fallback text-xl hover:bg-black/80 disabled:opacity-50 disabled:cursor-not-allowed flex-1 max-w-36 text-center"
+              className="px-8 py-3 bg-black/60 rounded-xl border-2 border-game-neon-red/70 text-game-neon-red font-bold font-game-fallback text-xl hover:bg-black/80 disabled:opacity-50 disabled:cursor-not-allowed flex-1 max-w-36 text-center"
             >
               LOWER
             </button>
@@ -656,7 +664,7 @@ const GameScreen = () => {
 
         {/* Bottom card (hidden term) */}
         <div className="flex items-center justify-center p-4">
-          <div className="w-full max-w-lg">
+          <div className="w-full max-w-lg" id="lower-card">
             <div
               className="w-full rounded-xl overflow-hidden shadow-xl relative h-[250px]"
               style={{
@@ -679,7 +687,7 @@ const GameScreen = () => {
                     <p className="text-sm text-white/70 font-game-fallback mb-1">
                       Monthly Search Volume
                     </p>
-                    <p className="text-xl font-bold text-game-neon-blue font-game-fallback">
+                    <p className="text-4xl font-bold text-white font-game-fallback font-display">
                       {gameState.hiddenTerm.volume.toLocaleString()}
                     </p>
                   </div>
@@ -744,7 +752,7 @@ const GameScreen = () => {
                     <p className="text-sm text-white/70 font-game-fallback">
                       Search Volume
                     </p>
-                    <p className="text-xl font-bold text-game-neon-blue font-game-fallback text-center">
+                    <p className="text-2xl font-bold text-white font-game-fallback font-display font-display-fallback text-center">
                       {gameState.knownTerm.volume.toLocaleString()}
                     </p>
                   </div>
@@ -807,39 +815,59 @@ const GameScreen = () => {
               <button
                 onClick={() => {
                   const currentCategory = gameState.category;
-                  
+
                   // Try Firebase first, then fall back to local restart
                   if (gameId) {
                     // Save high score first
-                    if (currentPlayer && currentPlayer.score > 0 && gameState.category) {
-                      console.log(`Saving final score before restart: ${currentPlayer.score} in ${gameState.category}`);
+                    if (
+                      currentPlayer &&
+                      currentPlayer.score > 0 &&
+                      gameState.category
+                    ) {
+                      console.log(
+                        `Saving final score before restart: ${currentPlayer.score} in ${gameState.category}`
+                      );
                       try {
                         // Call static method directly for reliability
-                        const mockUserUid = sessionStorage.getItem('mock_user_uid') || userUid;
+                        const mockUserUid =
+                          sessionStorage.getItem("mock_user_uid") || userUid;
                         const playerToUse = mockUserUid || userUid;
                         if (playerToUse) {
                           TrendGuesserService.updateHighScore(
                             playerToUse,
                             gameState.category,
                             currentPlayer.score
-                          ).catch(err => console.error("Error saving final high score for restart:", err));
+                          ).catch((err) =>
+                            console.error(
+                              "Error saving final high score for restart:",
+                              err
+                            )
+                          );
                         }
                       } catch (e) {
-                        console.error("Error saving final score before restart:", e);
+                        console.error(
+                          "Error saving final score before restart:",
+                          e
+                        );
                       }
                     }
-                    
+
                     // End game in Firebase and then restart with the same category
                     endGame()
                       .then(() => {
-                        console.log("Game ended successfully in Firebase, restarting...");
+                        console.log(
+                          "Game ended successfully in Firebase, restarting..."
+                        );
                         resetGame();
                         setTimeout(() => {
                           startGame(currentCategory);
                         }, 100);
                       })
-                      .catch(err => {
-                        console.warn("Error ending game in Firebase, falling back to local restart:", err);
+                      .catch((err) => {
+                        console.warn(
+                          "Error ending game in Firebase, falling back to local restart:",
+                          err
+                        );
                         resetGame();
                         setTimeout(() => {
                           startGame(currentCategory);
@@ -864,33 +892,53 @@ const GameScreen = () => {
                   // Try Firebase first, then fall back to local navigation
                   if (gameId) {
                     // Save high score first
-                    if (currentPlayer && currentPlayer.score > 0 && gameState.category) {
-                      console.log(`Saving final score before changing category: ${currentPlayer.score} in ${gameState.category}`);
+                    if (
+                      currentPlayer &&
+                      currentPlayer.score > 0 &&
+                      gameState.category
+                    ) {
+                      console.log(
+                        `Saving final score before changing category: ${currentPlayer.score} in ${gameState.category}`
+                      );
                       try {
                         // Call static method directly for reliability
-                        const mockUserUid = sessionStorage.getItem('mock_user_uid') || userUid;
+                        const mockUserUid =
+                          sessionStorage.getItem("mock_user_uid") || userUid;
                         const playerToUse = mockUserUid || userUid;
                         if (playerToUse) {
                           TrendGuesserService.updateHighScore(
                             playerToUse,
                             gameState.category,
                             currentPlayer.score
-                          ).catch(err => console.error("Error saving final high score before changing category:", err));
+                          ).catch((err) =>
+                            console.error(
+                              "Error saving final high score before changing category:",
+                              err
+                            )
+                          );
                         }
                       } catch (e) {
-                        console.error("Error saving final score before changing category:", e);
+                        console.error(
+                          "Error saving final score before changing category:",
+                          e
+                        );
                       }
                     }
-                    
+
                     // End game in Firebase and then navigate
                     endGame()
                       .then(() => {
-                        console.log("Game ended successfully in Firebase, navigating...");
+                        console.log(
+                          "Game ended successfully in Firebase, navigating..."
+                        );
                         resetGame();
                         router.push("/game");
                       })
-                      .catch(err => {
-                        console.warn("Error ending game in Firebase, falling back to local navigation:", err);
+                      .catch((err) => {
+                        console.warn(
+                          "Error ending game in Firebase, falling back to local navigation:",
+                          err
+                        );
                         resetGame();
                         router.push("/game");
                       });

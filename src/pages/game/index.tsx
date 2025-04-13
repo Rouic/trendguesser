@@ -10,6 +10,7 @@ import GameScreen from "@/components/GameScreen";
 import GameOver from "@/components/GameOver";
 import CustomTermInput from "@/components/CustomTermInput";
 import LoadingScreen from "@/components/LoadingScreen";
+import Link from "next/link";
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
@@ -497,9 +498,12 @@ const GamePage = () => {
 
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
-          <h1 className="text-4xl font-display text-game-neon-yellow tracking-wider mb-2 animate-glow font-display-fallback">
+          <Link
+            className="text-4xl font-display text-game-neon-yellow tracking-wider mb-2 animate-glow font-display-fallback cursor-pointer"
+            href="/"
+          >
             TREND GUESSER
-          </h1>
+          </Link>
           <p className="text-xl text-white mb-6 font-game-fallback">
             Choose a category to start
           </p>

@@ -263,6 +263,18 @@ function enhanceSearchTerm(term, category) {
                 return `${cleanedTerm} sports athletic competition`;
             case 'gaming':
                 return `${cleanedTerm} game gaming video-game`;
+            case 'famous landmarks':
+                return `${cleanedTerm} famous landmarks travel tourism`;
+            case 'british snacks':
+                return `${cleanedTerm} british snacks food culture`;
+            case 'fashion':
+                return `${cleanedTerm} fashion style clothing`;
+            case 'car brands':
+                return `${cleanedTerm} car brands automobile vehicle`;
+            case 'celebrities':
+                return `${cleanedTerm} celebrities famous people`;
+            case 'historical figureheads':
+                return `${cleanedTerm} historical figureheads history culture`;
             default:
                 return `${cleanedTerm} clear high-quality`;
         }
@@ -313,7 +325,13 @@ function determineGeneralCategory(term) {
         'science': ['science', 'research', 'study', 'scientist', 'space', 'astronomy', 'physics', 'biology', 'chemistry'],
         'health': ['health', 'medical', 'doctor', 'hospital', 'disease', 'medicine', 'wellness', 'fitness', 'diet'],
         'travel': ['travel', 'vacation', 'tourism', 'destination', 'hotel', 'flight', 'beach', 'resort'],
-        'gaming': ['game', 'gaming', 'playstation', 'xbox', 'nintendo', 'esports', 'fortnite', 'minecraft']
+        'gaming': ['game', 'gaming', 'playstation', 'xbox', 'nintendo', 'esports', 'fortnite', 'minecraft'],
+        'famous landmarks': ['landmark', 'monument', 'building', 'structure', 'historical', 'tourist attraction'],
+        'british snacks': ['snack', 'food', 'candy', 'chocolate', 'crisps', 'biscuits', 'sweets'],
+        'fashion': ['fashion', 'style', 'clothing', 'apparel', 'accessories', 'trends'],
+        'car brands': ['car', 'automobile', 'vehicle', 'motor', 'brand', 'model', 'engine'],
+        'celebrities': ['celebrity', 'famous', 'star', 'icon', 'public figure'],
+        'historical figureheads': ['historical', 'figurehead', 'leader', 'icon', 'legacy']
     };
     // Find matching category
     for (const [category, keywords] of Object.entries(categoryKeywords)) {
@@ -335,7 +353,13 @@ const BUILTIN_TERMS_POOL = {
     entertainment: ['Taylor Swift', 'Spider-Man movie', 'Beyonce', 'Star Wars', 'Stranger Things', 'Marvel', 'Harry Potter', 'Game of Thrones', 'Bridgerton', 'Squid Game', 'Black Mirror'],
     technology: ['iPhone 14', 'Tesla Model Y', 'Artificial Intelligence', 'Metaverse', 'Web3', 'Bitcoin price', 'Windows 11', 'SpaceX launch', 'Virtual Reality', 'NFT marketplace'],
     sports: ['World Cup', 'NBA Finals', 'Super Bowl', 'Olympics 2024', 'Wimbledon', 'UFC', 'Formula 1', 'Premier League', 'NFL draft', 'Champions League'],
-    gaming: ['Elden Ring', 'Fortnite Chapter 4', 'Minecraft 1.19', 'Call of Duty Modern Warfare 2', 'GTA 6', 'God of War Ragnarok', 'Hogwarts Legacy', 'Valorant', 'League of Legends', 'Roblox']
+    gaming: ['Elden Ring', 'Fortnite Chapter 4', 'Minecraft 1.19', 'Call of Duty Modern Warfare 2', 'GTA 6', 'God of War Ragnarok', 'Hogwarts Legacy', 'Valorant', 'League of Legends', 'Roblox'],
+    'british snacks': ['Cadbury chocolate', 'Walkers crisps', 'Jaffa Cakes', 'Digestives', 'Maltesers', 'Tunnock\'s Tea Cakes', 'Pork scratchings', 'Hula Hoops', 'Twiglets', 'Bounty'],
+    'famous landmarks': ['Eiffel Tower', 'Great Wall of China', 'Machu Picchu', 'Statue of Liberty', 'Taj Mahal', 'Colosseum', 'Big Ben', 'Sydney Opera House', 'Christ the Redeemer', 'Pyramids of Giza'],
+    'car brands': ['Toyota', 'Ford', 'BMW', 'Mercedes-Benz', 'Honda', 'Chevrolet', 'Volkswagen', 'Audi', 'Porsche', 'Lexus'],
+    'historical figureheads': ['Cleopatra', 'Alexander the Great', 'Julius Caesar', 'Marie Curie', 'Albert Einstein', 'Nelson Mandela', 'Mahatma Gandhi', 'Winston Churchill', 'Queen Elizabeth I', 'Martin Luther King Jr.'],
+    celebrities: ['Kim Kardashian', 'Dwayne Johnson', 'Selena Gomez', 'Kylie Jenner', 'Justin Bieber', 'Ariana Grande', 'Beyonce', 'Taylor Swift', 'Chris Hemsworth', 'Rihanna'],
+    fashion: ['Chanel', 'Gucci', 'Louis Vuitton', 'Prada', 'Versace', 'Dior', 'Burberry', 'Dolce & Gabbana', 'Armani', 'Yves Saint Laurent']
 };
 // Cache for search volumes to avoid excessive API calls
 const volumeCache = {};
@@ -480,30 +504,112 @@ async function getTermsForCategory(category) {
 // Generate new terms for a category using ChatGPT
 async function generateNewTermsForCategory(category, existingTerms, count = 5) {
     var _a;
-    try {
-        // Create a prompt to generate new terms
-        const prompt = `Generate ${count} new trending search terms for the category "${category}" that are distinct from these existing terms: ${existingTerms.join(', ')}. 
-    Provide only the terms as a comma-separated list without numbering or additional explanation.`;
-        const completion = await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo',
-            messages: [
-                { role: 'system', content: 'You are an assistant that generates trending search terms for different categories.' },
-                { role: 'user', content: prompt }
-            ]
-        });
-        const reply = ((_a = completion.choices[0].message) === null || _a === void 0 ? void 0 : _a.content) || '';
-        // Parse the comma-separated list from ChatGPT
-        const newTerms = reply
-            .split(',')
-            .map(term => term.trim())
-            .filter(term => term && !existingTerms.includes(term));
-        console.log(`Generated ${newTerms.length} new terms for category ${category}: ${newTerms.join(', ')}`);
-        return newTerms;
+    const maxRetries = 3;
+    let retryCount = 0;
+    while (retryCount < maxRetries) {
+        try {
+            // Create a prompt to generate new terms
+            const prompt = `Generate ${count} new trending search terms for the category "${category}" that are distinct from these existing terms: ${existingTerms.join(', ')}. 
+      Provide only the terms as a comma-separated list without numbering or additional explanation.`;
+            const completion = await openai.chat.completions.create({
+                model: 'gpt-3.5-turbo',
+                messages: [
+                    { role: 'system', content: 'You are an assistant that generates trending search terms for different categories.' },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.8, // Add some variability to responses
+                max_tokens: 150 // Limit response size
+            });
+            const reply = ((_a = completion.choices[0].message) === null || _a === void 0 ? void 0 : _a.content) || '';
+            // Parse the comma-separated list from ChatGPT
+            const newTerms = reply
+                .split(',')
+                .map(term => term.trim())
+                .filter(term => term && !existingTerms.includes(term));
+            console.log(`Generated ${newTerms.length} new terms for category ${category}: ${newTerms.join(', ')}`);
+            // If we got at least one term, return the results
+            if (newTerms.length > 0) {
+                return newTerms;
+            }
+            else {
+                // If no terms were generated, try again
+                console.log(`No new terms generated for ${category}, retrying...`);
+                retryCount++;
+            }
+        }
+        catch (error) {
+            console.error(`Error generating new terms for category ${category} (attempt ${retryCount + 1}):`, error);
+            retryCount++;
+            // Wait before retrying to avoid rate limits
+            await new Promise(resolve => setTimeout(resolve, 1000));
+        }
     }
-    catch (error) {
-        console.error(`Error generating new terms for category ${category}:`, error);
-        return [];
+    // If all retries fail, use a fallback approach
+    console.log(`Using fallback term generation for category ${category}`);
+    return generateFallbackTerms(category, existingTerms, count);
+}
+// Fallback function to generate terms when the API fails
+function generateFallbackTerms(category, existingTerms, count) {
+    // Basic templates for different categories
+    const templates = {
+        news: ['Latest on ', 'Breaking news ', 'Updates about ', 'Developments in '],
+        entertainment: ['New movie with ', 'TV show about ', 'Music by ', 'Celebrity '],
+        technology: ['New ', ' technology', ' app', ' device', ' software update'],
+        sports: [' tournament', ' championship', ' match', ' game', ' player'],
+        gaming: ['New game ', ' gameplay', ' release date', ' update for '],
+        'famous landmarks': ['Visiting ', 'History of ', 'Facts about ', 'Tours of '],
+        'british snacks': ['New flavor of ', 'Where to buy ', 'Recipe for ', 'Best '],
+        'fashion': ['2025 trends in ', ' style guide', ' designer', ' collection'],
+        'car brands': ['New model from ', ' review', ' vs ', ' price'],
+        'celebrities': [' interview', ' new project', ' scandal', ' relationship'],
+        'historical figureheads': ['Biography of ', 'Facts about ', 'Legacy of ', 'Documentary on ']
+    };
+    // Base terms for each category to combine with templates
+    const baseTerms = {
+        news: ['politics', 'economy', 'pandemic', 'climate change', 'conflict', 'elections'],
+        entertainment: ['Netflix', 'Hollywood', 'blockbuster', 'award show', 'streaming'],
+        technology: ['AI', 'smartphone', 'software', 'hardware', 'internet', 'virtual reality'],
+        sports: ['football', 'basketball', 'tennis', 'golf', 'Olympics', 'soccer'],
+        gaming: ['console', 'RPG', 'FPS', 'multiplayer', 'esports', 'PC gaming'],
+        'famous landmarks': ['tower', 'monument', 'museum', 'palace', 'castle', 'wonder'],
+        'british snacks': ['crisps', 'biscuits', 'chocolate', 'sweets', 'tea', 'savory'],
+        'fashion': ['dresses', 'shoes', 'accessories', 'sustainable', 'luxury', 'casual'],
+        'car brands': ['electric', 'luxury', 'SUV', 'sports car', 'sedan', 'hatchback'],
+        'celebrities': ['actor', 'singer', 'influencer', 'athlete', 'model', 'director'],
+        'historical figureheads': ['leader', 'royalty', 'president', 'inventor', 'scientist', 'revolutionary']
+    };
+    // Default fallback if the category isn't in our templates
+    const defaultTemplates = ['Top ', 'Best ', 'Popular ', 'Trending '];
+    const defaultBase = ['items', 'trends', 'topics', 'news', 'stories', 'products'];
+    const categoryTemplates = templates[category] || defaultTemplates;
+    const categoryBase = baseTerms[category] || defaultBase;
+    // Generate a seed based on the category for deterministic random selection
+    const seed = category.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    const rng = (n) => (seed * (n + 1)) % 10000 / 10000;
+    const newTerms = [];
+    const existingSet = new Set(existingTerms);
+    // Try to generate up to count*2 terms, keeping only unique ones until we have 'count' terms
+    for (let i = 0; i < count * 2 && newTerms.length < count; i++) {
+        const templateIndex = Math.floor(rng(i) * categoryTemplates.length);
+        const baseIndex = Math.floor(rng(i + 100) * categoryBase.length);
+        let term;
+        if (rng(i + 200) > 0.5) {
+            term = categoryTemplates[templateIndex] + categoryBase[baseIndex];
+        }
+        else {
+            term = categoryBase[baseIndex] + ' ' + category;
+        }
+        // Add year or specificity to some terms
+        if (rng(i + 300) > 0.7) {
+            term += ' 2025';
+        }
+        // Only add if it's unique and not in existing terms
+        if (!existingSet.has(term) && !newTerms.includes(term)) {
+            newTerms.push(term);
+        }
     }
+    console.log(`Generated ${newTerms.length} fallback terms for category ${category}`);
+    return newTerms;
 }
 // Function to add new terms to a category
 async function addNewTermsToCategory(category, newTerms) {
@@ -512,31 +618,40 @@ async function addNewTermsToCategory(category, newTerms) {
     try {
         // Get a reference to the category document
         const docRef = db.collection('wordList').doc(category);
-        // Use a transaction to safely update the terms array
-        await db.runTransaction(async (transaction) => {
-            const doc = await transaction.get(docRef);
-            if (!doc.exists) {
-                // If the document doesn't exist, create it
-                transaction.set(docRef, {
-                    category,
-                    terms: newTerms,
-                    lastUpdated: admin.firestore.FieldValue.serverTimestamp()
-                });
-            }
-            else {
-                // If it exists, add the new terms (avoiding duplicates)
-                const data = doc.data();
-                const existingTerms = new Set(data.terms);
-                const uniqueNewTerms = newTerms.filter(term => !existingTerms.has(term));
-                if (uniqueNewTerms.length > 0) {
-                    transaction.update(docRef, {
-                        terms: admin.firestore.FieldValue.arrayUnion(...uniqueNewTerms),
+        // Split terms into smaller batches to avoid transaction size limits
+        const batchSize = 10;
+        for (let i = 0; i < newTerms.length; i += batchSize) {
+            const termBatch = newTerms.slice(i, i + batchSize);
+            // Use a transaction to safely update the terms array
+            await db.runTransaction(async (transaction) => {
+                const doc = await transaction.get(docRef);
+                if (!doc.exists) {
+                    // If the document doesn't exist, create it
+                    transaction.set(docRef, {
+                        category,
+                        terms: termBatch,
                         lastUpdated: admin.firestore.FieldValue.serverTimestamp()
                     });
                 }
+                else {
+                    // If it exists, add the new terms (avoiding duplicates)
+                    const data = doc.data();
+                    const existingTerms = new Set(data.terms);
+                    const uniqueNewTerms = termBatch.filter(term => !existingTerms.has(term));
+                    if (uniqueNewTerms.length > 0) {
+                        transaction.update(docRef, {
+                            terms: admin.firestore.FieldValue.arrayUnion(...uniqueNewTerms),
+                            lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
+            });
+            // Add a small delay between batches to avoid potential rate limiting
+            if (i + batchSize < newTerms.length) {
+                await new Promise(resolve => setTimeout(resolve, 500));
             }
-        });
-        console.log(`Successfully added new terms to category ${category}`);
+        }
+        console.log(`Successfully added ${newTerms.length} new terms to category ${category}`);
     }
     catch (error) {
         console.error(`Error adding new terms to category ${category}:`, error);
@@ -580,48 +695,67 @@ exports.updateTrendingTerms = functions.pubsub
         // First, make sure the word list collection is initialized
         await initializeWordListIfNeeded();
         // Define the categories to update
-        const categories = ['news', 'entertainment', 'technology', 'sports', 'gaming'];
-        for (const category of categories) {
-            console.log(`Processing category: ${category}`);
-            // Step 1: Get the current terms for this category
-            const existingTerms = await getTermsForCategory(category);
-            console.log(`Category ${category} has ${existingTerms.length} existing terms`);
-            // Step 2: Check if we need to add more terms
-            if (existingTerms.length < MAX_TERMS_PER_CATEGORY) {
-                const termsToAdd = MAX_TERMS_PER_CATEGORY - existingTerms.length;
-                console.log(`Need to add ${termsToAdd} more terms to category ${category}`);
-                // Generate new terms
-                const newTerms = await generateNewTermsForCategory(category, existingTerms, Math.min(termsToAdd, 10) // Add up to 10 terms at a time
-                );
-                // Add the new terms to the category
-                await addNewTermsToCategory(category, newTerms);
-                // Update the existingTerms array with the new terms
-                existingTerms.push(...newTerms);
+        const categories = ['news', 'entertainment', 'technology', 'sports', 'gaming', 'famous landmarks', 'british snacks', 'fashion', 'car brands', 'celebrities', 'historical figureheads'];
+        // Process categories in smaller batches to avoid timeouts
+        const batchSize = 3; // Process 3 categories at a time
+        for (let i = 0; i < categories.length; i += batchSize) {
+            const categoryBatch = categories.slice(i, i + batchSize);
+            console.log(`Processing category batch: ${categoryBatch.join(', ')}`);
+            // Process each category in the batch concurrently
+            const promises = categoryBatch.map(async (category) => {
+                try {
+                    console.log(`Processing category: ${category}`);
+                    // Step 1: Get the current terms for this category
+                    const existingTerms = await getTermsForCategory(category);
+                    console.log(`Category ${category} has ${existingTerms.length} existing terms`);
+                    // Step 2: Check if we need to add more terms
+                    if (existingTerms.length < MAX_TERMS_PER_CATEGORY) {
+                        const termsToAdd = MAX_TERMS_PER_CATEGORY - existingTerms.length;
+                        console.log(`Need to add ${termsToAdd} more terms to category ${category}`);
+                        // Generate new terms (with a maximum of 10 at a time)
+                        const newTerms = await generateNewTermsForCategory(category, existingTerms, Math.min(termsToAdd, 10));
+                        // Add the new terms to the category
+                        await addNewTermsToCategory(category, newTerms);
+                        // Update the existingTerms array with the new terms
+                        existingTerms.push(...newTerms);
+                    }
+                    // Step 3: Select a subset of terms to update their search volumes
+                    const termsToUpdate = existingTerms
+                        .sort(() => 0.5 - Math.random()) // Shuffle the array
+                        .slice(0, Math.ceil(existingTerms.length * 0.2)); // Take ~20%
+                    console.log(`Updating search volumes for ${termsToUpdate.length} terms in category ${category}`);
+                    // Step 4: Update the search volumes for the selected terms
+                    await updateSearchVolumesForTerms(category, termsToUpdate);
+                    // Step 5: Add trending terms to the searchTerms collection
+                    const trendingTerms = await getTrendingTermsForCategory(category);
+                    const batch = db.batch();
+                    for (const termData of trendingTerms) {
+                        const termId = termData.term.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                        const docRef = db.collection('searchTerms').doc(termId);
+                        batch.set(docRef, {
+                            term: termData.term,
+                            volume: termData.volume,
+                            category,
+                            imageUrl: termData.imageUrl,
+                            timestamp: admin.firestore.FieldValue.serverTimestamp()
+                        }, { merge: true });
+                    }
+                    await batch.commit();
+                    console.log(`Added trending terms to searchTerms collection for category ${category}`);
+                    return { category, success: true };
+                }
+                catch (error) {
+                    console.error(`Error processing category ${category}:`, error);
+                    return { category, success: false, error };
+                }
+            });
+            // Wait for all categories in this batch to complete
+            const results = await Promise.all(promises);
+            console.log(`Batch results: ${results.map(r => `${r.category}: ${r.success}`).join(', ')}`);
+            // Add a small delay between batches to avoid rate limits
+            if (i + batchSize < categories.length) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
             }
-            // Step 3: Select a subset of terms to update their search volumes
-            // We'll update about 20% of the terms each time this function runs
-            const termsToUpdate = existingTerms
-                .sort(() => 0.5 - Math.random()) // Shuffle the array
-                .slice(0, Math.ceil(existingTerms.length * 0.2)); // Take ~20%
-            console.log(`Updating search volumes for ${termsToUpdate.length} terms in category ${category}`);
-            // Step 4: Update the search volumes for the selected terms
-            await updateSearchVolumesForTerms(category, termsToUpdate);
-            // Step 5: Add trending terms to the searchTerms collection
-            const trendingTerms = await getTrendingTermsForCategory(category);
-            const batch = db.batch();
-            for (const termData of trendingTerms) {
-                const termId = termData.term.toLowerCase().replace(/[^a-z0-9]/g, '-');
-                const docRef = db.collection('searchTerms').doc(termId);
-                batch.set(docRef, {
-                    term: termData.term,
-                    volume: termData.volume,
-                    category,
-                    imageUrl: termData.imageUrl,
-                    timestamp: admin.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-            }
-            await batch.commit();
-            console.log(`Added trending terms to searchTerms collection for category ${category}`);
         }
         return null;
     }

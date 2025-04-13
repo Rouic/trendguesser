@@ -137,6 +137,44 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect }) => {
     color: string;
   }[] = [
     {
+      id: "british snacks",
+      name: "British Snacks",
+      description: "Chips, crisps, and sweets",
+      color:
+        "border-game-neon-yellow text-game-neon-yellow shadow-neon-yellow-sm",
+    },
+    {
+      id: "famous landmarks",
+      name: "Famous Landmarks",
+      description: "Famous places & buildings",
+      color: "border-game-neon-purple text-game-neon-purple shadow-neon-purple-sm",
+    },
+    {
+      id: "fashion",
+      name: "Fashion",
+      description: "Trends & styles",
+      color: "border-game-neon-red text-game-neon-red shadow-neon-red-sm",
+    },
+    {
+      id: "car brands",
+      name: "Car Brands",
+      description: "Cars & vehicles",
+      color: "border-game-neon-blue text-game-neon-blue shadow-neon-blue-sm",
+    },
+    {
+      id: "celebrities",
+      name: "Celebrities",
+      description: "Famous people & influencers",
+      color: "border-game-neon-green text-game-neon-green shadow-neon-green-sm",
+
+    },
+    {
+      id: "historical figureheads",
+      name: "Historical Figureheads",
+      description: "Famous historical figures",
+      color: "border-game-neon-orange text-game-neon-orange shadow-neon-orange-sm",
+    },
+    {
       id: "gaming",
       name: "Gaming",
       description: "Video games & gaming",

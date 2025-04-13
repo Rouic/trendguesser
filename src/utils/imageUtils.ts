@@ -458,7 +458,13 @@ function determineGeneralCategory(term: string): string {
     'science': ['science', 'research', 'study', 'scientist', 'space', 'astronomy', 'physics', 'biology', 'chemistry'],
     'health': ['health', 'medical', 'doctor', 'hospital', 'disease', 'medicine', 'wellness', 'fitness', 'diet'],
     'travel': ['travel', 'vacation', 'tourism', 'destination', 'hotel', 'flight', 'beach', 'resort'],
-    'gaming': ['game', 'gaming', 'playstation', 'xbox', 'nintendo', 'esports', 'fortnite', 'minecraft']
+    'gaming': ['game', 'gaming', 'playstation', 'xbox', 'nintendo', 'esports', 'fortnite', 'minecraft'],
+    'british snacks': ['snack', 'crisps', 'chocolate', 'candy', 'sweets', 'biscuits', 'treats'],
+    'celebrities': ['celebrity', 'famous', 'star', 'icon', 'legend'],
+    'car brands': ['car', 'automobile', 'vehicle', 'brand', 'model'],
+    'historical figureheads': ['historical', 'figurehead', 'leader', 'icon', 'legend'],
+    'famous landmarks': ['landmark', 'monument', 'building', 'structure', 'site'],
+    'fashion': ['fashion', 'style', 'clothing', 'apparel', 'designer', 'trend']
   };
   
   // Find matching category
