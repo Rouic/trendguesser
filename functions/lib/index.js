@@ -198,7 +198,7 @@ const ImageConfig = {
             }
             catch (error) {
                 console.error('Fallback search also failed:', error);
-                return `https://via.placeholder.com/${width}x${height}?text=${encodeURIComponent(term)}`;
+                return `https://picsum.photos/seed/${encodeURIComponent(term)}/${width}/${height}`;
             }
         }
     }
@@ -240,7 +240,7 @@ async function getBackupFromCurated(term, width = 800, height = 600) {
     }
     catch (error) {
         console.error('Error fetching from curated collection:', error);
-        return `https://via.placeholder.com/${width}x${height}?text=${encodeURIComponent(term)}`;
+        return `https://picsum.photos/seed/${encodeURIComponent(term)}/${width}/${height}`;
     }
 }
 // Helper function: Enhance search term based on term and category
@@ -253,28 +253,22 @@ function enhanceSearchTerm(term, category) {
     // Add category-specific enhancements
     if (category) {
         switch (category.toLowerCase()) {
-            case 'news':
-                return `${cleanedTerm} news event current affairs journalism`;
-            case 'entertainment':
-                return `${cleanedTerm} entertainment celebrity media`;
             case 'technology':
                 return `${cleanedTerm} technology digital electronics`;
             case 'sports':
                 return `${cleanedTerm} sports athletic competition`;
-            case 'gaming':
-                return `${cleanedTerm} game gaming video-game`;
-            case 'famous landmarks':
+            case 'landmarks':
                 return `${cleanedTerm} famous landmarks travel tourism`;
-            case 'british snacks':
-                return `${cleanedTerm} british snacks food culture`;
+            case 'snacks':
+                return `${cleanedTerm} snacks food culture`;
             case 'fashion':
                 return `${cleanedTerm} fashion style clothing`;
-            case 'car brands':
+            case 'cars':
                 return `${cleanedTerm} car brands automobile vehicle`;
             case 'celebrities':
                 return `${cleanedTerm} celebrities famous people`;
-            case 'historical figureheads':
-                return `${cleanedTerm} historical figureheads history culture`;
+            case 'pets':
+                return `${cleanedTerm} pets animals cute`;
             default:
                 return `${cleanedTerm} clear high-quality`;
         }
@@ -318,20 +312,14 @@ function determineGeneralCategory(term) {
     // Map of keywords to categories
     const categoryKeywords = {
         'technology': ['tech', 'iphone', 'android', 'computer', 'software', 'hardware', 'digital', 'ai', 'artificial intelligence', 'app'],
-        'business': ['business', 'finance', 'economy', 'market', 'stock', 'company', 'startup', 'entrepreneur'],
-        'entertainment': ['movie', 'film', 'music', 'celebrity', 'actor', 'actress', 'hollywood', 'tv', 'television', 'star'],
         'sports': ['sport', 'football', 'soccer', 'basketball', 'tennis', 'baseball', 'golf', 'olympic', 'athlete'],
-        'politics': ['politics', 'government', 'election', 'president', 'congress', 'senate', 'democracy', 'law'],
-        'science': ['science', 'research', 'study', 'scientist', 'space', 'astronomy', 'physics', 'biology', 'chemistry'],
         'health': ['health', 'medical', 'doctor', 'hospital', 'disease', 'medicine', 'wellness', 'fitness', 'diet'],
-        'travel': ['travel', 'vacation', 'tourism', 'destination', 'hotel', 'flight', 'beach', 'resort'],
-        'gaming': ['game', 'gaming', 'playstation', 'xbox', 'nintendo', 'esports', 'fortnite', 'minecraft'],
-        'famous landmarks': ['landmark', 'monument', 'building', 'structure', 'historical', 'tourist attraction'],
-        'british snacks': ['snack', 'food', 'candy', 'chocolate', 'crisps', 'biscuits', 'sweets'],
+        'landmarks': ['landmark', 'monument', 'building', 'structure', 'historical', 'tourist attraction'],
+        'snacks': ['snack', 'food', 'candy', 'chocolate', 'crisps', 'biscuits', 'sweets'],
         'fashion': ['fashion', 'style', 'clothing', 'apparel', 'accessories', 'trends'],
-        'car brands': ['car', 'automobile', 'vehicle', 'motor', 'brand', 'model', 'engine'],
+        'cars': ['car', 'automobile', 'vehicle', 'motor', 'brand', 'model', 'engine'],
         'celebrities': ['celebrity', 'famous', 'star', 'icon', 'public figure'],
-        'historical figureheads': ['historical', 'figurehead', 'leader', 'icon', 'legacy']
+        'pets': ['pet', 'animal', 'dog', 'cat', 'fish', 'bird', 'reptile'],
     };
     // Find matching category
     for (const [category, keywords] of Object.entries(categoryKeywords)) {
@@ -349,15 +337,12 @@ const db = admin.firestore();
 const MAX_TERMS_PER_CATEGORY = 50;
 // Initial seed terms pool - will now be used to seed the Firestore collection
 const BUILTIN_TERMS_POOL = {
-    news: ['Ukraine conflict', 'COVID-19 updates', 'US elections', 'Climate change', 'Stock market news', 'Olympics', 'Stimulus package', 'Brexit', 'Middle East peace', 'Federal Reserve'],
-    entertainment: ['Taylor Swift', 'Spider-Man movie', 'Beyonce', 'Star Wars', 'Stranger Things', 'Marvel', 'Harry Potter', 'Game of Thrones', 'Bridgerton', 'Squid Game', 'Black Mirror'],
     technology: ['iPhone 14', 'Tesla Model Y', 'Artificial Intelligence', 'Metaverse', 'Web3', 'Bitcoin price', 'Windows 11', 'SpaceX launch', 'Virtual Reality', 'NFT marketplace'],
     sports: ['World Cup', 'NBA Finals', 'Super Bowl', 'Olympics 2024', 'Wimbledon', 'UFC', 'Formula 1', 'Premier League', 'NFL draft', 'Champions League'],
-    gaming: ['Elden Ring', 'Fortnite Chapter 4', 'Minecraft 1.19', 'Call of Duty Modern Warfare 2', 'GTA 6', 'God of War Ragnarok', 'Hogwarts Legacy', 'Valorant', 'League of Legends', 'Roblox'],
-    'british snacks': ['Cadbury chocolate', 'Walkers crisps', 'Jaffa Cakes', 'Digestives', 'Maltesers', 'Tunnock\'s Tea Cakes', 'Pork scratchings', 'Hula Hoops', 'Twiglets', 'Bounty'],
-    'famous landmarks': ['Eiffel Tower', 'Great Wall of China', 'Machu Picchu', 'Statue of Liberty', 'Taj Mahal', 'Colosseum', 'Big Ben', 'Sydney Opera House', 'Christ the Redeemer', 'Pyramids of Giza'],
-    'car brands': ['Toyota', 'Ford', 'BMW', 'Mercedes-Benz', 'Honda', 'Chevrolet', 'Volkswagen', 'Audi', 'Porsche', 'Lexus'],
-    'historical figureheads': ['Cleopatra', 'Alexander the Great', 'Julius Caesar', 'Marie Curie', 'Albert Einstein', 'Nelson Mandela', 'Mahatma Gandhi', 'Winston Churchill', 'Queen Elizabeth I', 'Martin Luther King Jr.'],
+    snacks: ['Cadbury chocolate', 'Walkers crisps', 'Jaffa Cakes', 'Digestives', 'Maltesers', 'Tunnock\'s Tea Cakes', 'Pork scratchings', 'Hula Hoops', 'Twiglets', 'Bounty'],
+    landmarks: ['Eiffel Tower', 'Great Wall of China', 'Machu Picchu', 'Statue of Liberty', 'Taj Mahal', 'Colosseum', 'Big Ben', 'Sydney Opera House', 'Christ the Redeemer', 'Pyramids of Giza'],
+    'cars': ['Toyota', 'Ford', 'BMW', 'Mercedes-Benz', 'Honda', 'Chevrolet', 'Volkswagen', 'Audi', 'Porsche', 'Lexus'],
+    'pets': ['Golden Retriever', 'Siamese Cat', 'Parrot', 'Turtle', 'Hamster', 'Guinea Pig', 'Betta Fish', 'Chinchilla', 'Bearded Dragon', 'Hedgehog'],
     celebrities: ['Kim Kardashian', 'Dwayne Johnson', 'Selena Gomez', 'Kylie Jenner', 'Justin Bieber', 'Ariana Grande', 'Beyonce', 'Taylor Swift', 'Chris Hemsworth', 'Rihanna'],
     fashion: ['Chanel', 'Gucci', 'Louis Vuitton', 'Prada', 'Versace', 'Dior', 'Burberry', 'Dolce & Gabbana', 'Armani', 'Yves Saint Laurent']
 };
@@ -407,7 +392,7 @@ async function getImageUrlWithCaching(term, category, width = 800, height = 600)
         catch (fallbackError) {
             console.error('Fallback image fetch also failed:', fallbackError);
             // Return a generic placeholder image as absolute last resort
-            return `https://via.placeholder.com/${width}x${height}?text=${encodeURIComponent(term)}`;
+            return `https://picsum.photos/seed/${encodeURIComponent(term)}/${width}/${height}`;
         }
     }
 }
@@ -455,34 +440,165 @@ exports.fetchSearchVolume = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('internal', 'Failed to fetch search volume data.');
     }
 });
+// Function to read CSV file, using try-catch to handle potential errors
+async function readCsvFile() {
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        // Try to find the CSV file relative to the current directory
+        const csvPath = path.join(__dirname, 'data.csv');
+        // Check if file exists
+        if (!fs.existsSync(csvPath)) {
+            console.log('CSV file not found at path:', csvPath);
+            return null;
+        }
+        // Read file contents
+        const data = fs.readFileSync(csvPath, 'utf8');
+        return data;
+    }
+    catch (error) {
+        console.error('Error reading CSV file:', error);
+        return null;
+    }
+}
+// Parse CSV data into structured format
+function parseCSV(csvContent) {
+    if (!csvContent)
+        return [];
+    const lines = csvContent.split('\n');
+    if (lines.length <= 1)
+        return []; // Header only or empty file
+    const result = [];
+    // Skip header (first line)
+    for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line)
+            continue;
+        const values = line.split(',');
+        if (values.length >= 3) {
+            result.push({
+                keyword: values[0].trim(),
+                category: values[1].trim().toLowerCase(),
+                volume: parseInt(values[2].trim(), 10) || 0
+            });
+        }
+    }
+    return result;
+}
+// Function to check if we should wait before the next update
+async function shouldWaitForNextUpdateCycle() {
+    var _a;
+    try {
+        const statusRef = db.collection('system').doc('seedingStatus');
+        const doc = await statusRef.get();
+        if (doc.exists) {
+            const status = doc.data();
+            const nextUpdateTime = ((_a = status === null || status === void 0 ? void 0 : status.nextUpdateTime) === null || _a === void 0 ? void 0 : _a.toMillis()) || 0;
+            if (nextUpdateTime > Date.now()) {
+                console.log('Waiting period active until:', new Date(nextUpdateTime));
+                return true;
+            }
+        }
+        return false;
+    }
+    catch (error) {
+        console.error('Error checking update cycle status:', error);
+        return false;
+    }
+}
 // Function to initialize the word list collection if it doesn't exist
 async function initializeWordListIfNeeded() {
     try {
+        // Check if we should wait before proceeding
+        if (await shouldWaitForNextUpdateCycle()) {
+            console.log('Skipping initialization as waiting period is active.');
+            return { initialized: false, waiting: true };
+        }
         // Check if the wordList collection exists and has documents
         const snapshot = await db.collection('wordList').limit(1).get();
         if (snapshot.empty) {
-            console.log('Word list collection is empty. Initializing from built-in terms...');
-            // Create a batch to add all categories
-            const batch = db.batch();
-            // Add each category as a document with its terms
-            for (const [category, terms] of Object.entries(BUILTIN_TERMS_POOL)) {
-                const docRef = db.collection('wordList').doc(category);
-                batch.set(docRef, {
-                    category,
-                    terms,
-                    lastUpdated: admin.firestore.FieldValue.serverTimestamp()
-                });
+            console.log('Word list collection is empty. Initializing from CSV...');
+            // Try to read and parse CSV file
+            const csvContent = await readCsvFile();
+            let seedFromCsv = false;
+            if (csvContent) {
+                const csvData = parseCSV(csvContent);
+                if (csvData.length > 0) {
+                    console.log(`Found ${csvData.length} entries in CSV. Seeding database...`);
+                    seedFromCsv = true;
+                    // Group by category
+                    const categorizedTerms = {};
+                    csvData.forEach(entry => {
+                        if (!categorizedTerms[entry.category]) {
+                            categorizedTerms[entry.category] = [];
+                        }
+                        categorizedTerms[entry.category].push(entry);
+                    });
+                    // Create a batch to add all categories and terms
+                    const batch = db.batch();
+                    // Add each category as a document with its terms
+                    for (const [category, entries] of Object.entries(categorizedTerms)) {
+                        const docRef = db.collection('wordList').doc(category);
+                        batch.set(docRef, {
+                            category,
+                            terms: entries.map(entry => entry.keyword),
+                            lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+                        });
+                        // Also add terms to searchTerms collection
+                        for (const entry of entries) {
+                            const termId = entry.keyword.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                            const termRef = db.collection('searchTerms').doc(termId);
+                            batch.set(termRef, {
+                                term: entry.keyword,
+                                volume: entry.volume,
+                                category,
+                                timestamp: admin.firestore.FieldValue.serverTimestamp()
+                            });
+                        }
+                    }
+                    // Set a status document to prevent immediate updates
+                    const statusRef = db.collection('system').doc('seedingStatus');
+                    batch.set(statusRef, {
+                        seededFromCsv: true,
+                        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+                        nextUpdateTime: admin.firestore.Timestamp.fromMillis(Date.now() + (6 * 60 * 60 * 1000) // 6 hours from now
+                        )
+                    });
+                    // Commit the batch
+                    await batch.commit();
+                    console.log('Database successfully seeded from CSV!');
+                    return { initialized: true, fromCsv: true };
+                }
             }
-            // Commit the batch
-            await batch.commit();
-            console.log('Word list initialized successfully!');
+            if (!seedFromCsv) {
+                console.log('No valid CSV data found. Using built-in terms instead.');
+                // Create a batch to add built-in terms
+                const batch = db.batch();
+                // Add each category as a document with its terms
+                for (const [category, terms] of Object.entries(BUILTIN_TERMS_POOL)) {
+                    const docRef = db.collection('wordList').doc(category);
+                    batch.set(docRef, {
+                        category,
+                        terms,
+                        lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+                    });
+                }
+                // Commit the batch
+                await batch.commit();
+                console.log('Word list initialized successfully with built-in terms!');
+                return { initialized: true, fromBuiltin: true };
+            }
+            // Return default value if CSV exists but has no valid entries
+            return { initialized: false, noValidData: true };
         }
         else {
             console.log('Word list collection already exists. Skipping initialization.');
+            return { initialized: false };
         }
     }
     catch (error) {
         console.error('Error initializing word list:', error);
+        return { initialized: false, error: error };
     }
 }
 // Function to get terms for a category from the wordList collection
@@ -552,31 +668,25 @@ async function generateNewTermsForCategory(category, existingTerms, count = 5) {
 function generateFallbackTerms(category, existingTerms, count) {
     // Basic templates for different categories
     const templates = {
-        news: ['Latest on ', 'Breaking news ', 'Updates about ', 'Developments in '],
-        entertainment: ['New movie with ', 'TV show about ', 'Music by ', 'Celebrity '],
         technology: ['New ', ' technology', ' app', ' device', ' software update'],
         sports: [' tournament', ' championship', ' match', ' game', ' player'],
-        gaming: ['New game ', ' gameplay', ' release date', ' update for '],
-        'famous landmarks': ['Visiting ', 'History of ', 'Facts about ', 'Tours of '],
-        'british snacks': ['New flavor of ', 'Where to buy ', 'Recipe for ', 'Best '],
+        'landmarks': ['Visiting ', 'History of ', 'Facts about ', 'Tours of '],
+        'snacks': ['New flavor of ', 'Where to buy ', 'Recipe for ', 'Best '],
         'fashion': ['2025 trends in ', ' style guide', ' designer', ' collection'],
-        'car brands': ['New model from ', ' review', ' vs ', ' price'],
+        'cars': ['New model from ', ' review', ' vs ', ' price'],
         'celebrities': [' interview', ' new project', ' scandal', ' relationship'],
-        'historical figureheads': ['Biography of ', 'Facts about ', 'Legacy of ', 'Documentary on ']
+        'pets': [' pet care', ' training tips', ' best breeds', ' pet products'],
     };
     // Base terms for each category to combine with templates
     const baseTerms = {
-        news: ['politics', 'economy', 'pandemic', 'climate change', 'conflict', 'elections'],
-        entertainment: ['Netflix', 'Hollywood', 'blockbuster', 'award show', 'streaming'],
         technology: ['AI', 'smartphone', 'software', 'hardware', 'internet', 'virtual reality'],
         sports: ['football', 'basketball', 'tennis', 'golf', 'Olympics', 'soccer'],
-        gaming: ['console', 'RPG', 'FPS', 'multiplayer', 'esports', 'PC gaming'],
-        'famous landmarks': ['tower', 'monument', 'museum', 'palace', 'castle', 'wonder'],
-        'british snacks': ['crisps', 'biscuits', 'chocolate', 'sweets', 'tea', 'savory'],
+        'landmarks': ['tower', 'monument', 'museum', 'palace', 'castle', 'wonder'],
+        'snacks': ['crisps', 'biscuits', 'chocolate', 'sweets', 'tea', 'savory'],
         'fashion': ['dresses', 'shoes', 'accessories', 'sustainable', 'luxury', 'casual'],
-        'car brands': ['electric', 'luxury', 'SUV', 'sports car', 'sedan', 'hatchback'],
+        'cars': ['electric', 'luxury', 'SUV', 'sports car', 'sedan', 'hatchback'],
         'celebrities': ['actor', 'singer', 'influencer', 'athlete', 'model', 'director'],
-        'historical figureheads': ['leader', 'royalty', 'president', 'inventor', 'scientist', 'revolutionary']
+        'pets': ['dog', 'cat', 'fish', 'bird', 'reptile', 'hamster'],
     };
     // Default fallback if the category isn't in our templates
     const defaultTemplates = ['Top ', 'Best ', 'Popular ', 'Trending '];
@@ -692,10 +802,20 @@ exports.updateTrendingTerms = functions.pubsub
     .timeZone('America/New_York')
     .onRun(async (context) => {
     try {
-        // First, make sure the word list collection is initialized
-        await initializeWordListIfNeeded();
+        // Check if we should wait before proceeding with updates
+        if (await shouldWaitForNextUpdateCycle()) {
+            console.log('Skipping scheduled update as waiting period is active after CSV seeding.');
+            return null;
+        }
+        // Make sure the word list collection is initialized
+        const initResult = await initializeWordListIfNeeded();
+        // If we just initialized with CSV data, skip this update cycle
+        if ((initResult === null || initResult === void 0 ? void 0 : initResult.initialized) && initResult.fromCsv) {
+            console.log('Database was just seeded with CSV data. Skipping this update cycle.');
+            return null;
+        }
         // Define the categories to update
-        const categories = ['news', 'entertainment', 'technology', 'sports', 'gaming', 'famous landmarks', 'british snacks', 'fashion', 'car brands', 'celebrities', 'historical figureheads'];
+        const categories = ['technology', 'sports', 'landmarks', 'snacks', 'fashion', 'cars', 'celebrities', 'pets'];
         // Process categories in smaller batches to avoid timeouts
         const batchSize = 3; // Process 3 categories at a time
         for (let i = 0; i < categories.length; i += batchSize) {

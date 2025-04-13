@@ -259,7 +259,7 @@ export const ImageConfig = {
         return await getBackupFromCurated(term, width, height);
       } catch (error) {
         console.error('Fallback search also failed:', error);
-        return `https://via.placeholder.com/${width}x${height}?text=${encodeURIComponent(term)}`;
+        return `https://picsum.photos/seed/${encodeURIComponent(term)}/${width}/${height}`
       }
     }
   }
@@ -339,7 +339,7 @@ export const getBackupFromCurated = async (term: string, width = 800, height = 6
     throw new Error('No curated images found');
   } catch (error) {
     console.error('Error fetching from curated collection:', error);
-    return `https://via.placeholder.com/${width}x${height}?text=${encodeURIComponent(term)}`;
+    return `https://picsum.photos/seed/${encodeURIComponent(term)}/${width}/${height}`
   }
 };
 
@@ -451,19 +451,12 @@ function determineGeneralCategory(term: string): string {
   // Map of keywords to categories
   const categoryKeywords: Record<string, string[]> = {
     'technology': ['tech', 'iphone', 'android', 'computer', 'software', 'hardware', 'digital', 'ai', 'artificial intelligence', 'app'],
-    'business': ['business', 'finance', 'economy', 'market', 'stock', 'company', 'startup', 'entrepreneur'],
-    'entertainment': ['movie', 'film', 'music', 'celebrity', 'actor', 'actress', 'hollywood', 'tv', 'television', 'star'],
     'sports': ['sport', 'football', 'soccer', 'basketball', 'tennis', 'baseball', 'golf', 'olympic', 'athlete'],
-    'politics': ['politics', 'government', 'election', 'president', 'congress', 'senate', 'democracy', 'law'],
-    'science': ['science', 'research', 'study', 'scientist', 'space', 'astronomy', 'physics', 'biology', 'chemistry'],
-    'health': ['health', 'medical', 'doctor', 'hospital', 'disease', 'medicine', 'wellness', 'fitness', 'diet'],
-    'travel': ['travel', 'vacation', 'tourism', 'destination', 'hotel', 'flight', 'beach', 'resort'],
-    'gaming': ['game', 'gaming', 'playstation', 'xbox', 'nintendo', 'esports', 'fortnite', 'minecraft'],
-    'british snacks': ['snack', 'crisps', 'chocolate', 'candy', 'sweets', 'biscuits', 'treats'],
+    'snacks': ['snack', 'crisps', 'chocolate', 'candy', 'sweets', 'biscuits', 'treats'],
     'celebrities': ['celebrity', 'famous', 'star', 'icon', 'legend'],
-    'car brands': ['car', 'automobile', 'vehicle', 'brand', 'model'],
-    'historical figureheads': ['historical', 'figurehead', 'leader', 'icon', 'legend'],
-    'famous landmarks': ['landmark', 'monument', 'building', 'structure', 'site'],
+    'cars': ['car', 'automobile', 'vehicle', 'brand', 'model'],
+    'pets': ['pet', 'dog', 'cat', 'animal', 'puppy', 'kitten', 'fish', 'bird'],
+    'landmarks': ['landmark', 'monument', 'building', 'structure', 'site'],
     'fashion': ['fashion', 'style', 'clothing', 'apparel', 'designer', 'trend']
   };
   

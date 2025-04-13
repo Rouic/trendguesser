@@ -137,14 +137,14 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect }) => {
     color: string;
   }[] = [
     {
-      id: "british snacks",
-      name: "British Snacks",
+      id: "snacks",
+      name: "Snacks",
       description: "Chips, crisps, and sweets",
       color:
         "border-game-neon-yellow text-game-neon-yellow shadow-neon-yellow-sm",
     },
     {
-      id: "famous landmarks",
+      id: "landmarks",
       name: "Famous Landmarks",
       description: "Famous places & buildings",
       color: "border-game-neon-purple text-game-neon-purple shadow-neon-purple-sm",
@@ -156,7 +156,7 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect }) => {
       color: "border-game-neon-red text-game-neon-red shadow-neon-red-sm",
     },
     {
-      id: "car brands",
+      id: "cars",
       name: "Car Brands",
       description: "Cars & vehicles",
       color: "border-game-neon-blue text-game-neon-blue shadow-neon-blue-sm",
@@ -169,16 +169,10 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect }) => {
 
     },
     {
-      id: "historical figureheads",
-      name: "Historical Figureheads",
-      description: "Famous historical figures",
-      color: "border-game-neon-orange text-game-neon-orange shadow-neon-orange-sm",
-    },
-    {
-      id: "gaming",
-      name: "Gaming",
-      description: "Video games & gaming",
-      color: "border-red-400 text-red-400 shadow-red-sm",
+      id: "pets",
+      name: "Pets",
+      description: "Cats, dogs, and more",
+      color: "border-game-neon-yellow text-game-neon-yellow shadow-neon-yellow-sm",
     },
     {
       id: "technology",
@@ -187,22 +181,10 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect }) => {
       color: "border-blue-400 text-blue-400 shadow-blue-sm",
     },
     {
-      id: "entertainment",
-      name: "Entertainment",
-      description: "Movies, music, & TV",
-      color: "border-pink-400 text-pink-400 shadow-pink-sm",
-    },
-    {
       id: "sports",
       name: "Sports",
       description: "Athletes & championships",
       color: "border-green-400 text-green-400 shadow-green-sm",
-    },
-    {
-      id: "news",
-      name: "News",
-      description: "Current events",
-      color: "border-orange-400 text-orange-400 shadow-orange-sm",
     },
     {
       id: "everything",
