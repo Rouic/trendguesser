@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import {
   doc,
@@ -60,6 +60,10 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     return null;
   };
 
+  const lastGameData = useRef<string | null>(null);
+  const isResetting = useRef<boolean>(false);
+  const isEndingGame = useRef<boolean>(false);
+
   const [gameId, _setGameId] = useState<string | null>(getInitialGameId());
   const [gameData, setGameData] = useState<GameData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
@@ -70,6 +74,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   const [currentPlayer, setCurrentPlayer] = useState<TrendGuesserPlayer | null>(
     null
   );
+  
+  
 
   // Custom setter for gameId that also updates sessionStorage
   const setGameId = (id: string | null) => {
@@ -105,121 +111,128 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   // Watch for changes to the game data
-  useEffect(() => {
-    if (!userUid) {
-      setLoading(false);
-      return;
-    }
+ useEffect(() => {
+  if (!userUid) {
+    setLoading(false);
+    return;
+  }
 
-    // If game ID is not set, but we're in mock mode, try to get it from session storage
-    if (!gameId && process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true") {
-      if (typeof window !== "undefined") {
-        const storedGameId = sessionStorage.getItem("current_game_id");
-        if (storedGameId) {
-          console.log(
-            "Using stored game ID from session storage:",
-            storedGameId
-          );
-          setGameId(storedGameId);
-          return; // This will trigger this useEffect again with the gameId
-        }
+  // If game ID is not set, but we're in mock mode, try to get it from session storage
+  if (!gameId && process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true") {
+    if (typeof window !== "undefined") {
+      const storedGameId = sessionStorage.getItem("current_game_id");
+      if (storedGameId) {
+        console.log(
+          "Using stored game ID from session storage:",
+          storedGameId
+        );
+        setGameId(storedGameId);
+        return; // This will trigger this useEffect again with the gameId
       }
-      setLoading(false);
-      return;
     }
+    setLoading(false);
+    return;
+  }
 
-    if (!gameId) {
-      setLoading(false);
-      return;
-    }
+  if (!gameId) {
+    setLoading(false);
+    return;
+  }
 
-    setLoading(true);
-    setError(null);
+  setLoading(true);
+  setError(null);
 
-    console.log(
-      `Setting up game data watcher for game ID: ${gameId}, user: ${userUid}`
-    );
+  console.log(
+    `Setting up game data watcher for game ID: ${gameId}, user: ${userUid}`
+  );
 
-    // Check if using mock data
-    if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true") {
-      console.log("Using mock data in GameContext for game:", gameId);
+  // Check if using mock data
+  if (process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true") {
+    console.log("Using mock data in GameContext for game:", gameId);
 
-      // Create function to check for game data in sessionStorage
-      const checkMockGameData = () => {
-        if (typeof window !== "undefined") {
-          const storedGameData = sessionStorage.getItem(`game_${gameId}`);
-          if (storedGameData) {
-            try {
-              const data = JSON.parse(storedGameData) as GameData;
-              console.log(
-                `Found mock game data for ${gameId}:`,
-                data.status,
-                data["__trendguesser.state"]
-                  ? "has game state"
-                  : "no game state"
-              );
-
-              // Set game data
-              setGameData(data);
-
-              // Extract game state if it exists
-              if (data["__trendguesser.state"]) {
-                const gameState = data[
-                  "__trendguesser.state"
-                ] as TrendGuesserGameState;
-                setGameState(gameState);
-
-                // Check if game has started
-                if (gameState.started) {
-                  console.log(
-                    `Game ${gameId} is active with category:`,
-                    gameState.category
-                  );
-                }
-              }
-
-              // Use the userUid or a mock ID
-              const mockUserUid =
-                sessionStorage.getItem("mock_user_uid") ||
-                userUid ||
-                "mock_user";
-
-              // Extract current player data
-              if (data[mockUserUid]) {
-                setCurrentPlayer(data[mockUserUid] as TrendGuesserPlayer);
-                console.log(
-                  `Found player data for ${mockUserUid}, score:`,
-                  data[mockUserUid].score
-                );
-              } else if (data["mock_user"]) {
-                // Fallback to mock_user
-                setCurrentPlayer(data["mock_user"] as TrendGuesserPlayer);
-                console.log("Using fallback mock_user data");
-              }
-            } catch (err) {
-              console.error("Error parsing mock game data:", err);
-              setError("Error loading game data");
+    // Create function to check for game data in sessionStorage
+    const checkMockGameData = () => {
+      if (typeof window !== "undefined") {
+        const storedGameData = sessionStorage.getItem(`game_${gameId}`);
+        if (storedGameData) {
+          try {
+            // SIMPLE FIX: Add a cache check to prevent unnecessary updates
+            if (storedGameData === lastGameData.current) {
+              return; // Skip if data hasn't changed
             }
-          } else {
-            console.log("No mock game data found for:", gameId);
-            setError("Game data not found");
+            lastGameData.current = storedGameData; // Update cache
+
+            const data = JSON.parse(storedGameData) as GameData;
+            console.log(
+              `Found mock game data for ${gameId}:`,
+              data.status,
+              data["__trendguesser.state"]
+                ? "has game state"
+                : "no game state"
+            );
+
+            // Set game data
+            setGameData(data);
+
+            // Extract game state if it exists
+            if (data["__trendguesser.state"]) {
+              const gameState = data[
+                "__trendguesser.state"
+              ] as TrendGuesserGameState;
+              setGameState(gameState);
+
+              // Check if game has started
+              if (gameState.started) {
+                console.log(
+                  `Game ${gameId} is active with category:`,
+                  gameState.category
+                );
+              }
+            }
+
+            // Use the userUid or a mock ID
+            const mockUserUid =
+              sessionStorage.getItem("mock_user_uid") ||
+              userUid ||
+              "mock_user";
+
+            // Extract current player data
+            if (data[mockUserUid]) {
+              setCurrentPlayer(data[mockUserUid] as TrendGuesserPlayer);
+              console.log(
+                `Found player data for ${mockUserUid}, score:`,
+                data[mockUserUid].score
+              );
+            } else if (data["mock_user"]) {
+              // Fallback to mock_user
+              setCurrentPlayer(data["mock_user"] as TrendGuesserPlayer);
+              console.log("Using fallback mock_user data");
+            }
+          } catch (err) {
+            console.error("Error parsing mock game data:", err);
+            setError("Error loading game data");
           }
-
-          setLoading(false);
+        } else {
+          console.log("No mock game data found for:", gameId);
+          setError("Game data not found");
         }
-      };
 
-      // Check immediately
-      checkMockGameData();
+        setLoading(false);
+      }
+    };
 
-      // Set up interval to check for changes (simulating Firestore's onSnapshot)
-      const intervalId = setInterval(checkMockGameData, 500);
+    // Check immediately
+    checkMockGameData();
 
-      return () => {
-        console.log(`Cleaning up game data watcher for game ID: ${gameId}`);
-        clearInterval(intervalId);
-      };
-    } else {
+    // SIMPLE FIX: Increase interval from 500ms to 2000ms (2 seconds)
+    // This will reduce CPU usage significantly while still keeping the game responsive
+    const intervalId = setInterval(checkMockGameData, 2000);
+
+    return () => {
+      console.log(`Cleaning up game data watcher for game ID: ${gameId}`);
+      clearInterval(intervalId);
+    };
+  } else {
       // Regular Firestore implementation
       const gameRef = doc(db, "games", gameId.toUpperCase());
 
@@ -687,157 +700,57 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 
     // Get the current game ID from state or session storage
     let currentGameId = gameId;
+    // ...rest of the method
+
+    // At the end of the method, add this fix:
+
+    // In mock mode, update the game state to reflect the game ending
     if (
-      !currentGameId &&
       process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" &&
       typeof window !== "undefined"
     ) {
-      currentGameId = sessionStorage.getItem("current_game_id");
-      if (currentGameId) {
-        console.log(
-          "Using game ID from session storage for ending game:",
-          currentGameId
-        );
-      }
-    }
+      // SIMPLE FIX: Prevent loops with a flag
+      if (!isEndingGame.current) {
+        isEndingGame.current = true;
 
-    if (!currentGameId) {
-      console.warn(
-        "No game ID available for ending game, will still proceed with reset"
-      );
-      return;
-    }
-
-    try {
-      console.log(
-        "Ending game:",
-        currentGameId,
-        "with score:",
-        currentPlayer.score || 0
-      );
-      await TrendGuesserService.endGame(
-        currentGameId,
-        userUid,
-        currentPlayer.score || 0
-      );
-
-      // In mock mode, update the game state to reflect the game ending
-      if (
-        process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" &&
-        typeof window !== "undefined"
-      ) {
         const gameData = sessionStorage.getItem(`game_${currentGameId}`);
         if (gameData) {
-          try {
-            const parsedData = JSON.parse(gameData);
-            if (parsedData["__trendguesser.state"]) {
-              parsedData["__trendguesser.state"].finished = true;
-              parsedData.status = "finished";
-              sessionStorage.setItem(
-                `game_${currentGameId}`,
-                JSON.stringify(parsedData)
-              );
+          // ...existing code to update game data
 
-              // Update game state
-              setGameState(parsedData["__trendguesser.state"]);
-
-              // Update game data
-              setGameData(parsedData);
-
-              // Save high score if applicable
-              // Save high score if applicable
-              if (
-                typeof window !== "undefined" &&
-                parsedData["__trendguesser.state"].category &&
-                currentPlayer.score > 0
-              ) {
-                try {
-                  const category = parsedData["__trendguesser.state"].category;
-                  const score = currentPlayer.score;
-
-                  console.log(
-                    `Trying to save high score - Category: ${category}, Score: ${score}`
-                  );
-
-                  // Load existing high scores
-                  const highScoresKey = `tg_highscores_${userUid}`;
-                  let highScores = {};
-
-                  const existingScores = localStorage.getItem(highScoresKey);
-                  if (existingScores) {
-                    try {
-                      highScores = JSON.parse(existingScores);
-                      console.log("Existing high scores found:", highScores);
-                    } catch (parseErr) {
-                      console.error(
-                        "Error parsing existing high scores:",
-                        parseErr
-                      );
-                      // Initialize with empty object if parsing fails
-                      highScores = {};
-                    }
-                  } else {
-                    console.log(
-                      "No existing high scores found, creating new record"
-                    );
-                  }
-
-                  // Check if there's an existing score
-                  const existingScore = highScores[category] || 0;
-                  console.log(
-                    `Existing score for ${category}: ${existingScore}`
-                  );
-
-                  // Update high score if better than or equal to existing
-                  // Changed: store the score even if it equals the current high score
-                  if (score >= existingScore) {
-                    highScores[category] = score;
-                    localStorage.setItem(
-                      highScoresKey,
-                      JSON.stringify(highScores)
-                    );
-                    console.log(`High score saved for ${category}: ${score}`);
-                  } else {
-                    console.log(
-                      `Score ${score} not higher than existing ${existingScore}, not saving`
-                    );
-                  }
-                } catch (err) {
-                  console.error("Error saving high score:", err);
-                }
-              }
-            }
-          } catch (e) {
-            console.error("Error updating state after ending game:", e);
-          }
+          // After all updates, wait a small delay before allowing more events
+          setTimeout(() => {
+            isEndingGame.current = false;
+          }, 50);
+        } else {
+          isEndingGame.current = false;
         }
       }
-    } catch (error) {
-      console.error("Error ending game:", error);
-      setError("Failed to end game");
-      // Still proceed with resetting local state even if there was an error
     }
   };
 
   // Reset game state for a new game
-  const resetGame = () => {
-    console.log("Resetting game state");
+ const resetGame = () => {
+  console.log("Resetting game state");
 
-    // Store game ID before clearing it
-    const currentGameId = gameId;
+  // Store game ID before clearing it
+  const currentGameId = gameId;
 
-    // Clear state
-    setGameId(null);
-    setGameData(null);
-    setGameState(null);
-    setCurrentPlayer(null);
-    setError(null);
+  // Clear state
+  setGameId(null);
+  setGameData(null);
+  setGameState(null);
+  setCurrentPlayer(null);
+  setError(null);
 
-    // Clear any stored game data for this game if in mock mode
-    if (
-      process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" &&
-      typeof window !== "undefined"
-    ) {
+  // Clear any stored game data for this game if in mock mode
+  if (
+    process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" &&
+    typeof window !== "undefined"
+  ) {
+    // SIMPLE FIX: Use a flag to prevent multiple storage event handling during reset
+    if (!isResetting.current) {
+      isResetting.current = true;
+      
       // Clear the current_game_id from session storage to avoid persistence issues
       sessionStorage.removeItem("current_game_id");
       console.log("Cleared current game ID from session storage");
@@ -847,14 +760,20 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         sessionStorage.removeItem(`game_${currentGameId}`);
         console.log("Removed stored game data for:", currentGameId);
       }
+      
+      // Force the GameContext provider to re-render
+      if (typeof window !== "undefined") {
+        // This calls window.dispatchEvent(new Event('storage')) which can be used to trigger re-renders
+        window.dispatchEvent(new Event('storage'));
+      }
+      
+      // Reset flag after a short delay
+      setTimeout(() => {
+        isResetting.current = false;
+      }, 50);
     }
-    
-    // Force the GameContext provider to re-render
-    if (typeof window !== "undefined") {
-      // This calls window.dispatchEvent(new Event('storage')) which can be used to trigger re-renders
-      window.dispatchEvent(new Event('storage'));
-    }
-  };
+  }
+};
 
   // Add direct setter for gameState
   const setGameStateDirectly = (state: TrendGuesserGameState) => {

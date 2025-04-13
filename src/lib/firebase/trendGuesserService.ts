@@ -31,6 +31,7 @@ console.log(`[TrendGuesserService] NEXT_PUBLIC_USE_MOCK_DATA: ${process.env.NEXT
 
 export class TrendGuesserService {
   // Start a new game with selected category
+  static isProcessingGuess: boolean = false;
   static async startGame(gameId: string, category: SearchCategory, customTerm?: string): Promise<TrendGuesserGameState | null> {
     try {
       console.log(`TrendGuesserService.startGame: Starting game ${gameId} with category ${category}`);
@@ -212,6 +213,15 @@ export class TrendGuesserService {
   
 static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Promise<boolean> {
   try {
+    // SIMPLE FIX: Add reentrancy check to prevent multiple simultaneous processing
+    if (TrendGuesserService.isProcessingGuess) {
+      console.log('[TrendGuesserService.makeGuess] Already processing a guess, skipping');
+      return false;
+    }
+    
+    // Set the flag to prevent reentrancy
+    TrendGuesserService.isProcessingGuess = true;
+    
     // Handle mock mode
     if (USE_MOCK_DATA) {
       console.log('[TrendGuesserService.makeGuess] Starting with:', { gameId, playerUid, isHigher });
@@ -228,6 +238,7 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
         const storedGameData = sessionStorage.getItem(`game_${gameId}`);
         if (!storedGameData) {
           console.error('[TrendGuesserService.makeGuess] No game data found for ID:', gameId);
+          TrendGuesserService.isProcessingGuess = false; // Clear flag before throwing
           throw new Error('No active game found');
         }
         
@@ -238,6 +249,7 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
           console.log('[TrendGuesserService.makeGuess] Game data loaded, status:', gameData.status);
         } catch (e) {
           console.error('[TrendGuesserService.makeGuess] Error parsing game data:', e);
+          TrendGuesserService.isProcessingGuess = false; // Clear flag before throwing
           throw new Error('Invalid game data format');
         }
         
@@ -245,6 +257,7 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
         const gameState = JSON.parse(JSON.stringify(gameData['__trendguesser.state']));
         if (!gameState) {
           console.error('[TrendGuesserService.makeGuess] No game state found in data');
+          TrendGuesserService.isProcessingGuess = false; // Clear flag before throwing
           throw new Error('Game state not found');
         }
         
@@ -429,6 +442,9 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
           sessionStorage.setItem(`game_${gameId}`, JSON.stringify(updatedGameData));
           console.log('[TrendGuesserService.makeGuess] Saved updated game data to session storage');
           
+          // Clear processing flag before returning
+          TrendGuesserService.isProcessingGuess = false;
+          
           // Return success
           return true;
         } else {
@@ -447,10 +463,16 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
           sessionStorage.setItem(`game_${gameId}`, JSON.stringify(updatedGameData));
           console.log('[TrendGuesserService.makeGuess] Saved game over state to session storage');
           
+          // Clear processing flag before returning
+          TrendGuesserService.isProcessingGuess = false;
+          
           // Return failure
           return false;
         }
       }
+      
+      // Clear processing flag before returning fallback
+      TrendGuesserService.isProcessingGuess = false;
       
       // Fallback if no session storage (shouldn't happen)
       return false;
@@ -463,6 +485,7 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
     const gameDoc = await getDoc(gameRef);
     
     if (!gameDoc.exists()) {
+      TrendGuesserService.isProcessingGuess = false; // Clear flag before throwing
       throw new Error('Game does not exist');
     }
     
@@ -497,6 +520,9 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
     if (!hasNewState && !hasOldState) {
       console.error('[TrendGuesserService.makeGuess] No game state found in document - will report error and let UI handle it');
       console.log('[TrendGuesserService.makeGuess] Document data:', gameData);
+      
+      // Clear flag before throwing
+      TrendGuesserService.isProcessingGuess = false;
       
       // Don't create default state - instead throw a clear error that the UI can handle with client-side state
       throw new Error('Game state not found in Firebase - UI will handle this with local state');
@@ -781,6 +807,8 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
         }
       }
       
+      // Clear processing flag before returning
+      TrendGuesserService.isProcessingGuess = false;
       return true;
     } else {
       // Incorrect guess - game over
@@ -809,10 +837,14 @@ static async makeGuess(gameId: string, playerUid: string, isHigher: boolean): Pr
       
       console.log('[TrendGuesserService.makeGuess] Firestore - Game over, incorrect guess');
       
+      // Clear processing flag before returning
+      TrendGuesserService.isProcessingGuess = false;
       return false;
     }
     
   } catch (error) {
+    // SIMPLE FIX: Always clear the flag on error
+    TrendGuesserService.isProcessingGuess = false;
     console.error('[TrendGuesserService.makeGuess] Error:', error);
     throw error;
   }
