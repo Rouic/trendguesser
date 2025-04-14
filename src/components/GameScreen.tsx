@@ -43,7 +43,6 @@ const GameScreen = () => {
 
   const [isInTransition, setIsInTransition] = useState(false);
 
-
   // Display any errors from the game context
   useEffect(() => {
     if (gameError) {
@@ -91,7 +90,6 @@ const GameScreen = () => {
 
   // Attempt to recover from missing game state
   useEffect(() => {
-
     if (!gameState && !recoveryAttempted) {
       setRecoveryAttempted(true);
 
@@ -310,7 +308,7 @@ const GameScreen = () => {
 
          console.log("[handleGuess] Starting transition to next round");
 
-          setIsInTransition(true);
+         setIsInTransition(true);
 
          // Begin fadeout animation
          setIsTransitioning(true);
@@ -380,149 +378,149 @@ const GameScreen = () => {
      setLastGuessCorrect(null);
      setIsTransitioning(false);
    }
-
-   // Helper function to prepare the next round state safely
-   function prepareNextRoundState() {
-     // Create deep copy of current state to avoid reference issues
-     const updatedState = JSON.parse(JSON.stringify(gameState));
-
-     // Increment round counter
-     updatedState.currentRound = (updatedState.currentRound || 1) + 1;
-
-     // CRITICAL FIX: We must PRESERVE the current category
-     const originalCategory = gameState.category;
-     updatedState.category = originalCategory;
-
-     // First, rotate terms LOCALLY (don't rely solely on Firebase)
-     // Move hidden term to known term position
-     updatedState.knownTerm = JSON.parse(JSON.stringify(gameState.hiddenTerm));
-
-     // Only try to get next term if we have terms available
-     if (
-       updatedState.terms &&
-       Array.isArray(updatedState.terms) &&
-       updatedState.terms.length > 0
-     ) {
-       // Get next term from terms array
-       updatedState.hiddenTerm = JSON.parse(
-         JSON.stringify(updatedState.terms[0])
-       );
-       updatedState.terms = updatedState.terms.slice(1);
-
-       // Update used terms list
-       updatedState.usedTerms = Array.isArray(updatedState.usedTerms)
-         ? [...updatedState.usedTerms, updatedState.hiddenTerm.id]
-         : [updatedState.knownTerm.id, updatedState.hiddenTerm.id];
-     } else {
-       // No terms left - we need to create a fallback term in the SAME category
-       console.log(
-         "[handleGuess] No more terms available, creating fallback term in category:",
-         originalCategory
-       );
-
-       updatedState.hiddenTerm = {
-         id: `fallback-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-         term: generateTermName(originalCategory),
-         volume: generateRandomVolume(updatedState.knownTerm.volume),
-         category: originalCategory,
-         imageUrl: `https://picsum.photos/seed/${originalCategory}-${Date.now()}/800/600`,
-       };
-
-       // Also ensure we have a terms array even if empty
-       updatedState.terms = [];
-       updatedState.usedTerms = updatedState.usedTerms || [];
-       updatedState.usedTerms.push(updatedState.hiddenTerm.id);
-     }
-
-     console.log("[handleGuess] Prepared next round state:", {
-       category: updatedState.category,
-       round: updatedState.currentRound,
-       knownTerm: updatedState.knownTerm.term,
-       hiddenTerm: updatedState.hiddenTerm.term,
-     });
-
-     return updatedState;
-   }
-
-   // Helper to generate a term name based on category
-   function generateTermName(category: string): string {
-     const categoryTerms = {
-       snacks: [
-         "Pretzels",
-         "Potato Chips",
-         "Chocolate Bar",
-         "Cheese Puffs",
-         "Trail Mix",
-         "Popcorn",
-         "Cookies",
-       ],
-       technology: [
-         "Smartphone",
-         "Smart Watch",
-         "Tablet",
-         "Laptop",
-         "Drone",
-         "Gaming Console",
-         "Bluetooth Speaker",
-       ],
-       sports: [
-         "Soccer Ball",
-         "Tennis Racket",
-         "Golf Clubs",
-         "Basketball",
-         "Football Helmet",
-         "Running Shoes",
-       ],
-       entertainment: [
-         "Movie Ticket",
-         "Streaming Service",
-         "Concert Ticket",
-         "Video Game",
-         "Board Game",
-       ],
-       landmarks: [
-         "Eiffel Tower",
-         "Statue of Liberty",
-         "Great Wall",
-         "Colosseum",
-         "Taj Mahal",
-         "Big Ben",
-       ],
-       fashion: [
-         "Designer Bag",
-         "Running Shoes",
-         "Dress Shirt",
-         "Jeans",
-         "Sunglasses",
-         "Watch",
-         "Sweater",
-       ],
-     };
-
-     // Get terms for this category or use generic terms
-     const terms = categoryTerms[category as keyof typeof categoryTerms] || [
-       "Product",
-       "Item",
-       "Brand",
-       "Service",
-     ];
-
-     // Pick a random term from the list
-     return terms[Math.floor(Math.random() * terms.length)];
-   }
-
-   // Helper to generate a realistic volume compared to the known term
-   function generateRandomVolume(knownVolume: number): number {
-     // Generate a volume that's somewhat realistic compared to the known term
-     // Either higher or lower by a reasonable margin (20%-200%)
-     const multiplier =
-       Math.random() < 0.5
-         ? 0.2 + Math.random() * 0.8 // Lower: 20%-100% of known volume
-         : 1 + Math.random(); // Higher: 100%-200% of known volume
-
-     return Math.floor(knownVolume * multiplier);
-   }
  };
+
+  // Helper function to prepare the next round state safely
+  function prepareNextRoundState() {
+    // Create deep copy of current state to avoid reference issues
+    const updatedState = JSON.parse(JSON.stringify(gameState));
+
+    // Increment round counter
+    updatedState.currentRound = (updatedState.currentRound || 1) + 1;
+
+    // CRITICAL FIX: We must PRESERVE the current category
+    const originalCategory = gameState.category;
+    updatedState.category = originalCategory;
+
+    // First, rotate terms LOCALLY (don't rely solely on Firebase)
+    // Move hidden term to known term position
+    updatedState.knownTerm = JSON.parse(JSON.stringify(gameState.hiddenTerm));
+
+    // Only try to get next term if we have terms available
+    if (
+      updatedState.terms &&
+      Array.isArray(updatedState.terms) &&
+      updatedState.terms.length > 0
+    ) {
+      // Get next term from terms array
+      updatedState.hiddenTerm = JSON.parse(
+        JSON.stringify(updatedState.terms[0])
+      );
+      updatedState.terms = updatedState.terms.slice(1);
+
+      // Update used terms list
+      updatedState.usedTerms = Array.isArray(updatedState.usedTerms)
+        ? [...updatedState.usedTerms, updatedState.hiddenTerm.id]
+        : [updatedState.knownTerm.id, updatedState.hiddenTerm.id];
+    } else {
+      // No terms left - we need to create a fallback term in the SAME category
+      console.log(
+        "[handleGuess] No more terms available, creating fallback term in category:",
+        originalCategory
+      );
+
+      updatedState.hiddenTerm = {
+        id: `fallback-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        term: generateTermName(originalCategory),
+        volume: generateRandomVolume(updatedState.knownTerm.volume),
+        category: originalCategory,
+        imageUrl: `https://picsum.photos/seed/${originalCategory}-${Date.now()}/800/600`,
+      };
+
+      // Also ensure we have a terms array even if empty
+      updatedState.terms = [];
+      updatedState.usedTerms = updatedState.usedTerms || [];
+      updatedState.usedTerms.push(updatedState.hiddenTerm.id);
+    }
+
+    console.log("[handleGuess] Prepared next round state:", {
+      category: updatedState.category,
+      round: updatedState.currentRound,
+      knownTerm: updatedState.knownTerm.term,
+      hiddenTerm: updatedState.hiddenTerm.term,
+    });
+
+    return updatedState;
+  }
+
+  // Helper to generate a term name based on category
+  function generateTermName(category: string): string {
+    const categoryTerms = {
+      snacks: [
+        "Pretzels",
+        "Potato Chips",
+        "Chocolate Bar",
+        "Cheese Puffs",
+        "Trail Mix",
+        "Popcorn",
+        "Cookies",
+      ],
+      technology: [
+        "Smartphone",
+        "Smart Watch",
+        "Tablet",
+        "Laptop",
+        "Drone",
+        "Gaming Console",
+        "Bluetooth Speaker",
+      ],
+      sports: [
+        "Soccer Ball",
+        "Tennis Racket",
+        "Golf Clubs",
+        "Basketball",
+        "Football Helmet",
+        "Running Shoes",
+      ],
+      entertainment: [
+        "Movie Ticket",
+        "Streaming Service",
+        "Concert Ticket",
+        "Video Game",
+        "Board Game",
+      ],
+      landmarks: [
+        "Eiffel Tower",
+        "Statue of Liberty",
+        "Great Wall",
+        "Colosseum",
+        "Taj Mahal",
+        "Big Ben",
+      ],
+      fashion: [
+        "Designer Bag",
+        "Running Shoes",
+        "Dress Shirt",
+        "Jeans",
+        "Sunglasses",
+        "Watch",
+        "Sweater",
+      ],
+    };
+
+    // Get terms for this category or use generic terms
+    const terms = categoryTerms[category as keyof typeof categoryTerms] || [
+      "Product",
+      "Item",
+      "Brand",
+      "Service",
+    ];
+
+    // Pick a random term from the list
+    return terms[Math.floor(Math.random() * terms.length)];
+  }
+
+  // Helper to generate a realistic volume compared to the known term
+  function generateRandomVolume(knownVolume: number): number {
+    // Generate a volume that's somewhat realistic compared to the known term
+    // Either higher or lower by a reasonable margin (20%-200%)
+    const multiplier =
+      Math.random() < 0.5
+        ? 0.2 + Math.random() * 0.8 // Lower: 20%-100% of known volume
+        : 1 + Math.random(); // Higher: 100%-200% of known volume
+
+    return Math.floor(knownVolume * multiplier);
+  }
 
   // Function to handle retry when an error occurs
   const handleRetry = useCallback(() => {
