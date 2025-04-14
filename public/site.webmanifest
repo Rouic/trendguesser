@@ -1,7 +1,7 @@
 {
-  "name": "Pyramid.Ninja",
-  "short_name": "Pyramid.Ninja",
-  "description": "A digital version of the popular drinking game Pyramid",
+  "name": "Trend Guesser",
+  "short_name": "Trend Guesser",
+  "description": "A game where you guess the trend based on a given image.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1b084e",

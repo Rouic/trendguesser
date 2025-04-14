@@ -80,7 +80,7 @@ export interface GameData extends DocumentData {
   id: string;
   createdAt: Timestamp | FieldValue;
   createdBy: string;
-  gameType: 'trendguesser' | 'pyramid' | 'yes';
+  gameType: 'trendguesser';
   status: 'waiting' | 'active' | 'finished' | 'inactive';
   [playerUid: string]: any;
   '__trendguesser.state'?: TrendGuesserGameState;

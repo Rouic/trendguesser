@@ -31,7 +31,7 @@ const PrivacyPage = () => {
         <title>Privacy Policy - Trend Guesser</title>
         <meta
           name="description"
-          content="Privacy policy for Trend Guesser, the digital card drinking game"
+          content="Privacy policy for Trend Guesser, the higher or lower game with trending search terms."
         />
       </Head>
 
@@ -89,7 +89,7 @@ const PrivacyPage = () => {
               <p className="mb-4">
                 Welcome to Trend Guesser! This Privacy Policy explains how we
                 collect, use, disclose, and safeguard your information when you
-                use our digital card drinking game application.
+                use our digital game.
               </p>
               <p>
                 We respect your privacy and are committed to protecting your
@@ -416,24 +416,6 @@ const PrivacyPage = () => {
                 security. Internet transmission is never 100% secure, and we
                 cannot guarantee the security of information transmitted through
                 our application.
-              </p>
-            </div>
-
-            {/* Children's Privacy section */}
-            <div className="bg-black/30 backdrop-blur-sm p-6 rounded-xl border border-game-neon-red/20 transform rotate-0.5 shadow-neon-red-sm">
-              <h3 className="text-xl sm:text-2xl text-game-neon-red font-game-fallback mb-4">
-                CHILDREN&apos;S PRIVACY
-              </h3>
-              <p className="mb-4">
-                Trend Guesser is a drinking game application and is not intended
-                for children under the legal drinking age in their respective
-                jurisdictions. We do not knowingly collect personal information
-                from children under the legal drinking age.
-              </p>
-              <p>
-                If we discover that we have collected personal information from
-                a child under the legal drinking age, we will promptly delete
-                that information.
               </p>
             </div>
 

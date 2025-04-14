@@ -45,7 +45,7 @@ const Footer: React.FC = () => {
 
           {/* Copyright */}
           <Link
-            href="https://github.com/Rouic/pyramid.ninja"
+            href="https://github.com/Rouic/trendguesser"
             target="_blank"
             rel="noreferrer"
             className=" text-xs mt-4 text-game-neon-yellow/50 font-display-fallback hover:text-game-neon-yellow transition duration-200"

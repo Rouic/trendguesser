@@ -6,7 +6,7 @@ Allow: /
 Disallow: /game/
 
 # Sitemap location - Primary sitemap
-Sitemap: https://pyramid.ninja/sitemap.xml
+Sitemap: https://trendguesser.com/sitemap.xml
 
 # Dynamic sitemap API endpoint
-Sitemap: https://pyramid.ninja/api/sitemap
+Sitemap: https://trendguesser.com/api/sitemap

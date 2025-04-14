@@ -468,12 +468,6 @@ body {
   }
 }
 
-/* Host-specific styling */
-.host-view .pyramid-container {
-  height: 500px;
-  padding: 1.5rem;
-}
-
 /* Landscape orientation fixes for mobile */
 @media (max-height: 500px) and (orientation: landscape) {
   .player-controls {

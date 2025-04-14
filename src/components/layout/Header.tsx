@@ -22,11 +22,11 @@ const Header: React.FC = () => {
         <Link href="/" className="flex items-center">
           <img
             src="/images/icon.png"
-            alt="Pyramid.Ninja logo"
+            alt="Trend Guesser logo"
             className="h-8 mr-3"
           />
           <span className="text-white text-xl font-display tracking-wider animate-glow font-display-fallback">
-            PYRAMID.NINJA
+           TREND GUESSER
           </span>
         </Link>
 

@@ -16,8 +16,8 @@ const Layout: React.FC<LayoutProps> = ({
   isGameLayout = false
 }) => {
   const fullTitle = pageTitle
-    ? `Pyramid.Ninja | ${pageTitle}`
-    : "Pyramid.Ninja - Online version of the drinking card game";
+    ? `Trend Guesser | ${pageTitle}`
+    : "Trend Guesser - Higher or Lower Search Trending Game";
 
   return (
     <>
