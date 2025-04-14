@@ -1,23 +1,12 @@
 // src/types/index.ts
-import { User } from 'firebase/auth';
-import { DocumentData, Timestamp, FieldValue } from 'firebase/firestore';
 
 // Auth Context Type
 export interface AuthContextType {
-  user: User | null;
+  user: { uid: string; isAnonymous: boolean } | null;
   userUid: string | null;
   loading: boolean;
   signInAnonymously: () => Promise<void>;
   signOut: () => Promise<void>;
-}
-
-// Card types (from original app)
-export interface Test {
-  id: string;
-  question: string;
-  answer: string;
-  imageUrl: string;
-  audioUrl: string;
 }
 
 // Search term categories
@@ -48,7 +37,7 @@ export interface SearchTerm {
   volume: number;
   category: SearchCategory;
   imageUrl?: string;
-  timestamp?: Timestamp | FieldValue;
+  timestamp?: string;
 }
 
 // TrendGuesser game state
@@ -76,9 +65,9 @@ export interface TrendGuesserPlayer {
 }
 
 // Overall game data structure
-export interface GameData extends DocumentData {
+export interface GameData {
   id: string;
-  createdAt: Timestamp | FieldValue;
+  createdAt: string;
   createdBy: string;
   gameType: 'trendguesser';
   status: 'waiting' | 'active' | 'finished' | 'inactive';

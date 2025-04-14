@@ -6,18 +6,17 @@ import { useRouter } from "next/router";
 import { ConsentProvider } from "../contexts/ConsentContext";
 import { AuthProvider } from "../contexts/AuthContext";
 import { GameProvider } from "../contexts/GameContext";
-import { initializeFirebase } from "../lib/firebase/firebase";
+import { Analytics } from '@vercel/analytics/react';
+
+// Initialize database if running on server
+if (typeof window === 'undefined' && process.env.NEON_DATABASE_URL) {
+  // Will be initialized on demand by the sql function when needed
+  // No need to eagerly initialize here
+}
 
 function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const canonicalUrl = `https://trendguesser.com${router.asPath === "/" ? "" : router.asPath}`;
-  
-  // Initialize Firebase immediately, not in useEffect
-  // This ensures Firebase is available before any components mount
-  if (typeof window !== 'undefined') {
-    const { app, auth, db } = initializeFirebase(true, false);
-    console.log("Firebase initialized in _app.tsx");
-  }
   
   // Load fonts
   useEffect(() => {
@@ -114,6 +113,7 @@ function MyApp({ Component, pageProps }: AppProps) {
             />
           </Head>
           <Component {...pageProps} />
+          <Analytics />
         </GameProvider>
       </AuthProvider>
     </ConsentProvider>

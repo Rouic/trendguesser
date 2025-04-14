@@ -5,8 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { useWindowSize } from "@/hooks/useWindowSize";
 import { SearchCategory, TrendGuesserGameState } from "@/types";
-import { Timestamp } from "firebase/firestore";
-import { TrendGuesserService } from "@/lib/firebase/trendGuesserService";
+import { TrendGuesserService } from "@/lib/trendGuesserService";
 
 
 const GameScreen = () => {
@@ -301,7 +300,7 @@ const handleGuess = async (isHigher: boolean) => {
         clearTimeout(transitionTimeoutRef.current);
       }
 
-      // Wait to let user see both cards (3 seconds)
+      // Wait to let user see the result for 2.5 seconds before transitioning
       transitionTimeoutRef.current = setTimeout(() => {
         if (!gameState || gameState.finished) {
           setIsGuessing(false);
@@ -309,8 +308,8 @@ const handleGuess = async (isHigher: boolean) => {
           return;
         }
 
-        console.log("[handleGuess] Starting transition to next round");
-
+        console.log("[handleGuess] Starting transition to next round after showing result");
+        
         setIsInTransition(true);
 
         // Begin fadeout animation
@@ -345,19 +344,20 @@ const handleGuess = async (isHigher: boolean) => {
             hiddenVol: nextState.hiddenTerm?.volume,
           });
 
-          // Update game state with prepared next state
+          // Update game state with prepared next state - ensure showResult is false before doing this
+          setLastGuessCorrect(null);
+          setShowResult(false);
           setGameState(nextState);
 
-          // Allow cards to become visible again after brief delay
+          // Allow cards to become visible again after longer delay to ensure hidden card value isn't visible
           setTimeout(() => {
-            setLastGuessCorrect(null);
             setIsGuessing(false);
             setIsTransitioning(false);
             setIsInTransition(false);
             console.log("[handleGuess] Transition complete, new round visible");
-          }, 50);
+          }, 300); // Increased from 50ms to 300ms to ensure state updates properly
         }, 600);
-      }, 3000);
+      }, 2500);
     } else {
       // Wrong guess - game over
       // Save high score for incorrect guess
@@ -381,6 +381,7 @@ const handleGuess = async (isHigher: boolean) => {
       setTimeout(() => {
         setIsGuessing(false);
         setIsTransitioning(false);
+        setIsInTransition(false); // Also reset the in-transition state
       }, 3000);
     }
   } catch (err) {
@@ -390,6 +391,7 @@ const handleGuess = async (isHigher: boolean) => {
     setShowResult(false);
     setLastGuessCorrect(null);
     setIsTransitioning(false);
+    setIsInTransition(false); // Also reset the in-transition state
   }
 };
 
@@ -880,7 +882,8 @@ function prepareNextRoundStateWithFixedCategory(currentState, fixedCategory) {
                   {gameState?.hiddenTerm?.term || "Loading..."}
                 </h3>
 
-                {showResult ? (
+                {/* Only show volume when showResult is true AND not transitioning */}
+                {showResult && !isInTransition ? (
                   <div className="text-center volume-reveal">
                     <p className="text-sm text-white/70 font-game-fallback mb-1">
                       Monthly Search Volume

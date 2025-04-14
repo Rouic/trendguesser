@@ -1,0 +1,242 @@
+[
+  {
+    "id": "youtube",
+    "term": "YouTube",
+    "volume": 1200000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=YouTube",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "facebook",
+    "term": "Facebook",
+    "volume": 724500000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Facebook",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "whatsapp-web",
+    "term": "WhatsApp Web",
+    "volume": 521000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=WhatsApp%20Web",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "translate",
+    "term": "Translate",
+    "volume": 460800000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Translate",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "google",
+    "term": "Google",
+    "volume": 405300000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Google",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "football",
+    "term": "Football",
+    "volume": 50000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Football",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "soccer",
+    "term": "Soccer",
+    "volume": 30000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Soccer",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "cricket",
+    "term": "Cricket",
+    "volume": 64200000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Cricket",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "basketball",
+    "term": "Basketball",
+    "volume": 20000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Basketball",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "tennis",
+    "term": "Tennis",
+    "volume": 10000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Tennis",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "eiffel-tower",
+    "term": "Eiffel Tower",
+    "volume": 2500000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Eiffel%20Tower",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "taj-mahal",
+    "term": "Taj Mahal",
+    "volume": 2000000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Taj%20Mahal",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "statue-of-liberty",
+    "term": "Statue of Liberty",
+    "volume": 800000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Statue%20of%20Liberty",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "pyramids-of-giza",
+    "term": "Pyramids of Giza",
+    "volume": 600000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Pyramids%20of%20Giza",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "colosseum",
+    "term": "Colosseum",
+    "volume": 600000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Colosseum",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "oreo",
+    "term": "Oreo",
+    "volume": 500000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Oreo%20Cookies",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "lay-s",
+    "term": "Lay's",
+    "volume": 200000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Lays%20Potato%20Chips",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "doritos",
+    "term": "Doritos",
+    "volume": 165000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Doritos%20Chips",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "pringles",
+    "term": "Pringles",
+    "volume": 150000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Pringles",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "cheetos",
+    "term": "Cheetos",
+    "volume": 165000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Cheetos",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "dogs",
+    "term": "Dogs",
+    "volume": 2500000,
+    "category": "animals",
+    "imageUrl": "/api/image?term=Dogs",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "cats",
+    "term": "Cats",
+    "volume": 2000000,
+    "category": "animals",
+    "imageUrl": "/api/image?term=Cats",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "elephants",
+    "term": "Elephants",
+    "volume": 500000,
+    "category": "animals",
+    "imageUrl": "/api/image?term=Elephants",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "lions",
+    "term": "Lions",
+    "volume": 600000,
+    "category": "animals",
+    "imageUrl": "/api/image?term=Lions",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "tigers",
+    "term": "Tigers",
+    "volume": 550000,
+    "category": "animals",
+    "imageUrl": "/api/image?term=Tigers",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "taylor-swift",
+    "term": "Taylor Swift",
+    "volume": 3500000,
+    "category": "celebrities",
+    "imageUrl": "/api/image?term=Taylor%20Swift",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "beyonce",
+    "term": "Beyoncé",
+    "volume": 2000000,
+    "category": "celebrities",
+    "imageUrl": "/api/image?term=Beyonce",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "dwayne-johnson",
+    "term": "Dwayne Johnson",
+    "volume": 1800000,
+    "category": "celebrities",
+    "imageUrl": "/api/image?term=Dwayne%20Johnson",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "leonardo-dicaprio",
+    "term": "Leonardo DiCaprio",
+    "volume": 1200000,
+    "category": "celebrities",
+    "imageUrl": "/api/image?term=Leonardo%20DiCaprio",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  },
+  {
+    "id": "oprah-winfrey",
+    "term": "Oprah Winfrey",
+    "volume": 800000,
+    "category": "celebrities",
+    "imageUrl": "/api/image?term=Oprah%20Winfrey",
+    "timestamp": "2023-04-14T12:00:00.000Z"
+  }
+]

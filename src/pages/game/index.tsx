@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import Head from "next/head";
 import { useAuth } from "@/contexts/AuthContext";
 import { useGame } from "@/contexts/GameContext";
-import { TrendGuesserService } from "@/lib/firebase/trendGuesserService";
+import { TrendGuesserService } from "@/lib/trendGuesserService";
 import { SearchCategory, TrendGuesserGameState } from "@/types";
 import CategorySelection from "@/components/CategorySelection";
 import GameScreen from "@/components/GameScreen";

@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { useGame } from "@/contexts/GameContext";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
-import { TrendGuesserService } from "@/lib/firebase/trendGuesserService";
+import { TrendGuesserService } from "@/lib/trendGuesserService";
 
 const GameOver = () => {
   const router = useRouter();

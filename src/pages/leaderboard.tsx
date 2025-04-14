@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Head from 'next/head';
 import { motion } from 'framer-motion';
-import { TrendGuesserService } from '@/lib/firebase/trendGuesserService';
+import { TrendGuesserService } from '@/lib/trendGuesserService';
 import { SearchCategory, TrendGuesserPlayer } from '@/types';
 import Footer from '@/components/layout/Footer';
 

@@ -6,7 +6,7 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 });
 
 const nextConfig = {
-  output: 'export',
+  // Removed 'export' output to enable API routes
   reactStrictMode: false,
   eslint: {
     dirs: ['src'],
@@ -76,17 +76,6 @@ const nextConfig = {
             value: 'strict-origin-when-cross-origin',
           },
         ],
-      },
-    ];
-  },
-  
-  // Redirects
-  redirects: async () => {
-    return [
-      {
-        source: '/game',
-        destination: '/join',
-        permanent: true,
       },
     ];
   },
