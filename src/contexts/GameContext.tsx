@@ -804,7 +804,64 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 
   // Add direct setter for gameState
   const setGameStateDirectly = (state: TrendGuesserGameState) => {
-    console.log("Setting game state directly:", state.category, state.currentRound);
+    // VALIDATION: Ensure we have valid state before updating
+    if (!state) {
+      console.error("Attempted to set null/undefined game state");
+      return;
+    }
+
+    // Ensure terms have valid structure to prevent crashes
+    if (!state.knownTerm || typeof state.knownTerm !== "object") {
+      console.warn(
+        "Known term missing or invalid in state update, adding placeholder"
+      );
+      state.knownTerm = {
+        id: `fallback-${Date.now()}-known`,
+        term: "Term",
+        volume: 500000,
+        category: state.category || "technology",
+        imageUrl: `https://picsum.photos/seed/fallback-known/800/600`,
+      };
+    }
+
+    if (!state.hiddenTerm || typeof state.hiddenTerm !== "object") {
+      console.warn(
+        "Hidden term missing or invalid in state update, adding placeholder"
+      );
+      state.hiddenTerm = {
+        id: `fallback-${Date.now()}-hidden`,
+        term: "Hidden Term",
+        volume: 700000,
+        category: state.category || "technology",
+        imageUrl: `https://picsum.photos/seed/fallback-hidden/800/600`,
+      };
+    }
+
+    // Make sure volume properties exist and are numbers
+    if (state.knownTerm && state.knownTerm.volume === undefined) {
+      console.warn("Known term volume missing, setting default");
+      state.knownTerm.volume = 500000;
+    }
+
+    if (state.hiddenTerm && state.hiddenTerm.volume === undefined) {
+      console.warn("Hidden term volume missing, setting default");
+      state.hiddenTerm.volume = 700000;
+    }
+
+    // Make sure arrays are initialized
+    if (!Array.isArray(state.terms)) {
+      state.terms = [];
+    }
+
+    if (!Array.isArray(state.usedTerms)) {
+      state.usedTerms = [];
+    }
+
+    console.log(
+      "Setting game state directly:",
+      state.category,
+      state.currentRound
+    );
     setGameState(state);
     setLoading(false);
   };

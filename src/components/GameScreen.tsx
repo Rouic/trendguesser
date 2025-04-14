@@ -37,6 +37,9 @@ const GameScreen = () => {
 
   const loadedCategoriesInScreen = useRef<Set<string>>(new Set());
 
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
 
   // Display any errors from the game context
   useEffect(() => {
@@ -191,40 +194,57 @@ const GameScreen = () => {
 
   // Handle player making a guess
   const handleGuess = async (isHigher: boolean) => {
-    if (!gameState || isGuessing) return;
+    // Don't allow guesses during transitions or if already guessing
+    if (!gameState || isGuessing || isTransitioning) return;
 
     // Verify we have valid term data before proceeding
     if (!gameState.knownTerm || !gameState.hiddenTerm) {
-      console.error("[handleGuess] Missing term data in game state:", 
-        {knownTerm: !!gameState.knownTerm, hiddenTerm: !!gameState.hiddenTerm});
-      
+      console.error("[handleGuess] Missing term data in game state:", {
+        knownTerm: !!gameState.knownTerm,
+        hiddenTerm: !!gameState.hiddenTerm,
+      });
+
       // Try to recover from locally stored state
       try {
         if (typeof window !== "undefined" && gameId) {
-          const storedLocalState = localStorage.getItem(`tg_local_state_${gameId}`);
+          const storedLocalState = localStorage.getItem(
+            `tg_local_state_${gameId}`
+          );
           if (storedLocalState) {
             const localStateStore = JSON.parse(storedLocalState);
             const currentRoundKey = `round_${gameState.currentRound || 1}`;
-            
+
             if (localStateStore[currentRoundKey]) {
-              console.log("[handleGuess] Recovering game state from local storage");
-              
+              console.log(
+                "[handleGuess] Recovering game state from local storage"
+              );
+
               // Create a reconstructed state
-              const recoveredState = {...gameState};
-              
+              const recoveredState = { ...gameState };
+
               // Add missing terms from local storage
-              if (!recoveredState.knownTerm && localStateStore[currentRoundKey].knownTerm) {
-                recoveredState.knownTerm = localStateStore[currentRoundKey].knownTerm;
+              if (
+                !recoveredState.knownTerm &&
+                localStateStore[currentRoundKey].knownTerm
+              ) {
+                recoveredState.knownTerm =
+                  localStateStore[currentRoundKey].knownTerm;
               }
-              
-              if (!recoveredState.hiddenTerm && localStateStore[currentRoundKey].hiddenTerm) {
-                recoveredState.hiddenTerm = localStateStore[currentRoundKey].hiddenTerm;
+
+              if (
+                !recoveredState.hiddenTerm &&
+                localStateStore[currentRoundKey].hiddenTerm
+              ) {
+                recoveredState.hiddenTerm =
+                  localStateStore[currentRoundKey].hiddenTerm;
               }
-              
+
               // Update the game state
               setGameState(recoveredState);
-              console.log("[handleGuess] Recovered missing terms from local storage");
-              
+              console.log(
+                "[handleGuess] Recovered missing terms from local storage"
+              );
+
               // Continue with updated state
               return handleGuess(isHigher);
             }
@@ -233,7 +253,7 @@ const GameScreen = () => {
       } catch (e) {
         console.error("[handleGuess] Error recovering from local state:", e);
       }
-      
+
       setError("Missing game data. Please restart the game.");
       return;
     }
@@ -249,9 +269,9 @@ const GameScreen = () => {
       // Store the current game state values for comparison
       // Also safely access properties with fallbacks for error prevention
       const currentRound = gameState.currentRound || 1;
-      const knownTermName = gameState.knownTerm?.term || 'Unknown Term';
+      const knownTermName = gameState.knownTerm?.term || "Unknown Term";
       const knownTermVolume = gameState.knownTerm?.volume ?? 0;
-      const hiddenTermName = gameState.hiddenTerm?.term || 'Unknown Term';
+      const hiddenTermName = gameState.hiddenTerm?.term || "Unknown Term";
       const hiddenTermVolume = gameState.hiddenTerm?.volume ?? 0;
 
       console.log(`[handleGuess] Round ${currentRound} comparison:`, {
@@ -333,119 +353,214 @@ const GameScreen = () => {
           setCurrentPlayer(updatedPlayer);
         }
 
+        // SET THE TRANSITION LOCK to prevent multiple transitions
+        setIsTransitioning(true);
+
+        // Clear any existing timeout to avoid race conditions
+        if (transitionTimeoutRef.current) {
+          clearTimeout(transitionTimeoutRef.current);
+        }
+
         // Wait before moving to next round
-        setTimeout(() => {
+        transitionTimeoutRef.current = setTimeout(() => {
           // First verify we still have a valid game state before hiding result
           if (gameState && !gameState.finished) {
-            // CRITICAL FIX: ALWAYS swap the terms locally for reliable term rotation
-            console.log(
-              "[handleGuess] Local term rotation - manually updating UI state"
-            );
-
-            // Create a copy of the current game state to modify
-            const updatedState = { ...gameState };
-
-            // Setup next round
-            updatedState.currentRound = (updatedState.currentRound || 1) + 1;
-
-            // Check for locally cached terms for the next round
-            let foundNextTerms = false;
-            
-            try {
-              // Try to get locally cached terms for continuity
-              if (typeof window !== "undefined" && gameId) {
-                const storedLocalState = localStorage.getItem(`tg_local_state_${gameId}`);
-                if (storedLocalState) {
-                  const localStateStore = JSON.parse(storedLocalState);
-                  const nextRoundKey = `round_${updatedState.currentRound}`;
-                  
-                  // Check if we have pre-cached terms for the next round
-                  if (localStateStore[nextRoundKey] && 
-                      localStateStore[nextRoundKey].knownTerm && 
-                      localStateStore[nextRoundKey].hiddenTerm) {
-                    
-                    console.log(`[handleGuess] Found cached terms for round ${updatedState.currentRound}`);
-                    
-                    // Use the cached terms
-                    updatedState.knownTerm = localStateStore[nextRoundKey].knownTerm;
-                    updatedState.hiddenTerm = localStateStore[nextRoundKey].hiddenTerm;
-                    
-                    foundNextTerms = true;
-                  }
-                }
-              }
-            } catch (e) {
-              console.error("[handleGuess] Error checking local term cache:", e);
-            }
-            
-            // If we didn't find terms in the cache, do standard rotation
-            if (!foundNextTerms) {
-              console.log("[handleGuess] Standard term rotation - move hidden to known");
-              
-              // Move the hidden term to the known term position
-              if (updatedState.hiddenTerm) {
-                updatedState.knownTerm = { ...updatedState.hiddenTerm };
-              }
-
-              // Use next term from the terms array if available
-              if (updatedState.terms && Array.isArray(updatedState.terms) && updatedState.terms.length > 0) {
-                updatedState.hiddenTerm = { ...updatedState.terms[0] };
-                updatedState.terms = updatedState.terms.slice(1);
-                
-                // Make sure usedTerms is initialized
-                updatedState.usedTerms = Array.isArray(updatedState.usedTerms)
-                  ? [...updatedState.usedTerms, updatedState.hiddenTerm.id]
-                  : [updatedState.knownTerm.id, updatedState.hiddenTerm.id];
-              } else {
-                // No more terms - end the game with a win
-                console.log(
-                  "[handleGuess] No more terms available, ending game with a win"
-                );
-                updatedState.finished = true;
-
-                // Show a message to the user
-                setError("You won! No more terms available.");
-
-                // Skip setting a new term
-                setGameState(updatedState);
-                return;
-              }
-            }
-
-            // Update the game state in context
-            console.log(
-              "[handleGuess] Setting updated game state with term rotation:",
-              {
-                newRound: updatedState.currentRound,
-                newKnownTerm: updatedState.knownTerm.term,
-                newHiddenTerm: updatedState.hiddenTerm.term,
-              }
-            );
-
-            // IMPORTANT: Only set the new game state if not finished
-            if (!gameState.finished) {
-              setGameState(updatedState);
-            }
-
-            // Reset UI states with a clean-up timeout
-            // First hide result BEFORE showing new hidden term
+            // Hide the result first - this is crucial to prevent flicker
             setShowResult(false);
 
-            // Then wait a bit to allow state update to propagate
+            // Short delay to ensure UI updates before changing state
             setTimeout(() => {
-              setLastGuessCorrect(null);
-              setIsGuessing(false);
-            }, 200);
+              // CRITICAL FIX: ALWAYS swap the terms locally for reliable term rotation
+              console.log(
+                "[handleGuess] Local term rotation - manually updating UI state"
+              );
+
+              // Create a deep copy of the state to avoid reference issues
+              const updatedState = JSON.parse(JSON.stringify(gameState));
+
+              // Setup next round
+              updatedState.currentRound = (updatedState.currentRound || 1) + 1;
+
+              // Check for locally cached terms for the next round
+              let foundNextTerms = false;
+
+              try {
+                // Try to get locally cached terms for continuity
+                if (typeof window !== "undefined" && gameId) {
+                  const storedLocalState = localStorage.getItem(
+                    `tg_local_state_${gameId}`
+                  );
+                  if (storedLocalState) {
+                    const localStateStore = JSON.parse(storedLocalState);
+                    const nextRoundKey = `round_${updatedState.currentRound}`;
+
+                    // Check if we have pre-cached terms for the next round
+                    if (
+                      localStateStore[nextRoundKey] &&
+                      localStateStore[nextRoundKey].knownTerm &&
+                      localStateStore[nextRoundKey].hiddenTerm
+                    ) {
+                      console.log(
+                        `[handleGuess] Found cached terms for round ${updatedState.currentRound}`
+                      );
+
+                      // Use the cached terms with deep copies to avoid reference issues
+                      updatedState.knownTerm = JSON.parse(
+                        JSON.stringify(localStateStore[nextRoundKey].knownTerm)
+                      );
+                      updatedState.hiddenTerm = JSON.parse(
+                        JSON.stringify(localStateStore[nextRoundKey].hiddenTerm)
+                      );
+
+                      foundNextTerms = true;
+                    }
+                  }
+                }
+              } catch (e) {
+                console.error(
+                  "[handleGuess] Error checking local term cache:",
+                  e
+                );
+              }
+
+              // If we didn't find terms in the cache, do standard rotation
+              if (!foundNextTerms) {
+                console.log(
+                  "[handleGuess] Standard term rotation - move hidden to known"
+                );
+
+                // Deep copy the hidden term to known term to avoid reference issues
+                if (updatedState.hiddenTerm) {
+                  updatedState.knownTerm = JSON.parse(
+                    JSON.stringify(updatedState.hiddenTerm)
+                  );
+                }
+
+                // Use next term from the terms array if available
+                if (
+                  updatedState.terms &&
+                  Array.isArray(updatedState.terms) &&
+                  updatedState.terms.length > 0
+                ) {
+                  // Deep copy the next term
+                  updatedState.hiddenTerm = JSON.parse(
+                    JSON.stringify(updatedState.terms[0])
+                  );
+                  updatedState.terms = updatedState.terms.slice(1);
+
+                  // Make sure usedTerms is initialized
+                  updatedState.usedTerms = Array.isArray(updatedState.usedTerms)
+                    ? [...updatedState.usedTerms, updatedState.hiddenTerm.id]
+                    : [updatedState.knownTerm.id, updatedState.hiddenTerm.id];
+                } else {
+                  // No more terms - end the game with a win
+                  console.log(
+                    "[handleGuess] No more terms available, ending game with a win"
+                  );
+                  updatedState.finished = true;
+
+                  // Show a message to the user
+                  setError("You won! No more terms available.");
+
+                  // Skip setting a new term
+                  setGameState(updatedState);
+                  setIsGuessing(false);
+                  setIsTransitioning(false);
+                  return;
+                }
+              }
+
+              // Extra validation to ensure we have valid term objects before updating state
+              if (
+                !updatedState.knownTerm ||
+                !updatedState.hiddenTerm ||
+                updatedState.knownTerm.volume === undefined ||
+                updatedState.hiddenTerm.volume === undefined
+              ) {
+                console.error(
+                  "[handleGuess] Invalid term objects after rotation:",
+                  {
+                    hasKnownTerm: !!updatedState.knownTerm,
+                    hasHiddenTerm: !!updatedState.hiddenTerm,
+                    knownVolume: updatedState.knownTerm?.volume,
+                    hiddenVolume: updatedState.hiddenTerm?.volume,
+                  }
+                );
+
+                // Try one last recovery attempt - use safe hardcoded values if needed
+                if (
+                  !updatedState.knownTerm ||
+                  updatedState.knownTerm.volume === undefined
+                ) {
+                  console.log("[handleGuess] Using fallback for known term");
+                  updatedState.knownTerm = {
+                    id: `fallback-${Date.now()}-known`,
+                    term: updatedState.knownTerm?.term || "Technology Term",
+                    volume: updatedState.knownTerm?.volume || 500000,
+                    category: updatedState.category || "technology",
+                    imageUrl:
+                      updatedState.knownTerm?.imageUrl ||
+                      `https://picsum.photos/seed/fallback-known/800/600`,
+                  };
+                }
+
+                if (
+                  !updatedState.hiddenTerm ||
+                  updatedState.hiddenTerm.volume === undefined
+                ) {
+                  console.log("[handleGuess] Using fallback for hidden term");
+                  updatedState.hiddenTerm = {
+                    id: `fallback-${Date.now()}-hidden`,
+                    term:
+                      updatedState.hiddenTerm?.term || "New Technology Term",
+                    volume: updatedState.hiddenTerm?.volume || 700000,
+                    category: updatedState.category || "technology",
+                    imageUrl:
+                      updatedState.hiddenTerm?.imageUrl ||
+                      `https://picsum.photos/seed/fallback-hidden/800/600`,
+                  };
+                }
+              }
+
+              // Log updated state for debugging
+              console.log(
+                "[handleGuess] Setting updated game state with term rotation:",
+                {
+                  newRound: updatedState.currentRound,
+                  newKnownTerm: updatedState.knownTerm.term,
+                  newHiddenTerm: updatedState.hiddenTerm.term,
+                }
+              );
+
+              // IMPORTANT: Only set the new game state if not finished
+              if (!gameState.finished) {
+                setGameState(updatedState);
+              }
+
+              // Reset UI states after applying new state
+              setTimeout(() => {
+                setLastGuessCorrect(null);
+                setIsGuessing(false);
+                setIsTransitioning(false);
+              }, 100);
+            }, 300); // Delay after hiding result before applying new state
+          } else {
+            // If game is already finished, release locks
+            setIsGuessing(false);
+            setIsTransitioning(false);
           }
-        }, 1500);
+        }, 1500); // Delay to show result before transition
       } else {
         // Wrong guess - game over
         // Save high score on game over before showing GameOver screen
         if (currentPlayer && currentPlayer.score > 0 && gameState.category) {
-          console.log(`Saving high score for game over: ${currentPlayer.score} in ${gameState.category}`);
+          console.log(
+            `Saving high score for game over: ${currentPlayer.score} in ${gameState.category}`
+          );
           try {
             // Call static method directly for reliability
-            const mockUserUid = sessionStorage.getItem('mock_user_uid') || userUid;
+            const mockUserUid =
+              sessionStorage.getItem("mock_user_uid") || userUid;
             const playerToUse = mockUserUid || userUid;
             if (playerToUse) {
               await TrendGuesserService.updateHighScore(
@@ -458,9 +573,15 @@ const GameScreen = () => {
             console.error("Error saving high score during game over:", e);
           }
         }
-        
+
         // Just keep the showResult true and lastGuessCorrect false
         // Firebase will handle marking the game as finished
+
+        // Release the guessing lock
+        setTimeout(() => {
+          setIsGuessing(false);
+          setIsTransitioning(false);
+        }, 1500);
       }
     } catch (err) {
       console.error("Error in handleGuess:", err);
@@ -468,6 +589,7 @@ const GameScreen = () => {
       setIsGuessing(false);
       setShowResult(false);
       setLastGuessCorrect(null);
+      setIsTransitioning(false);
     }
   };
 
@@ -610,11 +732,18 @@ const GameScreen = () => {
       <div className="flex-1 grid grid-rows-[1fr_auto_1fr] h-[calc(100vh-64px)]">
         {/* Top card (known term) */}
         <div className="flex items-center justify-center p-4">
-          <div className="w-full max-w-lg" id="higher-card">
+          <div
+            className={`w-full max-w-lg card-transition-wrapper ${
+              isTransitioning ? "fade-out" : "fade-in"
+            }`}
+            id="higher-card"
+          >
             <div
               className="w-full rounded-xl overflow-hidden shadow-xl relative h-[250px]"
               style={{
-                backgroundImage: `url("${gameState.knownTerm.imageUrl}")`,
+                backgroundImage: `url("${
+                  gameState?.knownTerm?.imageUrl || ""
+                }")`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
@@ -625,7 +754,7 @@ const GameScreen = () => {
               {/* Content */}
               <div className="relative p-4 flex flex-col items-center justify-center text-center h-full">
                 <h3 className="text-xl md:text-2xl font-bold text-white mb-4 font-game-fallback">
-                  {gameState.knownTerm.term}
+                  {gameState?.knownTerm?.term || "Loading..."}
                 </h3>
 
                 <div className="text-center">
@@ -633,7 +762,9 @@ const GameScreen = () => {
                     Monthly Search Volume
                   </p>
                   <p className="text-4xl font-bold text-white font-game-fallback font-display">
-                    {gameState.knownTerm.volume.toLocaleString()}
+                    {gameState?.knownTerm?.volume !== undefined
+                      ? gameState.knownTerm.volume.toLocaleString()
+                      : "..."}
                   </p>
                 </div>
               </div>
@@ -664,11 +795,18 @@ const GameScreen = () => {
 
         {/* Bottom card (hidden term) */}
         <div className="flex items-center justify-center p-4">
-          <div className="w-full max-w-lg" id="lower-card">
+          <div
+            className={`w-full max-w-lg card-transition-wrapper ${
+              isTransitioning ? "fade-out" : "fade-in"
+            }`}
+            id="lower-card"
+          >
             <div
               className="w-full rounded-xl overflow-hidden shadow-xl relative h-[250px]"
               style={{
-                backgroundImage: `url("${gameState.hiddenTerm.imageUrl}")`,
+                backgroundImage: `url("${
+                  gameState?.hiddenTerm?.imageUrl || ""
+                }")`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
@@ -679,7 +817,7 @@ const GameScreen = () => {
               {/* Content */}
               <div className="relative p-4 flex flex-col items-center justify-center text-center h-full">
                 <h3 className="text-xl md:text-2xl font-bold text-white mb-4 font-game-fallback">
-                  {gameState.hiddenTerm.term}
+                  {gameState?.hiddenTerm?.term || "Loading..."}
                 </h3>
 
                 {showResult ? (
@@ -688,7 +826,9 @@ const GameScreen = () => {
                       Monthly Search Volume
                     </p>
                     <p className="text-4xl font-bold text-white font-game-fallback font-display">
-                      {gameState.hiddenTerm.volume.toLocaleString()}
+                      {gameState?.hiddenTerm?.volume !== undefined
+                        ? gameState.hiddenTerm.volume.toLocaleString()
+                        : "..."}
                     </p>
                   </div>
                 ) : (
@@ -746,14 +886,16 @@ const GameScreen = () => {
               <div className="rounded-xl overflow-hidden shadow-xl relative p-4 bg-black/40">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <h3 className="text-xl font-bold text-white font-game-fallback">
-                    {gameState.knownTerm.term}
+                    {gameState?.knownTerm?.term || "Loading..."}
                   </h3>
                   <div className="bg-black/40 backdrop-blur-sm px-4 py-2 rounded-lg">
                     <p className="text-sm text-white/70 font-game-fallback">
                       Search Volume
                     </p>
-                    <p className="text-2xl font-bold text-white font-game-fallback font-display font-display-fallback text-center">
-                      {gameState.knownTerm.volume.toLocaleString()}
+                    <p className="text-2xl font-bold text-white font-game-fallback font-display text-center">
+                      {gameState?.knownTerm?.volume !== undefined
+                        ? gameState.knownTerm.volume.toLocaleString()
+                        : "..."}
                     </p>
                   </div>
                 </div>
@@ -796,14 +938,16 @@ const GameScreen = () => {
               <div className="rounded-xl overflow-hidden shadow-xl relative p-4 bg-black/40">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <h3 className="text-xl font-bold text-white font-game-fallback">
-                    {gameState.hiddenTerm.term}
+                    {gameState?.hiddenTerm?.term || "Loading..."}
                   </h3>
                   <div className="bg-black/40 backdrop-blur-sm px-4 py-2 rounded-lg">
                     <p className="text-sm text-white/70 font-game-fallback">
                       Search Volume
                     </p>
-                    <p className="text-xl font-bold text-game-neon-yellow font-game-fallback text-center">
-                      {gameState.hiddenTerm.volume.toLocaleString()}
+                    <p className="text-2xl font-bold text-white font-game-fallback font-display text-center">
+                      {gameState?.hiddenTerm?.volume !== undefined
+                        ? gameState.hiddenTerm.volume.toLocaleString()
+                        : "..."}
                     </p>
                   </div>
                 </div>

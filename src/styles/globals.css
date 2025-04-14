@@ -172,6 +172,18 @@ body {
   color: var(--color-white);
 }
 
+.card-transition-wrapper {
+  transition: opacity 0.3s ease-out;
+}
+
+.card-transition-wrapper.fade-out {
+  opacity: 0;
+}
+
+.card-transition-wrapper.fade-in {
+  opacity: 1;
+}
+
 /* Card styles */
 .backface-hidden {
   -webkit-backface-visibility: hidden;
