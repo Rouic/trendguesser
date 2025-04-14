@@ -256,10 +256,13 @@ const GameScreen = () => {
      const actuallyEqual = hiddenTermVolume === knownTermVolume;
      const isCorrect = actuallyEqual ? true : isHigher === actuallyHigher;
 
-     // IMPORTANT: Store current terms before any API calls
-     // This ensures we maintain visual continuity even if API responses change terms
-     const currentKnownTerm = JSON.parse(JSON.stringify(gameState.knownTerm));
-     const currentHiddenTerm = JSON.parse(JSON.stringify(gameState.hiddenTerm));
+     // CRITICAL FIX: Create local copies of current terms that won't be affected by Firebase updates
+     // These deep cloned objects will be used for UI rendering during the transition
+     const localKnownTerm = JSON.parse(JSON.stringify(gameState.knownTerm));
+     const localHiddenTerm = JSON.parse(JSON.stringify(gameState.hiddenTerm));
+
+     // Save these local terms in component state to protect them from external updates
+     const localCurrentCategory = gameState.category;
 
      // Make the guess API call
      let result;
@@ -318,8 +321,20 @@ const GameScreen = () => {
            // Hide the result while cards are invisible
            setShowResult(false);
 
-           // Prepare next round state with manual term rotation that prioritizes visual continuity
-           const nextState = prepareNextRoundState();
+           // CRITICAL FIX: Create a new game state that preserves the correct category
+           // This ensures we don't show terms from the wrong category during transition
+           const nextRoundState = {
+             ...gameState,
+             category: localCurrentCategory, // Preserve the original category
+             currentRound: (gameState.currentRound || 1) + 1,
+             knownTerm: localHiddenTerm, // Use our local copy of hiddenTerm
+           };
+
+           // Prepare next round state with manual term rotation
+           const nextState = prepareNextRoundStateWithFixedCategory(
+             nextRoundState,
+             localCurrentCategory
+           );
 
            // CRITICAL: Log state details for visibility
            console.log("[handleGuess] Updating to next round with state:", {
@@ -379,6 +394,89 @@ const GameScreen = () => {
      setIsTransitioning(false);
    }
  };
+
+ function prepareNextRoundStateWithFixedCategory(currentState, fixedCategory) {
+   // Create deep copy of current state to avoid reference issues
+   const updatedState = JSON.parse(JSON.stringify(currentState));
+
+   // CRITICAL: Ensure we use the fixed category, not whatever might be in the current state
+   updatedState.category = fixedCategory;
+
+   // Only try to get next term if we have terms available
+   if (
+     updatedState.terms &&
+     Array.isArray(updatedState.terms) &&
+     updatedState.terms.length > 0
+   ) {
+     // Filter terms to only use ones matching our fixed category
+     const categoryTerms = updatedState.terms.filter(
+       (term) => term.category === fixedCategory
+     );
+
+     if (categoryTerms.length > 0) {
+       // Get next term from category-filtered terms array
+       updatedState.hiddenTerm = JSON.parse(JSON.stringify(categoryTerms[0]));
+
+       // Update terms list to remove the term we just used
+       const termIndex = updatedState.terms.findIndex(
+         (t) => t.id === categoryTerms[0].id
+       );
+       if (termIndex !== -1) {
+         updatedState.terms = [
+           ...updatedState.terms.slice(0, termIndex),
+           ...updatedState.terms.slice(termIndex + 1),
+         ];
+       }
+     } else {
+       // No terms of the right category - create a fallback term
+       updatedState.hiddenTerm = {
+         id: `fallback-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+         term: generateTermName(fixedCategory),
+         volume: generateRandomVolume(updatedState.knownTerm.volume),
+         category: fixedCategory,
+         imageUrl: `https://picsum.photos/seed/${fixedCategory}-${Date.now()}/800/600`,
+       };
+
+       // Ensure we have a terms array even if empty
+       updatedState.terms = updatedState.terms.filter(
+         (term) => term.category === fixedCategory
+       );
+     }
+
+     // Update used terms list
+     updatedState.usedTerms = Array.isArray(updatedState.usedTerms)
+       ? [...updatedState.usedTerms, updatedState.hiddenTerm.id]
+       : [updatedState.knownTerm.id, updatedState.hiddenTerm.id];
+   } else {
+     // No terms left - we need to create a fallback term in the SAME category
+     console.log(
+       "[handleGuess] No more terms available, creating fallback term in category:",
+       fixedCategory
+     );
+
+     updatedState.hiddenTerm = {
+       id: `fallback-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+       term: generateTermName(fixedCategory),
+       volume: generateRandomVolume(updatedState.knownTerm.volume),
+       category: fixedCategory,
+       imageUrl: `https://picsum.photos/seed/${fixedCategory}-${Date.now()}/800/600`,
+     };
+
+     // Also ensure we have a terms array even if empty
+     updatedState.terms = [];
+     updatedState.usedTerms = updatedState.usedTerms || [];
+     updatedState.usedTerms.push(updatedState.hiddenTerm.id);
+   }
+
+   console.log("[handleGuess] Prepared next round state:", {
+     category: updatedState.category,
+     round: updatedState.currentRound,
+     knownTerm: updatedState.knownTerm.term,
+     hiddenTerm: updatedState.hiddenTerm.term,
+   });
+
+   return updatedState;
+ }
 
   // Helper function to prepare the next round state safely
   function prepareNextRoundState() {
