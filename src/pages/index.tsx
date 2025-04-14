@@ -4,7 +4,6 @@ import Head from "next/head";
 import Footer from "@/components/layout/Footer";
 
 const HomePage = () => {
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-between px-4 sm:px-8 py-4 sm:py-8 relative overflow-hidden">
       {/* Background patterns similar to Balatro */}
@@ -106,7 +105,7 @@ const HomePage = () => {
               className="w-full h-full object-contain"
             />
           </div> */}
-          <h1 className="text-[25px] xxs:text-3xl xs:text-3xl sm:text-4xl md:text-5xl xl:text-7xl font-display text-game-neon-yellow tracking-tight xs:tracking-normal sm:tracking-wider mb-0 animate-glow font-display-fallback w-full px-2">
+          <h1 className="text-[45px] xl:text-7xl font-display text-game-neon-yellow tracking-tight xs:tracking-normal sm:tracking-wider mb-0 animate-glow font-display-fallback w-full px-2">
             TREND GUESSER
           </h1>
         </div>
@@ -117,41 +116,42 @@ const HomePage = () => {
           GUESS WHICH TRENDING TERM HAS MORE SEARCHES!
         </p>
 
-        {/* Game buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mb-6 sm:mb-12 justify-center">
+        {/* Game buttons - UPDATED for more prominent Play Now button */}
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mb-10 sm:mb-16 justify-center w-full">
           <Link
             href="/game"
-            className="px-8 py-4 bg-black/30 backdrop-blur-sm rounded-xl border-2 border-game-neon-yellow/70 text-game-neon-yellow font-bold font-game-fallback text-xl hover:bg-black/50 hover:scale-105 transition-all duration-300 shadow-neon-yellow-sm flex-1 text-center"
+            className="px-12 py-6 bg-black/50 backdrop-blur-sm rounded-xl border-4 border-game-neon-yellow text-game-neon-yellow font-bold font-game-fallback text-2xl md:text-3xl hover:bg-black/70 hover:scale-105 hover:shadow-neon-yellow-lg transition-all duration-300 shadow-neon-yellow-md text-center mx-auto w-full max-w-md relative"
           >
+            <div className="absolute -inset-px bg-game-neon-yellow/10 rounded-xl"></div>
             PLAY NOW
           </Link>
         </div>
 
-        {/* Features section */}
+        {/* Features section - UPDATED to be more subtle/informational */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
-          <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-black/40 transition-colors">
-            <h3 className="text-game-neon-blue font-bold text-xl mb-3 font-game-fallback">
+          <div className="bg-gray-800/20 backdrop-blur-sm rounded-xl p-6 border border-white/5">
+            <h3 className="text-game-neon-blue/80 font-bold text-lg mb-3 font-game-fallback">
               CATEGORIES
             </h3>
-            <p className="text-white/80 font-game-fallback">
-              Choose from animals, celebrities, technology, and more.
+            <p className="text-white/60 font-game-fallback">
+              Choose from snacks, locations, technology, and more.
             </p>
           </div>
 
-          <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-black/40 transition-colors">
-            <h3 className="text-game-neon-pink font-bold text-xl mb-3 font-game-fallback">
+          <div className="bg-gray-800/20 backdrop-blur-sm rounded-xl p-6 border border-white/5">
+            <h3 className="text-game-neon-pink/80 font-bold text-lg mb-3 font-game-fallback">
               CUSTOM TERMS
             </h3>
-            <p className="text-white/80 font-game-fallback">
+            <p className="text-white/60 font-game-fallback">
               Enter your own search term and see how it compares.
             </p>
           </div>
 
-          <div className="bg-black/30 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:bg-black/40 transition-colors sm:col-span-2 lg:col-span-1">
-            <h3 className="text-game-neon-green font-bold text-xl mb-3 font-game-fallback">
+          <div className="bg-gray-800/20 backdrop-blur-sm rounded-xl p-6 border border-white/5 sm:col-span-2 lg:col-span-1">
+            <h3 className="text-game-neon-green/80 font-bold text-lg mb-3 font-game-fallback">
               HIGH SCORES
             </h3>
-            <p className="text-white/80 font-game-fallback">
+            <p className="text-white/60 font-game-fallback">
               Your high scores are saved for each category.
             </p>
           </div>

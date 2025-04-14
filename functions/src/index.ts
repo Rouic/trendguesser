@@ -577,14 +577,6 @@ function enhanceSearchTerm(term: string, category: string): string {
       return `${cleanedTerm} famous landmarks travel tourism`;
     case 'snacks':
       return `${cleanedTerm} snacks food culture`;
-    case 'fashion':
-      return `${cleanedTerm} fashion style clothing`;
-    case 'cars':
-      return `${cleanedTerm} car brands automobile vehicle`;
-    case 'celebrities':
-      return `${cleanedTerm} celebrities famous people`;
-    case 'pets':
-      return `${cleanedTerm} pets animals cute`;
     default:
       return `${cleanedTerm} high-quality`;
   }
@@ -630,7 +622,7 @@ function calculateRelevanceScore(photo: PexelsPhoto, termWords: string[]): numbe
 // Helper function: Determine a general category for fallback
 function determineGeneralCategory(term: string, category: string): string {
   // If we already have a category, use it
-  if (category && ['technology', 'sports', 'landmarks', 'snacks', 'fashion', 'cars', 'celebrities', 'pets'].includes(category)) {
+  if (category && ['technology', 'sports', 'landmarks', 'snacks'].includes(category)) {
     return category;
   }
   
@@ -642,10 +634,6 @@ function determineGeneralCategory(term: string, category: string): string {
     'sports': ['sport', 'football', 'soccer', 'basketball', 'tennis', 'baseball', 'golf', 'olympic', 'athlete'],
     'landmarks': ['landmark', 'monument', 'building', 'structure', 'historical', 'tourist attraction'],
     'snacks': ['snack', 'food', 'candy', 'chocolate', 'crisps', 'biscuits', 'sweets'],
-    'fashion': ['fashion', 'style', 'clothing', 'apparel', 'accessories', 'trends'],
-    'cars': ['car', 'automobile', 'vehicle', 'motor', 'brand', 'model', 'engine'],
-    'celebrities': ['celebrity', 'famous', 'star', 'icon', 'public figure'],
-    'pets': ['pet', 'animal', 'dog', 'cat', 'fish', 'bird', 'reptile'],
   };
   
   // Find matching category

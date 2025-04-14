@@ -374,19 +374,17 @@ function enhanceSearchTerm(term: string, category?: string): string {
   // Add category-specific enhancements
   if (category) {
     switch (category.toLowerCase()) {
-      case 'news':
-        return `${cleanedTerm} news event current affairs journalism`;
-      case 'entertainment':
-        return `${cleanedTerm} entertainment celebrity media`;
-      case 'technology':
-        return `${cleanedTerm} technology digital electronics`;
-      case 'sports':
-        return `${cleanedTerm} sports athletic competition`;
-      case 'gaming':
-        return `${cleanedTerm} game gaming video-game`;
-      default:
-        return `${cleanedTerm} clear high-quality`;
-    }
+    case 'technology':
+      return `${cleanedTerm} technology digital electronics`;
+    case 'sports':
+      return `${cleanedTerm} sports athletic competition`;
+    case 'landmarks':
+      return `${cleanedTerm} famous landmarks travel tourism`;
+    case 'snacks':
+      return `${cleanedTerm} snacks food culture`;
+    default:
+      return `${cleanedTerm} high-quality`;
+  }
   }
   
   // Add general quality terms if no category

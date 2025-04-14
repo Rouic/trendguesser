@@ -41,14 +41,13 @@ const GameScreen = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-
   // Display any errors from the game context
   useEffect(() => {
     if (gameError) {
       setError(gameError);
     }
   }, [gameError]);
-  
+
   // Load high scores when component mounts
   useEffect(() => {
     if (
@@ -91,57 +90,71 @@ const GameScreen = () => {
   useEffect(() => {
     if (!gameState && !recoveryAttempted) {
       setRecoveryAttempted(true);
-      
+
       // First, try to recover from localStorage (best source of continuity)
       try {
         if (typeof window !== "undefined") {
           // Find the most recent game ID
-          const currentGameId = sessionStorage.getItem("current_game_id") || gameId;
-          
+          const currentGameId =
+            sessionStorage.getItem("current_game_id") || gameId;
+
           if (currentGameId) {
             // Check if we have local state data for this game
-            const storedLocalState = localStorage.getItem(`tg_local_state_${currentGameId}`);
+            const storedLocalState = localStorage.getItem(
+              `tg_local_state_${currentGameId}`
+            );
             if (storedLocalState) {
               console.log("[Recovery] Found local state data in localStorage");
-              
+
               // Parse the local state
               const localStateStore = JSON.parse(storedLocalState);
-              
+
               // Find the latest round data
               let latestRound = 0;
               let latestRoundData = null;
-              
+
               // Find the latest round in our saved data
-              Object.keys(localStateStore).forEach(key => {
-                if (key.startsWith('round_')) {
-                  const roundNum = parseInt(key.replace('round_', ''));
+              Object.keys(localStateStore).forEach((key) => {
+                if (key.startsWith("round_")) {
+                  const roundNum = parseInt(key.replace("round_", ""));
                   if (roundNum > latestRound) {
                     latestRound = roundNum;
                     latestRoundData = localStateStore[key];
                   }
                 }
               });
-              
-              if (latestRoundData && latestRoundData.knownTerm && latestRoundData.hiddenTerm) {
+
+              if (
+                latestRoundData &&
+                latestRoundData.knownTerm &&
+                latestRoundData.hiddenTerm
+              ) {
                 console.log(`[Recovery] Found data for round ${latestRound}`);
-                
+
                 // Create a reconstructed game state
                 const reconstructedState: TrendGuesserGameState = {
                   currentRound: latestRound,
-                  category: latestRoundData.knownTerm.category || "technology" as SearchCategory,
+                  category:
+                    latestRoundData.knownTerm.category ||
+                    ("technology" as SearchCategory),
                   started: true,
                   finished: false,
                   knownTerm: latestRoundData.knownTerm,
                   hiddenTerm: latestRoundData.hiddenTerm,
-                  usedTerms: [latestRoundData.knownTerm.id, latestRoundData.hiddenTerm.id],
+                  usedTerms: [
+                    latestRoundData.knownTerm.id,
+                    latestRoundData.hiddenTerm.id,
+                  ],
                   terms: [],
-                  customTerm: null
+                  customTerm: null,
                 };
-                
+
                 // Update the game state in context
                 setGameState(reconstructedState);
-                console.log("[Recovery] Successfully reconstructed game state from localStorage");
-                
+                console.log(
+                  "[Recovery] Successfully reconstructed game state from localStorage"
+                );
+
                 return; // Successfully recovered, exit early
               }
             }
@@ -150,7 +163,7 @@ const GameScreen = () => {
       } catch (e) {
         console.error("[Recovery] Error recovering from localStorage:", e);
       }
-      
+
       // If localStorage recovery fails, try sessionStorage
       if (
         process.env.NEXT_PUBLIC_USE_MOCK_DATA === "true" &&
@@ -159,7 +172,8 @@ const GameScreen = () => {
         console.log("Attempting to recover game state from session storage...");
 
         // Get the current game ID
-        const currentGameId = sessionStorage.getItem("current_game_id") || gameId;
+        const currentGameId =
+          sessionStorage.getItem("current_game_id") || gameId;
         if (!currentGameId) {
           setError("Game session not found. Please start a new game.");
           return;
@@ -354,9 +368,6 @@ const GameScreen = () => {
          setCurrentPlayer(updatedPlayer);
        }
 
-       // SET THE TRANSITION LOCK to prevent multiple transitions
-       setIsTransitioning(true);
-
        // Clear any existing timeout to avoid race conditions
        if (transitionTimeoutRef.current) {
          clearTimeout(transitionTimeoutRef.current);
@@ -368,10 +379,13 @@ const GameScreen = () => {
        transitionTimeoutRef.current = setTimeout(() => {
          // First verify we still have a valid game state before proceeding
          if (gameState && !gameState.finished) {
+           // IMPORTANT FIX: Only NOW set the transition flag to trigger the fade animation
+           // This ensures the cards stay visible for the full 3 seconds
+           setIsTransitioning(true);
 
-           // 1. Keep showing the result with transition indicator for another second
+           // 1. Now start the transition sequence after the user has seen both values
            setTimeout(() => {
-             // 2. Start fading out the cards
+             // 2. Continue with fading out the cards
              setShowResult(false);
 
              // 3. After cards fade out, update game state
@@ -547,21 +561,20 @@ const GameScreen = () => {
                  setGameState(updatedState);
                }
 
-
-                 // 5. Reset all UI states after the new state is properly set
-                 setTimeout(() => {
-                   setLastGuessCorrect(null);
-                   setIsGuessing(false);
-                   setIsTransitioning(false);
-                 }, 100);
-             }, 500); // Increased time to fade out before applying new state
-           }, 1000); // Added time to show transition indicator with both values visible
+               // 5. Reset all UI states after the new state is properly set
+               setTimeout(() => {
+                 setLastGuessCorrect(null);
+                 setIsGuessing(false);
+                 setIsTransitioning(false);
+               }, 200); // Increased from 100ms to 200ms for smoother transition
+             }, 200); // Increased from 500ms to 700ms to give users more time to see the fadeout
+           }, 1500); // Increased from 1000ms to 1500ms to show transition indicator with both values visible longer
          } else {
            // If game is already finished, release locks
            setIsGuessing(false);
            setIsTransitioning(false);
          }
-       }, 3000); // INCREASED from 1500ms to 3000ms - more time to see both values
+       }, 3000); // 3 second delay before ANY transition begins
 
        // ======= END OF IMPROVED TRANSITION EXPERIENCE =======
      } else {
@@ -632,10 +645,13 @@ const GameScreen = () => {
     try {
       // Save high score before quitting
       if (currentPlayer && currentPlayer.score > 0 && gameState.category) {
-        console.log(`Saving high score during quit: ${currentPlayer.score} in ${gameState.category}`);
+        console.log(
+          `Saving high score during quit: ${currentPlayer.score} in ${gameState.category}`
+        );
         try {
           // Call static method directly for reliability
-          const mockUserUid = sessionStorage.getItem('mock_user_uid') || userUid;
+          const mockUserUid =
+            sessionStorage.getItem("mock_user_uid") || userUid;
           const playerToUse = mockUserUid || userUid;
           if (playerToUse) {
             await TrendGuesserService.updateHighScore(
@@ -648,7 +664,7 @@ const GameScreen = () => {
           console.error("Error saving high score during quit:", e);
         }
       }
-      
+
       // Try Firebase first, then fall back to local navigation
       if (gameId) {
         try {
@@ -656,12 +672,17 @@ const GameScreen = () => {
           await endGame();
           console.log("Game ended successfully in Firebase during quit");
         } catch (err) {
-          console.warn("Error ending game in Firebase during quit, continuing anyway:", err);
+          console.warn(
+            "Error ending game in Firebase during quit, continuing anyway:",
+            err
+          );
         }
       } else {
-        console.warn("No gameId available for quit, using local navigation only");
+        console.warn(
+          "No gameId available for quit, using local navigation only"
+        );
       }
-      
+
       // Always reset local state and navigate
       resetGame();
       router.push("/game");
@@ -707,7 +728,7 @@ const GameScreen = () => {
     <div className="min-h-screen flex flex-col">
       {/* Top bar with score */}
       <div className="p-4 bg-black/30 backdrop-blur-sm grid grid-cols-3 items-center border-b border-white/10">
-        <div className="flex items-center justify-start gap-2">
+        <div className="flex items-center justify-start gap-2 grow lg:shrink">
           <button
             onClick={handleQuit}
             className="px-4 py-1 bg-black/40 rounded-full border border-game-neon-red/30 text-game-neon-red text-sm font-game-fallback hover:bg-black/60"
@@ -719,11 +740,12 @@ const GameScreen = () => {
           </span>
         </div>
 
-        <div className="flex justify-center">
+        <div className="lg:flex justify-center hidden">
           <h1 className="text-xl font-display text-game-neon-yellow tracking-wider animate-glow font-display-fallback">
             TREND GUESSER
           </h1>
         </div>
+        <div className="flex lg:hidden"></div>
 
         <div className="flex items-center justify-end gap-3">
           <span className="text-white font-game-fallback">SCORE:</span>
@@ -792,7 +814,11 @@ const GameScreen = () => {
             <button
               onClick={() => handleGuess(false)}
               disabled={isGuessing}
-              className="px-8 py-3 bg-black/60 rounded-xl border-2 border-game-neon-red/70 text-game-neon-red font-bold font-game-fallback text-xl hover:bg-black/80 disabled:opacity-50 disabled:cursor-not-allowed flex-1 max-w-36 text-center"
+              className="px-8 py-3 bg-black/60 rounded-xl border-2 border-game-neon-red/70 text-game-neon-red font-bold font-game-fallback text-xl 
+      hover:bg-black/90 hover:scale-105 hover:border-game-neon-red hover:shadow-[0_0_15px_rgba(255,0,68,0.5)] 
+      active:scale-95 active:bg-black/100 active:shadow-[0_0_20px_rgba(255,0,68,0.7)]
+      disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none disabled:hover:bg-black/60
+      flex-1 max-w-36 text-center transition-all duration-200 ease-in-out"
             >
               LOWER
             </button>
@@ -800,7 +826,11 @@ const GameScreen = () => {
             <button
               onClick={() => handleGuess(true)}
               disabled={isGuessing}
-              className="px-8 py-3 bg-black/60 rounded-xl border-2 border-game-neon-green/70 text-game-neon-green font-bold font-game-fallback text-xl hover:bg-black/80 disabled:opacity-50 disabled:cursor-not-allowed flex-1 max-w-36 text-center"
+              className="px-8 py-3 bg-black/60 rounded-xl border-2 border-game-neon-green/70 text-game-neon-green font-bold font-game-fallback text-xl 
+      hover:bg-black/90 hover:scale-105 hover:border-game-neon-green hover:shadow-[0_0_15px_rgba(0,255,85,0.5)] 
+      active:scale-95 active:bg-black/100 active:shadow-[0_0_20px_rgba(0,255,85,0.7)]
+      disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none disabled:hover:bg-black/60
+      flex-1 max-w-36 text-center transition-all duration-200 ease-in-out"
             >
               HIGHER
             </button>

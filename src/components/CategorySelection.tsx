@@ -149,31 +149,31 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect }) => {
       description: "Famous places & buildings",
       color: "border-game-neon-purple text-game-neon-purple shadow-neon-purple-sm",
     },
-    {
-      id: "fashion",
-      name: "Fashion",
-      description: "Trends & styles",
-      color: "border-game-neon-red text-game-neon-red shadow-neon-red-sm",
-    },
-    {
-      id: "cars",
-      name: "Car Brands",
-      description: "Cars & vehicles",
-      color: "border-game-neon-blue text-game-neon-blue shadow-neon-blue-sm",
-    },
-    {
-      id: "celebrities",
-      name: "Celebrities",
-      description: "Famous people & influencers",
-      color: "border-game-neon-green text-game-neon-green shadow-neon-green-sm",
+    // {
+    //   id: "fashion",
+    //   name: "Fashion",
+    //   description: "Trends & styles",
+    //   color: "border-game-neon-red text-game-neon-red shadow-neon-red-sm",
+    // },
+    // {
+    //   id: "cars",
+    //   name: "Car Brands",
+    //   description: "Cars & vehicles",
+    //   color: "border-game-neon-blue text-game-neon-blue shadow-neon-blue-sm",
+    // },
+    // {
+    //   id: "celebrities",
+    //   name: "Celebrities",
+    //   description: "Famous people & influencers",
+    //   color: "border-game-neon-green text-game-neon-green shadow-neon-green-sm",
 
-    },
-    {
-      id: "pets",
-      name: "Pets",
-      description: "Cats, dogs, and more",
-      color: "border-game-neon-yellow text-game-neon-yellow shadow-neon-yellow-sm",
-    },
+    // },
+    // {
+    //   id: "pets",
+    //   name: "Pets",
+    //   description: "Cats, dogs, and more",
+    //   color: "border-game-neon-yellow text-game-neon-yellow shadow-neon-yellow-sm",
+    // },
     {
       id: "technology",
       name: "Technology",
@@ -192,18 +192,18 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect }) => {
       description: "Mix of all categories",
       color: "border-purple-400 text-purple-400 shadow-purple-sm",
     },
-    {
-      id: "latest",
-      name: "Latest",
-      description: "Recent trending topics",
-      color: "border-yellow-400 text-yellow-400 shadow-yellow-sm",
-    },
-    {
-      id: "custom",
-      name: "Custom",
-      description: "Choose your own term",
-      color: "border-game-neon-blue text-game-neon-blue shadow-neon-blue-sm",
-    },
+    // {
+    //   id: "latest",
+    //   name: "Latest",
+    //   description: "Recent trending topics",
+    //   color: "border-yellow-400 text-yellow-400 shadow-yellow-sm",
+    // },
+    // {
+    //   id: "custom",
+    //   name: "Custom",
+    //   description: "Choose your own term",
+    //   color: "border-game-neon-blue text-game-neon-blue shadow-neon-blue-sm",
+    // },
   ];
 
   return (
