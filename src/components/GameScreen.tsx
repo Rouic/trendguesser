@@ -8,6 +8,7 @@ import { SearchCategory, TrendGuesserGameState } from "@/types";
 import { Timestamp } from "firebase/firestore";
 import { TrendGuesserService } from "@/lib/firebase/trendGuesserService";
 
+
 const GameScreen = () => {
   const router = useRouter();
   const windowSize = useWindowSize();
@@ -193,405 +194,418 @@ const GameScreen = () => {
   }, [gameState, recoveryAttempted, gameId]);
 
   // Handle player making a guess
-  const handleGuess = async (isHigher: boolean) => {
-    // Don't allow guesses during transitions or if already guessing
-    if (!gameState || isGuessing || isTransitioning) return;
+ const handleGuess = async (isHigher: boolean) => {
+   // Don't allow guesses during transitions or if already guessing
+   if (!gameState || isGuessing || isTransitioning) return;
 
-    // Verify we have valid term data before proceeding
-    if (!gameState.knownTerm || !gameState.hiddenTerm) {
-      console.error("[handleGuess] Missing term data in game state:", {
-        knownTerm: !!gameState.knownTerm,
-        hiddenTerm: !!gameState.hiddenTerm,
-      });
+   // Verify we have valid term data before proceeding
+   if (!gameState.knownTerm || !gameState.hiddenTerm) {
+     console.error("[handleGuess] Missing term data in game state:", {
+       knownTerm: !!gameState.knownTerm,
+       hiddenTerm: !!gameState.hiddenTerm,
+     });
 
-      // Try to recover from locally stored state
-      try {
-        if (typeof window !== "undefined" && gameId) {
-          const storedLocalState = localStorage.getItem(
-            `tg_local_state_${gameId}`
-          );
-          if (storedLocalState) {
-            const localStateStore = JSON.parse(storedLocalState);
-            const currentRoundKey = `round_${gameState.currentRound || 1}`;
+     // Try to recover from locally stored state
+     try {
+       if (typeof window !== "undefined" && gameId) {
+         const storedLocalState = localStorage.getItem(
+           `tg_local_state_${gameId}`
+         );
+         if (storedLocalState) {
+           const localStateStore = JSON.parse(storedLocalState);
+           const currentRoundKey = `round_${gameState.currentRound || 1}`;
 
-            if (localStateStore[currentRoundKey]) {
-              console.log(
-                "[handleGuess] Recovering game state from local storage"
-              );
+           if (localStateStore[currentRoundKey]) {
+             console.log(
+               "[handleGuess] Recovering game state from local storage"
+             );
 
-              // Create a reconstructed state
-              const recoveredState = { ...gameState };
+             // Create a reconstructed state
+             const recoveredState = { ...gameState };
 
-              // Add missing terms from local storage
-              if (
-                !recoveredState.knownTerm &&
-                localStateStore[currentRoundKey].knownTerm
-              ) {
-                recoveredState.knownTerm =
-                  localStateStore[currentRoundKey].knownTerm;
-              }
+             // Add missing terms from local storage
+             if (
+               !recoveredState.knownTerm &&
+               localStateStore[currentRoundKey].knownTerm
+             ) {
+               recoveredState.knownTerm =
+                 localStateStore[currentRoundKey].knownTerm;
+             }
 
-              if (
-                !recoveredState.hiddenTerm &&
-                localStateStore[currentRoundKey].hiddenTerm
-              ) {
-                recoveredState.hiddenTerm =
-                  localStateStore[currentRoundKey].hiddenTerm;
-              }
+             if (
+               !recoveredState.hiddenTerm &&
+               localStateStore[currentRoundKey].hiddenTerm
+             ) {
+               recoveredState.hiddenTerm =
+                 localStateStore[currentRoundKey].hiddenTerm;
+             }
 
-              // Update the game state
-              setGameState(recoveredState);
-              console.log(
-                "[handleGuess] Recovered missing terms from local storage"
-              );
+             // Update the game state
+             setGameState(recoveredState);
+             console.log(
+               "[handleGuess] Recovered missing terms from local storage"
+             );
 
-              // Continue with updated state
-              return handleGuess(isHigher);
-            }
-          }
-        }
-      } catch (e) {
-        console.error("[handleGuess] Error recovering from local state:", e);
-      }
+             // Continue with updated state
+             return handleGuess(isHigher);
+           }
+         }
+       }
+     } catch (e) {
+       console.error("[handleGuess] Error recovering from local state:", e);
+     }
 
-      setError("Missing game data. Please restart the game.");
-      return;
-    }
+     setError("Missing game data. Please restart the game.");
+     return;
+   }
 
-    setIsGuessing(true);
-    setError(null);
+   setIsGuessing(true);
+   setError(null);
 
-    try {
-      console.log(
-        `[handleGuess] Making ${isHigher ? "HIGHER" : "LOWER"} guess...`
-      );
+   try {
+     console.log(
+       `[handleGuess] Making ${isHigher ? "HIGHER" : "LOWER"} guess...`
+     );
 
-      // Store the current game state values for comparison
-      // Also safely access properties with fallbacks for error prevention
-      const currentRound = gameState.currentRound || 1;
-      const knownTermName = gameState.knownTerm?.term || "Unknown Term";
-      const knownTermVolume = gameState.knownTerm?.volume ?? 0;
-      const hiddenTermName = gameState.hiddenTerm?.term || "Unknown Term";
-      const hiddenTermVolume = gameState.hiddenTerm?.volume ?? 0;
+     // Store the current game state values for comparison
+     // Also safely access properties with fallbacks for error prevention
+     const currentRound = gameState.currentRound || 1;
+     const knownTermName = gameState.knownTerm?.term || "Unknown Term";
+     const knownTermVolume = gameState.knownTerm?.volume ?? 0;
+     const hiddenTermName = gameState.hiddenTerm?.term || "Unknown Term";
+     const hiddenTermVolume = gameState.hiddenTerm?.volume ?? 0;
 
-      console.log(`[handleGuess] Round ${currentRound} comparison:`, {
-        knownTerm: knownTermName,
-        knownVolume: knownTermVolume,
-        hiddenTerm: hiddenTermName,
-        hiddenVolume: hiddenTermVolume,
-      });
+     console.log(`[handleGuess] Round ${currentRound} comparison:`, {
+       knownTerm: knownTermName,
+       knownVolume: knownTermVolume,
+       hiddenTerm: hiddenTermName,
+       hiddenVolume: hiddenTermVolume,
+     });
 
-      // Determine if the guess is correct locally
-      const actuallyHigher = hiddenTermVolume > knownTermVolume;
-      const actuallyEqual = hiddenTermVolume === knownTermVolume;
-      const isCorrect = actuallyEqual ? true : isHigher === actuallyHigher;
+     // Determine if the guess is correct locally
+     const actuallyHigher = hiddenTermVolume > knownTermVolume;
+     const actuallyEqual = hiddenTermVolume === knownTermVolume;
+     const isCorrect = actuallyEqual ? true : isHigher === actuallyHigher;
 
-      console.log(`[handleGuess] Result calculation:`, {
-        actuallyHigher,
-        actuallyEqual,
-        userGuessedHigher: isHigher,
-        isCorrect,
-      });
+     console.log(`[handleGuess] Result calculation:`, {
+       actuallyHigher,
+       actuallyEqual,
+       userGuessedHigher: isHigher,
+       isCorrect,
+     });
 
-      // IMPORTANT: Wait to show the result until AFTER we get the Firebase result
-      // This prevents the flicker and premature reveal
-      let result;
-      let usedLocalFallback = false;
+     // IMPORTANT: Wait to show the result until AFTER we get the Firebase result
+     // This prevents the flicker and premature reveal
+     let result;
+     let usedLocalFallback = false;
 
-      if (gameId) {
-        try {
-          console.log("[handleGuess] Attempting to make guess via Firebase...");
-          result = await makeGuess(isHigher);
-          console.log("[handleGuess] Firebase operation succeeded:", result);
+     if (gameId) {
+       try {
+         console.log("[handleGuess] Attempting to make guess via Firebase...");
+         result = await makeGuess(isHigher);
+         console.log("[handleGuess] Firebase operation succeeded:", result);
 
-          // If Firebase returned false but our calculation says true - OVERRIDE Firebase result
-          if (result === false && isCorrect === true) {
-            console.warn(
-              "[handleGuess] Firebase disagrees with local calculation - OVERRIDING Firebase result!"
-            );
-            result = true; // Trust our local calculation instead
-          }
-        } catch (err) {
-          console.error(
-            "[handleGuess] Firebase error, using local fallback:",
-            err
-          );
-          result = isCorrect;
-          usedLocalFallback = true;
-        }
-      } else {
-        console.warn(
-          "[handleGuess] No gameId available, using local calculation"
-        );
-        result = isCorrect;
-        usedLocalFallback = true;
-      }
+         // If Firebase returned false but our calculation says true - OVERRIDE Firebase result
+         if (result === false && isCorrect === true) {
+           console.warn(
+             "[handleGuess] Firebase disagrees with local calculation - OVERRIDING Firebase result!"
+           );
+           result = true; // Trust our local calculation instead
+         }
+       } catch (err) {
+         console.error(
+           "[handleGuess] Firebase error, using local fallback:",
+           err
+         );
+         result = isCorrect;
+         usedLocalFallback = true;
+       }
+     } else {
+       console.warn(
+         "[handleGuess] No gameId available, using local calculation"
+       );
+       result = isCorrect;
+       usedLocalFallback = true;
+     }
 
-      console.log(
-        `[handleGuess] Final result (used fallback: ${usedLocalFallback}):`,
-        result
-      );
+     console.log(
+       `[handleGuess] Final result (used fallback: ${usedLocalFallback}):`,
+       result
+     );
 
-      // NOW it's safe to show the result - AFTER we've determined the outcome
-      setLastGuessCorrect(result);
-      setShowResult(true);
+     // NOW it's safe to show the result - AFTER we've determined the outcome
+     setLastGuessCorrect(result);
+     setShowResult(true);
 
-      // LOCAL STATE HANDLING
-      if (result) {
-        // Correct guess
-        // Update score locally (in the UI only)
-        const newScore = (currentPlayer?.score || 0) + 1;
-        console.log("[handleGuess] Updating local score to:", newScore);
+     // LOCAL STATE HANDLING
+     if (result) {
+       // Correct guess
+       // Update score locally (in the UI only)
+       const newScore = (currentPlayer?.score || 0) + 1;
+       console.log("[handleGuess] Updating local score to:", newScore);
 
-        // Create an updated player with the new score and update the state
-        if (currentPlayer) {
-          const updatedPlayer = {
-            ...currentPlayer,
-            score: newScore,
-          };
-          // Update the local state immediately so UI shows correct score
-          setCurrentPlayer(updatedPlayer);
-        }
+       // Create an updated player with the new score and update the state
+       if (currentPlayer) {
+         const updatedPlayer = {
+           ...currentPlayer,
+           score: newScore,
+         };
+         // Update the local state immediately so UI shows correct score
+         setCurrentPlayer(updatedPlayer);
+       }
 
-        // SET THE TRANSITION LOCK to prevent multiple transitions
-        setIsTransitioning(true);
+       // SET THE TRANSITION LOCK to prevent multiple transitions
+       setIsTransitioning(true);
 
-        // Clear any existing timeout to avoid race conditions
-        if (transitionTimeoutRef.current) {
-          clearTimeout(transitionTimeoutRef.current);
-        }
+       // Clear any existing timeout to avoid race conditions
+       if (transitionTimeoutRef.current) {
+         clearTimeout(transitionTimeoutRef.current);
+       }
 
-        // Wait before moving to next round
-        transitionTimeoutRef.current = setTimeout(() => {
-          // First verify we still have a valid game state before hiding result
-          if (gameState && !gameState.finished) {
-            // Hide the result first - this is crucial to prevent flicker
-            setShowResult(false);
+       // ======= IMPROVED TRANSITION TIMING AND EXPERIENCE =======
 
-            // Short delay to ensure UI updates before changing state
-            setTimeout(() => {
-              // CRITICAL FIX: ALWAYS swap the terms locally for reliable term rotation
-              console.log(
-                "[handleGuess] Local term rotation - manually updating UI state"
-              );
+       // Show a "Next Round" animation sequence after giving users time to see both numbers
+       transitionTimeoutRef.current = setTimeout(() => {
+         // First verify we still have a valid game state before proceeding
+         if (gameState && !gameState.finished) {
 
-              // Create a deep copy of the state to avoid reference issues
-              const updatedState = JSON.parse(JSON.stringify(gameState));
+           // 1. Keep showing the result with transition indicator for another second
+           setTimeout(() => {
+             // 2. Start fading out the cards
+             setShowResult(false);
 
-              // Setup next round
-              updatedState.currentRound = (updatedState.currentRound || 1) + 1;
+             // 3. After cards fade out, update game state
+             setTimeout(() => {
+               // CRITICAL FIX: ALWAYS swap the terms locally for reliable term rotation
+               console.log(
+                 "[handleGuess] Local term rotation - manually updating UI state"
+               );
 
-              // Check for locally cached terms for the next round
-              let foundNextTerms = false;
+               // Create a deep copy of the state to avoid reference issues
+               const updatedState = JSON.parse(JSON.stringify(gameState));
 
-              try {
-                // Try to get locally cached terms for continuity
-                if (typeof window !== "undefined" && gameId) {
-                  const storedLocalState = localStorage.getItem(
-                    `tg_local_state_${gameId}`
-                  );
-                  if (storedLocalState) {
-                    const localStateStore = JSON.parse(storedLocalState);
-                    const nextRoundKey = `round_${updatedState.currentRound}`;
+               // Setup next round
+               updatedState.currentRound = (updatedState.currentRound || 1) + 1;
 
-                    // Check if we have pre-cached terms for the next round
-                    if (
-                      localStateStore[nextRoundKey] &&
-                      localStateStore[nextRoundKey].knownTerm &&
-                      localStateStore[nextRoundKey].hiddenTerm
-                    ) {
-                      console.log(
-                        `[handleGuess] Found cached terms for round ${updatedState.currentRound}`
-                      );
+               // Check for locally cached terms for the next round
+               let foundNextTerms = false;
 
-                      // Use the cached terms with deep copies to avoid reference issues
-                      updatedState.knownTerm = JSON.parse(
-                        JSON.stringify(localStateStore[nextRoundKey].knownTerm)
-                      );
-                      updatedState.hiddenTerm = JSON.parse(
-                        JSON.stringify(localStateStore[nextRoundKey].hiddenTerm)
-                      );
+               try {
+                 // Try to get locally cached terms for continuity
+                 if (typeof window !== "undefined" && gameId) {
+                   const storedLocalState = localStorage.getItem(
+                     `tg_local_state_${gameId}`
+                   );
+                   if (storedLocalState) {
+                     const localStateStore = JSON.parse(storedLocalState);
+                     const nextRoundKey = `round_${updatedState.currentRound}`;
 
-                      foundNextTerms = true;
-                    }
-                  }
-                }
-              } catch (e) {
-                console.error(
-                  "[handleGuess] Error checking local term cache:",
-                  e
-                );
-              }
+                     // Check if we have pre-cached terms for the next round
+                     if (
+                       localStateStore[nextRoundKey] &&
+                       localStateStore[nextRoundKey].knownTerm &&
+                       localStateStore[nextRoundKey].hiddenTerm
+                     ) {
+                       console.log(
+                         `[handleGuess] Found cached terms for round ${updatedState.currentRound}`
+                       );
 
-              // If we didn't find terms in the cache, do standard rotation
-              if (!foundNextTerms) {
-                console.log(
-                  "[handleGuess] Standard term rotation - move hidden to known"
-                );
+                       // Use the cached terms with deep copies to avoid reference issues
+                       updatedState.knownTerm = JSON.parse(
+                         JSON.stringify(localStateStore[nextRoundKey].knownTerm)
+                       );
+                       updatedState.hiddenTerm = JSON.parse(
+                         JSON.stringify(
+                           localStateStore[nextRoundKey].hiddenTerm
+                         )
+                       );
 
-                // Deep copy the hidden term to known term to avoid reference issues
-                if (updatedState.hiddenTerm) {
-                  updatedState.knownTerm = JSON.parse(
-                    JSON.stringify(updatedState.hiddenTerm)
-                  );
-                }
+                       foundNextTerms = true;
+                     }
+                   }
+                 }
+               } catch (e) {
+                 console.error(
+                   "[handleGuess] Error checking local term cache:",
+                   e
+                 );
+               }
 
-                // Use next term from the terms array if available
-                if (
-                  updatedState.terms &&
-                  Array.isArray(updatedState.terms) &&
-                  updatedState.terms.length > 0
-                ) {
-                  // Deep copy the next term
-                  updatedState.hiddenTerm = JSON.parse(
-                    JSON.stringify(updatedState.terms[0])
-                  );
-                  updatedState.terms = updatedState.terms.slice(1);
+               // If we didn't find terms in the cache, do standard rotation
+               if (!foundNextTerms) {
+                 console.log(
+                   "[handleGuess] Standard term rotation - move hidden to known"
+                 );
 
-                  // Make sure usedTerms is initialized
-                  updatedState.usedTerms = Array.isArray(updatedState.usedTerms)
-                    ? [...updatedState.usedTerms, updatedState.hiddenTerm.id]
-                    : [updatedState.knownTerm.id, updatedState.hiddenTerm.id];
-                } else {
-                  // No more terms - end the game with a win
-                  console.log(
-                    "[handleGuess] No more terms available, ending game with a win"
-                  );
-                  updatedState.finished = true;
+                 // Deep copy the hidden term to known term to avoid reference issues
+                 if (updatedState.hiddenTerm) {
+                   updatedState.knownTerm = JSON.parse(
+                     JSON.stringify(updatedState.hiddenTerm)
+                   );
+                 }
 
-                  // Show a message to the user
-                  setError("You won! No more terms available.");
+                 // Use next term from the terms array if available
+                 if (
+                   updatedState.terms &&
+                   Array.isArray(updatedState.terms) &&
+                   updatedState.terms.length > 0
+                 ) {
+                   // Deep copy the next term
+                   updatedState.hiddenTerm = JSON.parse(
+                     JSON.stringify(updatedState.terms[0])
+                   );
+                   updatedState.terms = updatedState.terms.slice(1);
 
-                  // Skip setting a new term
-                  setGameState(updatedState);
-                  setIsGuessing(false);
-                  setIsTransitioning(false);
-                  return;
-                }
-              }
+                   // Make sure usedTerms is initialized
+                   updatedState.usedTerms = Array.isArray(
+                     updatedState.usedTerms
+                   )
+                     ? [...updatedState.usedTerms, updatedState.hiddenTerm.id]
+                     : [updatedState.knownTerm.id, updatedState.hiddenTerm.id];
+                 } else {
+                   // No more terms - end the game with a win
+                   console.log(
+                     "[handleGuess] No more terms available, ending game with a win"
+                   );
+                   updatedState.finished = true;
 
-              // Extra validation to ensure we have valid term objects before updating state
-              if (
-                !updatedState.knownTerm ||
-                !updatedState.hiddenTerm ||
-                updatedState.knownTerm.volume === undefined ||
-                updatedState.hiddenTerm.volume === undefined
-              ) {
-                console.error(
-                  "[handleGuess] Invalid term objects after rotation:",
-                  {
-                    hasKnownTerm: !!updatedState.knownTerm,
-                    hasHiddenTerm: !!updatedState.hiddenTerm,
-                    knownVolume: updatedState.knownTerm?.volume,
-                    hiddenVolume: updatedState.hiddenTerm?.volume,
-                  }
-                );
+                   // Show a message to the user
+                   setError("You won! No more terms available.");
 
-                // Try one last recovery attempt - use safe hardcoded values if needed
-                if (
-                  !updatedState.knownTerm ||
-                  updatedState.knownTerm.volume === undefined
-                ) {
-                  console.log("[handleGuess] Using fallback for known term");
-                  updatedState.knownTerm = {
-                    id: `fallback-${Date.now()}-known`,
-                    term: updatedState.knownTerm?.term || "Technology Term",
-                    volume: updatedState.knownTerm?.volume || 500000,
-                    category: updatedState.category || "technology",
-                    imageUrl:
-                      updatedState.knownTerm?.imageUrl ||
-                      `https://picsum.photos/seed/fallback-known/800/600`,
-                  };
-                }
+                   // Skip setting a new term
+                   setGameState(updatedState);
+                   setIsGuessing(false);
+                   setIsTransitioning(false);
+                   return;
+                 }
+               }
 
-                if (
-                  !updatedState.hiddenTerm ||
-                  updatedState.hiddenTerm.volume === undefined
-                ) {
-                  console.log("[handleGuess] Using fallback for hidden term");
-                  updatedState.hiddenTerm = {
-                    id: `fallback-${Date.now()}-hidden`,
-                    term:
-                      updatedState.hiddenTerm?.term || "New Technology Term",
-                    volume: updatedState.hiddenTerm?.volume || 700000,
-                    category: updatedState.category || "technology",
-                    imageUrl:
-                      updatedState.hiddenTerm?.imageUrl ||
-                      `https://picsum.photos/seed/fallback-hidden/800/600`,
-                  };
-                }
-              }
+               // Extra validation to ensure we have valid term objects before updating state
+               if (
+                 !updatedState.knownTerm ||
+                 !updatedState.hiddenTerm ||
+                 updatedState.knownTerm.volume === undefined ||
+                 updatedState.hiddenTerm.volume === undefined
+               ) {
+                 console.error(
+                   "[handleGuess] Invalid term objects after rotation:",
+                   {
+                     hasKnownTerm: !!updatedState.knownTerm,
+                     hasHiddenTerm: !!updatedState.hiddenTerm,
+                     knownVolume: updatedState.knownTerm?.volume,
+                     hiddenVolume: updatedState.hiddenTerm?.volume,
+                   }
+                 );
 
-              // Log updated state for debugging
-              console.log(
-                "[handleGuess] Setting updated game state with term rotation:",
-                {
-                  newRound: updatedState.currentRound,
-                  newKnownTerm: updatedState.knownTerm.term,
-                  newHiddenTerm: updatedState.hiddenTerm.term,
-                }
-              );
+                 // Try one last recovery attempt - use safe hardcoded values if needed
+                 if (
+                   !updatedState.knownTerm ||
+                   updatedState.knownTerm.volume === undefined
+                 ) {
+                   console.log("[handleGuess] Using fallback for known term");
+                   updatedState.knownTerm = {
+                     id: `fallback-${Date.now()}-known`,
+                     term: updatedState.knownTerm?.term || "Technology Term",
+                     volume: updatedState.knownTerm?.volume || 500000,
+                     category: updatedState.category || "technology",
+                     imageUrl:
+                       updatedState.knownTerm?.imageUrl ||
+                       `https://picsum.photos/seed/fallback-known/800/600`,
+                   };
+                 }
 
-              // IMPORTANT: Only set the new game state if not finished
-              if (!gameState.finished) {
-                setGameState(updatedState);
-              }
+                 if (
+                   !updatedState.hiddenTerm ||
+                   updatedState.hiddenTerm.volume === undefined
+                 ) {
+                   console.log("[handleGuess] Using fallback for hidden term");
+                   updatedState.hiddenTerm = {
+                     id: `fallback-${Date.now()}-hidden`,
+                     term:
+                       updatedState.hiddenTerm?.term || "New Technology Term",
+                     volume: updatedState.hiddenTerm?.volume || 700000,
+                     category: updatedState.category || "technology",
+                     imageUrl:
+                       updatedState.hiddenTerm?.imageUrl ||
+                       `https://picsum.photos/seed/fallback-hidden/800/600`,
+                   };
+                 }
+               }
 
-              // Reset UI states after applying new state
-              setTimeout(() => {
-                setLastGuessCorrect(null);
-                setIsGuessing(false);
-                setIsTransitioning(false);
-              }, 100);
-            }, 300); // Delay after hiding result before applying new state
-          } else {
-            // If game is already finished, release locks
-            setIsGuessing(false);
-            setIsTransitioning(false);
-          }
-        }, 1500); // Delay to show result before transition
-      } else {
-        // Wrong guess - game over
-        // Save high score on game over before showing GameOver screen
-        if (currentPlayer && currentPlayer.score > 0 && gameState.category) {
-          console.log(
-            `Saving high score for game over: ${currentPlayer.score} in ${gameState.category}`
-          );
-          try {
-            // Call static method directly for reliability
-            const mockUserUid =
-              sessionStorage.getItem("mock_user_uid") || userUid;
-            const playerToUse = mockUserUid || userUid;
-            if (playerToUse) {
-              await TrendGuesserService.updateHighScore(
-                playerToUse,
-                gameState.category,
-                currentPlayer.score
-              );
-            }
-          } catch (e) {
-            console.error("Error saving high score during game over:", e);
-          }
-        }
+               // Log updated state for debugging
+               console.log(
+                 "[handleGuess] Setting updated game state with term rotation:",
+                 {
+                   newRound: updatedState.currentRound,
+                   newKnownTerm: updatedState.knownTerm.term,
+                   newHiddenTerm: updatedState.hiddenTerm.term,
+                 }
+               );
 
-        // Just keep the showResult true and lastGuessCorrect false
-        // Firebase will handle marking the game as finished
+               // IMPORTANT: Only set the new game state if not finished
+               if (!gameState.finished) {
+                 setGameState(updatedState);
+               }
 
-        // Release the guessing lock
-        setTimeout(() => {
-          setIsGuessing(false);
-          setIsTransitioning(false);
-        }, 1500);
-      }
-    } catch (err) {
-      console.error("Error in handleGuess:", err);
-      setError("Error processing guess. Please try again.");
-      setIsGuessing(false);
-      setShowResult(false);
-      setLastGuessCorrect(null);
-      setIsTransitioning(false);
-    }
-  };
+
+                 // 5. Reset all UI states after the new state is properly set
+                 setTimeout(() => {
+                   setLastGuessCorrect(null);
+                   setIsGuessing(false);
+                   setIsTransitioning(false);
+                 }, 100);
+             }, 500); // Increased time to fade out before applying new state
+           }, 1000); // Added time to show transition indicator with both values visible
+         } else {
+           // If game is already finished, release locks
+           setIsGuessing(false);
+           setIsTransitioning(false);
+         }
+       }, 3000); // INCREASED from 1500ms to 3000ms - more time to see both values
+
+       // ======= END OF IMPROVED TRANSITION EXPERIENCE =======
+     } else {
+       // Wrong guess - game over
+       // Save high score on game over before showing GameOver screen
+       if (currentPlayer && currentPlayer.score > 0 && gameState.category) {
+         console.log(
+           `Saving high score for game over: ${currentPlayer.score} in ${gameState.category}`
+         );
+         try {
+           // Call static method directly for reliability
+           const mockUserUid =
+             sessionStorage.getItem("mock_user_uid") || userUid;
+           const playerToUse = mockUserUid || userUid;
+           if (playerToUse) {
+             await TrendGuesserService.updateHighScore(
+               playerToUse,
+               gameState.category,
+               currentPlayer.score
+             );
+           }
+         } catch (e) {
+           console.error("Error saving high score during game over:", e);
+         }
+       }
+
+       // Just keep the showResult true and lastGuessCorrect false
+       // Firebase will handle marking the game as finished
+
+       // Release the guessing lock after a longer delay for Game Over
+       setTimeout(() => {
+         setIsGuessing(false);
+         setIsTransitioning(false);
+       }, 3000); // Increased from 1500ms to 3000ms for Game Over too
+     }
+   } catch (err) {
+     console.error("Error in handleGuess:", err);
+     setError("Error processing guess. Please try again.");
+     setIsGuessing(false);
+     setShowResult(false);
+     setLastGuessCorrect(null);
+     setIsTransitioning(false);
+   }
+ };
 
   // Function to handle retry when an error occurs
   const handleRetry = useCallback(() => {
@@ -821,7 +835,7 @@ const GameScreen = () => {
                 </h3>
 
                 {showResult ? (
-                  <div className="text-center">
+                  <div className="text-center volume-reveal">
                     <p className="text-sm text-white/70 font-game-fallback mb-1">
                       Monthly Search Volume
                     </p>
@@ -847,11 +861,18 @@ const GameScreen = () => {
             </div>
           </div>
         </div>
+
+        {/* Error message */}
+        {error && !showResult && (
+          <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 px-6 py-3 bg-game-neon-red/20 border border-game-neon-red/50 rounded-lg text-white text-center max-w-xs z-50">
+            {error}
+          </div>
+        )}
       </div>
 
       {/* Correct guess notification */}
       {showResult && lastGuessCorrect === true && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 px-6 py-4 bg-game-neon-green/20 backdrop-blur-md rounded-xl border border-game-neon-green/50 text-game-neon-green font-bold text-xl shadow-lg z-50">
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 px-6 py-4 bg-game-neon-green/20 backdrop-blur-md rounded-xl border border-game-neon-green/50 text-game-neon-green font-bold text-xl shadow-lg z-50 result-notification correct-guess">
           {gameState.hiddenTerm.volume === gameState.knownTerm.volume ? (
             <span>
               EQUAL VALUES!
