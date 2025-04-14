@@ -41,6 +41,9 @@ const GameScreen = () => {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transitionTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const [isInTransition, setIsInTransition] = useState(false);
+
+
   // Display any errors from the game context
   useEffect(() => {
     if (gameError) {
@@ -88,6 +91,7 @@ const GameScreen = () => {
 
   // Attempt to recover from missing game state
   useEffect(() => {
+
     if (!gameState && !recoveryAttempted) {
       setRecoveryAttempted(true);
 
@@ -306,6 +310,8 @@ const GameScreen = () => {
 
          console.log("[handleGuess] Starting transition to next round");
 
+          setIsInTransition(true);
+
          // Begin fadeout animation
          setIsTransitioning(true);
 
@@ -334,6 +340,7 @@ const GameScreen = () => {
              setLastGuessCorrect(null);
              setIsGuessing(false);
              setIsTransitioning(false);
+             setIsInTransition(false);
              console.log(
                "[handleGuess] Transition complete, new round visible"
              );
