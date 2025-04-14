@@ -81,7 +81,7 @@ export interface GameData extends DocumentData {
   createdAt: Timestamp | FieldValue;
   createdBy: string;
   gameType: 'trendguesser' | 'pyramid' | 'yes';
-  status: 'waiting' | 'active' | 'finished';
+  status: 'waiting' | 'active' | 'finished' | 'inactive';
   [playerUid: string]: any;
   '__trendguesser.state'?: TrendGuesserGameState;
 }

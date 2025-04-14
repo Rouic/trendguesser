@@ -17,7 +17,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { v4 as uuidv4 } from 'uuid';
-import { SearchCategory, SearchTerm, TrendGuesserGameState, TrendGuesserPlayer } from '@/types';
+import { SearchCategory, SearchTerm, TrendGuesserGameState, TrendGuesserPlayer, GameData } from '@/types';
 import { sampleSearchTerms, sampleLeaderboard } from './mockData';
 import { ImageConfig } from '@/utils/imageUtils';
 
@@ -113,7 +113,9 @@ export class TrendGuesserService {
           
           if (existingData) {
             // Update existing game data
-            mockGameData = JSON.parse(existingData);
+            mockGameData = TrendGuesserService.safeJSONParse(existingData, {});
+            
+            
             mockGameData.status = 'active';
             mockGameData['__trendguesser.state'] = gameState;
           } else {
@@ -147,7 +149,7 @@ export class TrendGuesserService {
             const key = sessionStorage.key(i);
             if (key && key.startsWith('game_') && key !== `game_${gameId}`) {
               try {
-                const data = JSON.parse(sessionStorage.getItem(key) || '{}');
+                const data = TrendGuesserService.safeJSONParse(sessionStorage.getItem(key) || '{}', {}) as GameData;
                 if (data.status === 'active') {
                   data.status = 'inactive';
                   sessionStorage.setItem(key, JSON.stringify(data));
@@ -211,6 +213,19 @@ export class TrendGuesserService {
     }
   }
 
+private static safeJSONParse<T>(value: string | null | undefined, defaultValue: T): T {
+  if (!value) {
+    return defaultValue;
+  }
+  
+  try {
+    return JSON.parse(value) as T;
+  } catch (e) {
+    console.warn('[TrendGuesserService] Error parsing JSON, using default value:', e);
+    return defaultValue;
+  }
+}
+
 private static async retryOperation(operation: () => Promise<any>, maxRetries = 3): Promise<any> {
   let lastError: any;
   
@@ -269,7 +284,7 @@ static async makeGuess(
         // Parse the game data and extract important parts
         let gameData;
         try {
-          gameData = JSON.parse(storedGameData);
+          gameData = TrendGuesserService.safeJSONParse(storedGameData, {});
           console.log('[TrendGuesserService.makeGuess] Game data loaded, status:', gameData.status);
         } catch (e) {
           console.error('[TrendGuesserService.makeGuess] Error parsing game data:', e);
@@ -278,7 +293,7 @@ static async makeGuess(
         }
         
         // Get the game state - create a deep copy to avoid reference issues
-        const gameState = JSON.parse(JSON.stringify(gameData['__trendguesser.state']));
+        const gameState = TrendGuesserService.safeJSONParse(JSON.stringify(gameData['__trendguesser.state']), {}) as TrendGuesserGameState;
         if (!gameState) {
           console.error('[TrendGuesserService.makeGuess] No game state found in data');
           TrendGuesserService.isProcessingGuess = false; // Clear flag before throwing
@@ -298,7 +313,7 @@ static async makeGuess(
           
           // Also update the game data in sessionStorage to ensure consistency
           if (typeof window !== 'undefined') {
-            const updatedData = JSON.parse(storedGameData);
+            const updatedData = TrendGuesserService.safeJSONParse(storedGameData, {}) as GameData;
             if (updatedData['__trendguesser.state']) {
               updatedData['__trendguesser.state'].started = true;
               updatedData['__trendguesser.state'].finished = false;
@@ -384,7 +399,7 @@ static async makeGuess(
         }
         
         // Create a new game data object to avoid reference issues
-        const updatedGameData = JSON.parse(JSON.stringify(gameData));
+        const updatedGameData = TrendGuesserService.safeJSONParse(JSON.stringify(gameData), {})
         
         // Process the guess result
         if (isCorrect) {
@@ -400,12 +415,12 @@ static async makeGuess(
           // Check if we have more terms
           if (gameState.terms && gameState.terms.length > 0) {
             // Create new game state with deep copies to avoid reference issues
-            const updatedGameState = JSON.parse(JSON.stringify(gameState));
+            const updatedGameState = TrendGuesserService.safeJSONParse(JSON.stringify(gameState), {}) as TrendGuesserGameState;
             
             // Set up next round
             updatedGameState.currentRound = gameState.currentRound + 1;
-            updatedGameState.knownTerm = JSON.parse(JSON.stringify(gameState.hiddenTerm));
-            updatedGameState.hiddenTerm = JSON.parse(JSON.stringify(gameState.terms[0]));
+            updatedGameState.knownTerm = TrendGuesserService.safeJSONParse(JSON.stringify(gameState.hiddenTerm), {}) as SearchTerm;
+            updatedGameState.hiddenTerm = TrendGuesserService.safeJSONParse(JSON.stringify(gameState.terms[0]), {}) as SearchTerm;
             updatedGameState.usedTerms = [...gameState.usedTerms, gameState.terms[0].id];
             updatedGameState.terms = gameState.terms.slice(1);
             updatedGameState.finished = false; // Explicitly set to false
@@ -464,14 +479,14 @@ static async makeGuess(
             }
             
             // Create updated game state
-            const updatedGameState = JSON.parse(JSON.stringify(gameState));
+            const updatedGameState = TrendGuesserService.safeJSONParse(JSON.stringify(gameState), {}) as TrendGuesserGameState;
             updatedGameState.currentRound = gameState.currentRound + 1;
             updatedGameState.terms = newTerms;
             updatedGameState.finished = false;
             
             // Setup the next round's terms
-            updatedGameState.knownTerm = JSON.parse(JSON.stringify(gameState.hiddenTerm));
-            updatedGameState.hiddenTerm = JSON.parse(JSON.stringify(newTerms[0]));
+            updatedGameState.knownTerm = TrendGuesserService.safeJSONParse(JSON.stringify(gameState.hiddenTerm), {}) as SearchTerm;
+            updatedGameState.hiddenTerm = TrendGuesserService.safeJSONParse(JSON.stringify(newTerms[0]), {}) as SearchTerm;
             updatedGameState.usedTerms.push(newTerms[0].id);
             updatedGameState.terms = newTerms.slice(1);
             
@@ -837,8 +852,8 @@ static async makeGuess(
         const remainingTerms = gameState.terms.slice(1);
         
         // Create deep copies to avoid reference issues
-        const newKnownTerm = JSON.parse(JSON.stringify(gameState.hiddenTerm));
-        const newHiddenTerm = JSON.parse(JSON.stringify(nextTerm));
+        const newKnownTerm = TrendGuesserService.safeJSONParse(JSON.stringify(gameState.hiddenTerm), {}) as SearchTerm;
+        const newHiddenTerm = TrendGuesserService.safeJSONParse(JSON.stringify(nextTerm), {}) as SearchTerm;
         
         // CRITICAL FIX: Create state with explicit properties, not using ...spread
         const updatedState: TrendGuesserGameState = {
@@ -961,8 +976,8 @@ static async makeGuess(
         } else {
           // Continue game with new terms
           // Create deep copies to avoid reference issues
-          const newKnownTerm = JSON.parse(JSON.stringify(gameState.hiddenTerm));
-          const newHiddenTerm = JSON.parse(JSON.stringify(newTerms[0]));
+          const newKnownTerm = TrendGuesserService.safeJSONParse(JSON.stringify(gameState.hiddenTerm), {}) as SearchTerm;
+          const newHiddenTerm = TrendGuesserService.safeJSONParse(JSON.stringify(newTerms[0]), {}) as SearchTerm;
           
           // CRITICAL FIX: Create state with explicit properties, not using ...spread
           const updatedState: TrendGuesserGameState = {
@@ -1051,7 +1066,7 @@ static async endGame(gameId: string, playerUid: string, finalScore: number): Pro
       const storedGameData = sessionStorage.getItem(`game_${gameId}`);
       if (storedGameData) {
         try {
-          const gameData = JSON.parse(storedGameData);
+          const gameData = TrendGuesserService.safeJSONParse(storedGameData, {}) as GameData;
           const gameState = gameData['__trendguesser.state'] as TrendGuesserGameState;
           
           if (gameState && gameState.started) {
@@ -1153,7 +1168,7 @@ static async endGame(gameId: string, playerUid: string, finalScore: number): Pro
           if (currentGameId === gameId) {
             const gameData = sessionStorage.getItem(`game_${gameId}`);
             if (gameData) {
-              const parsedData = JSON.parse(gameData);
+              const parsedData = TrendGuesserService.safeJSONParse(gameData, {});
               foundCategory = parsedData['__trendguesser.state']?.category;
               
               if (foundCategory) {
@@ -1348,7 +1363,7 @@ static async updateHighScore(
       const storedScores = localStorage.getItem(highScoresKey);
       if (storedScores) {
         try {
-          existingScores = JSON.parse(storedScores);
+          existingScores = TrendGuesserService.safeJSONParse(storedScores, {});
         } catch (e) {
           console.error("[TrendGuesserService.updateHighScore] Error parsing stored scores:", e);
         }
@@ -1483,7 +1498,7 @@ static async updateHighScore(
         const storedUpdates = localStorage.getItem(pendingUpdatesKey);
         if (storedUpdates) {
           try {
-            pendingUpdates = JSON.parse(storedUpdates);
+            pendingUpdates = TrendGuesserService.safeJSONParse(storedUpdates, {}) as any[];
           } catch (e) {
             console.error("[TrendGuesserService.updateHighScore] Error parsing pending updates:", e);
             pendingUpdates = [];
