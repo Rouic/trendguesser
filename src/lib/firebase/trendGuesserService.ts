@@ -667,12 +667,27 @@ static async makeGuess(
       if (hasOldState && !hasNewState) {
         console.log('[TrendGuesserService.makeGuess] Found old state format, converting to new format');
         gameData['__trendguesser.state'] = gameData['__trendguesser'];
+        
+        // CRITICAL FIX: Preserve the category from the old state
+        if (gameData['__trendguesser'] && gameData['__trendguesser'].category) {
+          gameData['__trendguesser.state'].category = gameData['__trendguesser'].category;
+        }
       } else if (hasTrendGuesserState && !hasNewState) {
         console.log('[TrendGuesserService.makeGuess] Found trendguesser.state format, converting to new format');
         gameData['__trendguesser.state'] = gameData['trendguesser.state'];
+        
+        // CRITICAL FIX: Preserve the category from the old state
+        if (gameData['trendguesser.state'] && gameData['trendguesser.state'].category) {
+          gameData['__trendguesser.state'].category = gameData['trendguesser.state'].category;
+        }
       } else if (hasTrendGuesser && !hasNewState) {
         console.log('[TrendGuesserService.makeGuess] Found trendguesser format, converting to new format');
         gameData['__trendguesser.state'] = gameData['trendguesser'];
+        
+        // CRITICAL FIX: Preserve the category from the old state
+        if (gameData['trendguesser'] && gameData['trendguesser'].category) {
+          gameData['__trendguesser.state'].category = gameData['trendguesser'].category;
+        }
       }
     }
     
@@ -680,8 +695,15 @@ static async makeGuess(
     
     // Check if we have the minimal required properties and make sure they're non-null
     if (!gameState.category) {
+      // CRITICAL FIX: Try to extract category from client state first 
+      let recoveryCategory = 'technology' as SearchCategory; 
+      if (clientGameState && clientGameState.category) {
+        recoveryCategory = clientGameState.category;
+        console.log(`[TrendGuesserService.makeGuess] Using category from client state for recovery: ${recoveryCategory}`);
+      }
+      
       console.warn('[TrendGuesserService.makeGuess] Missing category, defaulting to technology');
-      gameState.category = 'technology' as SearchCategory;
+      gameState.category = recoveryCategory; // Use extracted category instead of hardcoded 'technology'
     }
     
     // Make sure arrays are initialized but DON'T create fallback terms
@@ -938,128 +960,44 @@ static async makeGuess(
         // Get more terms for the same category using existing method
         let newTerms: SearchTerm[] = [];
         
-        try {
-          // Use the existing method to fetch terms by category
+
           try {
-            if (gameState.category === 'custom' && gameState.customTerm) {
-              // For custom categories, fetch related terms
-              console.log(`[TrendGuesserService.makeGuess] Fetching custom terms for: ${gameState.customTerm}`);
-              newTerms = await this.fetchCustomTermWithRelated(gameState.customTerm);
-            } else {
-              // CRITICAL FIX: Always pass the original category, never default to 'technology'
-              console.log(`[TrendGuesserService.makeGuess] Fetching terms for category: ${originalCategory}`);
-              newTerms = await this.fetchTermsByCategory(originalCategory);
+            // Use the existing method to fetch terms by category
+            try {
+              if (gameState.category === 'custom' && gameState.customTerm) {
+                // For custom categories, fetch related terms
+                console.log(`[TrendGuesserService.makeGuess] Fetching custom terms for: ${gameState.customTerm}`);
+                newTerms = await this.fetchCustomTermWithRelated(gameState.customTerm);
+              } else {
+                // CRITICAL FIX: Always pass the original category, never default to 'technology'
+                console.log(`[TrendGuesserService.makeGuess] Fetching terms for category: ${originalCategory}`);
+                newTerms = await this.fetchTermsByCategory(originalCategory);
+              }
+              
+              // CRITICAL FIX: Filter fetched terms to ensure they match the original category
+              if (newTerms.length > 0) {
+                const termsBeforeFilter = newTerms.length;
+                newTerms = newTerms.filter(term => term.category === originalCategory);
+                console.log(`[TrendGuesserService.makeGuess] Filtered terms by category: ${termsBeforeFilter} -> ${newTerms.length}`);
+              }
+            } catch (fetchErr) {
+              console.error('[TrendGuesserService.makeGuess] Error in fetch method:', fetchErr);
+              // Create fallback terms if fetch fails
+              newTerms = [];
             }
             
-            // CRITICAL FIX: Filter fetched terms to ensure they match the original category
-            if (newTerms.length > 0) {
-              const termsBeforeFilter = newTerms.length;
-              newTerms = newTerms.filter(term => term.category === originalCategory);
-              console.log(`[TrendGuesserService.makeGuess] Filtered terms by category: ${termsBeforeFilter} -> ${newTerms.length}`);
+            // Filter out terms that have already been used
+            if (gameState.usedTerms && Array.isArray(gameState.usedTerms)) {
+              const usedTermIds = new Set(gameState.usedTerms);
+              newTerms = newTerms.filter(term => !usedTermIds.has(term.id));
+              console.log(`[TrendGuesserService.makeGuess] Filtered out ${gameState.usedTerms.length} already used terms`);
             }
-          } catch (fetchErr) {
-            console.error('[TrendGuesserService.makeGuess] Error in fetch method:', fetchErr);
-            // Create fallback terms if fetch fails
+            
+            console.log(`[TrendGuesserService.makeGuess] Found ${newTerms.length} new terms`);
+          } catch (error) {
+            console.error('[TrendGuesserService.makeGuess] Error fetching new terms:', error);
             newTerms = [];
           }
-          
-          // CRITICAL FIX: Always create category-appropriate fallback terms if needed
-          if (newTerms.length < 5) {
-            console.log(`[TrendGuesserService.makeGuess] Creating fallback terms for category: ${originalCategory}`);
-            
-            // Generate category-specific names for more appropriate terms
-            const getCategoryTerm = (category: string, index: number) => {
-              switch(category) {
-                case 'snacks':
-                  return [`Cookies ${index}`, `Chips ${index}`, `Candies ${index}`, `Crackers ${index}`, `Popcorn ${index}`][index % 5];
-                case 'technology':
-                  return [`Smartphone ${index}`, `Laptop ${index}`, `Tablet ${index}`, `Headphones ${index}`, `Smart Watch ${index}`][index % 5];
-                case 'sports':
-                  return [`Soccer ${index}`, `Basketball ${index}`, `Tennis ${index}`, `Golf ${index}`, `Football ${index}`][index % 5];
-                case 'landmarks':
-                  return [`Monument ${index}`, `Tower ${index}`, `Museum ${index}`, `Castle ${index}`, `Cathedral ${index}`][index % 5];
-                case 'fashion':
-                  return [`Dress ${index}`, `Shoes ${index}`, `Bag ${index}`, `Jacket ${index}`, `Sunglasses ${index}`][index % 5];
-                default:
-                  return `${category.charAt(0).toUpperCase() + category.slice(1)} Item ${index}`;
-              }
-            };
-            
-            // Create enough fallback terms to reach at least 5 total
-            const neededTerms = Math.max(0, 5 - newTerms.length);
-            for (let i = 0; i < neededTerms; i++) {
-              const termName = getCategoryTerm(originalCategory, i+1);
-              
-              try {
-                const image = await ImageConfig.pexels.getUrl(`${originalCategory} ${termName}`, 800, 600);
-                newTerms.push({
-                  id: `fallback-fetch-${Date.now()}-${i}`,
-                  term: termName,
-                  volume: Math.floor(Math.random() * 900000) + 100000,
-                  category: originalCategory, // CRITICAL FIX: Always use original category!
-                  imageUrl: image,
-                  timestamp: Timestamp.now()
-                });
-              } catch (imgErr) {
-                // Even if image fails, still create the term with a placeholder
-                newTerms.push({
-                  id: `fallback-fetch-${Date.now()}-${i}`,
-                  term: termName,
-                  volume: Math.floor(Math.random() * 900000) + 100000,
-                  category: originalCategory,
-                  imageUrl: `https://picsum.photos/seed/${encodeURIComponent(termName)}/${800}/${600}`,
-                  timestamp: Timestamp.now()
-                });
-              }
-            }
-            
-            console.log(`[TrendGuesserService.makeGuess] Added ${neededTerms} fallback terms, total terms: ${newTerms.length}`);
-          }
-          
-          // Safely filter out terms that have already been used
-          if (gameState.usedTerms && Array.isArray(gameState.usedTerms)) {
-            const usedTermIds = new Set(gameState.usedTerms);
-            newTerms = newTerms.filter(term => !usedTermIds.has(term.id));
-            console.log(`[TrendGuesserService.makeGuess] Filtered out ${gameState.usedTerms.length} already used terms`);
-          } else {
-            console.log('[TrendGuesserService.makeGuess] No usedTerms array found or it is not iterable');
-            // Initialize usedTerms if missing
-            gameState.usedTerms = gameState.usedTerms || [];
-          }
-          
-          console.log(`[TrendGuesserService.makeGuess] Found ${newTerms.length} new terms`);
-        } catch (error) {
-          console.error('[TrendGuesserService.makeGuess] Error fetching new terms:', error);
-          
-          // If an error occurs, create some backup terms
-          newTerms = [];
-          for (let i = 0; i < 5; i++) {
-            const termName = `${originalCategory.charAt(0).toUpperCase() + originalCategory.slice(1)} Item ${i+1}`;
-            
-            try {
-              const image = await ImageConfig.pexels.getUrl(`${originalCategory} term ${i+1}`, 800, 600);
-              const backupTerm: SearchTerm = {
-                id: `backup-${Date.now()}-${i}`,
-                term: termName,
-                volume: Math.floor(Math.random() * 900000) + 100000,
-                category: originalCategory, // CRITICAL FIX: Use original category!
-                imageUrl: image,
-                timestamp: Timestamp.now()
-              };
-              newTerms.push(backupTerm);
-            } catch (imgErr) {
-              // If image fetch fails, use fallback URL
-              newTerms.push({
-                id: `backup-${Date.now()}-${i}`,
-                term: termName,
-                volume: Math.floor(Math.random() * 900000) + 100000,
-                category: originalCategory,
-                imageUrl: `https://picsum.photos/seed/${originalCategory}-${i+1}/800/600`,
-                timestamp: Timestamp.now()
-              });
-            }
-          }
-        }
         
         if (newTerms.length === 0) {
           // If we still have no terms, end the game
@@ -1100,8 +1038,8 @@ static async makeGuess(
             finished: false,
             // Ensure arrays are always properly initialized
             usedTerms: Array.isArray(gameState.usedTerms) 
-              ? [...gameState.usedTerms, newTerms[0].id] 
-              : [gameState.knownTerm.id, gameState.hiddenTerm.id, newTerms[0].id],
+              ? [...gameState.usedTerms, newHiddenTerm.id] 
+              : [gameState.knownTerm.id, gameState.hiddenTerm.id, newHiddenTerm.id],
             terms: Array.isArray(newTerms) && newTerms.length > 1 ? newTerms.slice(1) : [],
             // Preserve custom term if it exists
             customTerm: gameState.customTerm || null

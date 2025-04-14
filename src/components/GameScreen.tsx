@@ -210,273 +210,271 @@ const GameScreen = () => {
   }, [gameState, recoveryAttempted, gameId]);
 
   // Handle player making a guess
- const handleGuess = async (isHigher: boolean) => {
-   // Don't allow guesses during transitions or if already guessing
-   if (!gameState || isGuessing || isTransitioning) return;
+const handleGuess = async (isHigher: boolean) => {
+  // Don't allow guesses during transitions or if already guessing
+  if (!gameState || isGuessing || isTransitioning) return;
 
-   // Verify we have valid term data before proceeding
-   if (!gameState.knownTerm || !gameState.hiddenTerm) {
-     console.error("[handleGuess] Missing term data in game state:", {
-       knownTerm: !!gameState.knownTerm,
-       hiddenTerm: !!gameState.hiddenTerm,
-     });
+  // Verify we have valid term data before proceeding
+  if (!gameState.knownTerm || !gameState.hiddenTerm) {
+    console.error("[handleGuess] Missing term data in game state:", {
+      knownTerm: !!gameState.knownTerm,
+      hiddenTerm: !!gameState.hiddenTerm,
+    });
 
-     // Try to recover from locally stored state or show error
-     setError("Missing game data. Please restart the game.");
-     return;
-   }
+    // Try to recover from locally stored state or show error
+    setError("Missing game data. Please restart the game.");
+    return;
+  }
 
-   // Lock UI to prevent multiple guesses
-   setIsGuessing(true);
-   setError(null);
+  // Lock UI to prevent multiple guesses
+  setIsGuessing(true);
+  setError(null);
 
-   try {
-     console.log(
-       `[handleGuess] Making ${isHigher ? "HIGHER" : "LOWER"} guess...`
-     );
+  try {
+    console.log(
+      `[handleGuess] Making ${isHigher ? "HIGHER" : "LOWER"} guess...`
+    );
 
-     // Store the current game state values for comparison
-     const currentRound = gameState.currentRound || 1;
-     const currentCategory = gameState.category;
-     const knownTermName = gameState.knownTerm?.term || "Unknown Term";
-     const knownTermVolume = gameState.knownTerm?.volume ?? 0;
-     const hiddenTermName = gameState.hiddenTerm?.term || "Unknown Term";
-     const hiddenTermVolume = gameState.hiddenTerm?.volume ?? 0;
+    // Store the current game state values for comparison
+    const currentRound = gameState.currentRound || 1;
+    const currentCategory = gameState.category;
+    const knownTermName = gameState.knownTerm?.term || "Unknown Term";
+    const knownTermVolume = gameState.knownTerm?.volume ?? 0;
+    const hiddenTermName = gameState.hiddenTerm?.term || "Unknown Term";
+    const hiddenTermVolume = gameState.hiddenTerm?.volume ?? 0;
 
-     console.log(`[handleGuess] Round ${currentRound} comparison:`, {
-       category: currentCategory,
-       knownTerm: knownTermName,
-       knownVolume: knownTermVolume,
-       hiddenTerm: hiddenTermName,
-       hiddenVolume: hiddenTermVolume,
-     });
+    console.log(`[handleGuess] Round ${currentRound} comparison:`, {
+      category: currentCategory,
+      knownTerm: knownTermName,
+      knownVolume: knownTermVolume,
+      hiddenTerm: hiddenTermName,
+      hiddenVolume: hiddenTermVolume,
+    });
 
-     // Determine if the guess is correct locally
-     const actuallyHigher = hiddenTermVolume > knownTermVolume;
-     const actuallyEqual = hiddenTermVolume === knownTermVolume;
-     const isCorrect = actuallyEqual ? true : isHigher === actuallyHigher;
+    // Determine if the guess is correct locally
+    const actuallyHigher = hiddenTermVolume > knownTermVolume;
+    const actuallyEqual = hiddenTermVolume === knownTermVolume;
+    const isCorrect = actuallyEqual ? true : isHigher === actuallyHigher;
 
-     // CRITICAL FIX: Create local copies of current terms that won't be affected by Firebase updates
-     // These deep cloned objects will be used for UI rendering during the transition
-     const localKnownTerm = JSON.parse(JSON.stringify(gameState.knownTerm));
-     const localHiddenTerm = JSON.parse(JSON.stringify(gameState.hiddenTerm));
+    // CRITICAL FIX: Create local copies of current terms that won't be affected by Firebase updates
+    // These deep cloned objects will be used for UI rendering during the transition
+    const localKnownTerm = JSON.parse(JSON.stringify(gameState.knownTerm));
+    const localHiddenTerm = JSON.parse(JSON.stringify(gameState.hiddenTerm));
 
-     // Save these local terms in component state to protect them from external updates
-     const localCurrentCategory = gameState.category;
+    // Save these local terms in component state to protect them from external updates
+    const localCurrentCategory = gameState.category;
 
-     // Make the guess API call
-     let result;
-     try {
-       result = await makeGuess(isHigher);
+    // Make the guess API call
+    let result;
+    try {
+      result = await makeGuess(isHigher);
 
-       // If Firebase disagrees with our calculation, trust our calculation
-       if (result !== isCorrect) {
-         console.warn(
-           "[handleGuess] API result differs from local calculation - using local result"
-         );
-         result = isCorrect;
-       }
-     } catch (err) {
-       console.error("[handleGuess] API error, using local calculation:", err);
-       result = isCorrect;
-     }
+      // If Firebase disagrees with our calculation, trust our calculation
+      if (result !== isCorrect) {
+        console.warn(
+          "[handleGuess] API result differs from local calculation - using local result"
+        );
+        result = isCorrect;
+      }
+    } catch (err) {
+      console.error("[handleGuess] API error, using local calculation:", err);
+      result = isCorrect;
+    }
 
-     // Show the result to the user
-     setLastGuessCorrect(result);
-     setShowResult(true);
+    // Show the result to the user
+    setLastGuessCorrect(result);
+    setShowResult(true);
 
-     // LOCAL STATE HANDLING
-     if (result) {
-       // Correct guess - Update score locally
-       const newScore = (currentPlayer?.score || 0) + 1;
-       if (currentPlayer) {
-         setCurrentPlayer({
-           ...currentPlayer,
-           score: newScore,
-         });
-       }
+    // LOCAL STATE HANDLING
+    if (result) {
+      // Correct guess - Update score locally
+      const newScore = (currentPlayer?.score || 0) + 1;
+      if (currentPlayer) {
+        setCurrentPlayer({
+          ...currentPlayer,
+          score: newScore,
+        });
+      }
 
-       // Clear any existing timeout to avoid race conditions
-       if (transitionTimeoutRef.current) {
-         clearTimeout(transitionTimeoutRef.current);
-       }
+      // Clear any existing timeout to avoid race conditions
+      if (transitionTimeoutRef.current) {
+        clearTimeout(transitionTimeoutRef.current);
+      }
 
-       // Wait to let user see both cards (3 seconds)
-       transitionTimeoutRef.current = setTimeout(() => {
-         if (!gameState || gameState.finished) {
-           setIsGuessing(false);
-           setIsTransitioning(false);
-           return;
-         }
+      // Wait to let user see both cards (3 seconds)
+      transitionTimeoutRef.current = setTimeout(() => {
+        if (!gameState || gameState.finished) {
+          setIsGuessing(false);
+          setIsTransitioning(false);
+          return;
+        }
 
-         console.log("[handleGuess] Starting transition to next round");
+        console.log("[handleGuess] Starting transition to next round");
 
-         setIsInTransition(true);
+        setIsInTransition(true);
 
-         // Begin fadeout animation
-         setIsTransitioning(true);
+        // Begin fadeout animation
+        setIsTransitioning(true);
 
-         // Wait for fadeout to complete (600ms)
-         setTimeout(() => {
-           // Hide the result while cards are invisible
-           setShowResult(false);
+        // Wait for fadeout to complete (600ms)
+        setTimeout(() => {
+          // Hide the result while cards are invisible
+          setShowResult(false);
 
-           // CRITICAL FIX: Create a new game state that preserves the correct category
-           // This ensures we don't show terms from the wrong category during transition
-           const nextRoundState = {
-             ...gameState,
-             category: localCurrentCategory, // Preserve the original category
-             currentRound: (gameState.currentRound || 1) + 1,
-             knownTerm: localHiddenTerm, // Use our local copy of hiddenTerm
-           };
+          // CRITICAL FIX: Create a new game state that preserves the correct category
+          // This ensures we don't show terms from the wrong category during transition
+          const nextRoundState = {
+            ...gameState,
+            category: localCurrentCategory, // Preserve the original category
+            currentRound: (gameState.currentRound || 1) + 1,
+            knownTerm: localHiddenTerm, // Use our local copy of hiddenTerm
+          };
 
-           // Prepare next round state with manual term rotation
-           const nextState = prepareNextRoundStateWithFixedCategory(
-             nextRoundState,
-             localCurrentCategory
-           );
+          // Prepare next round state with manual term rotation
+          const nextState = prepareNextRoundStateWithFixedCategory(
+            nextRoundState,
+            localCurrentCategory
+          );
 
-           // CRITICAL: Log state details for visibility
-           console.log("[handleGuess] Updating to next round with state:", {
-             category: nextState.category,
-             knownTerm: nextState.knownTerm?.term,
-             knownVol: nextState.knownTerm?.volume,
-             hiddenTerm: nextState.hiddenTerm?.term,
-             hiddenVol: nextState.hiddenTerm?.volume,
-           });
+          // CRITICAL: Log state details for visibility
+          console.log("[handleGuess] Updating to next round with state:", {
+            category: nextState.category,
+            knownTerm: nextState.knownTerm?.term,
+            knownVol: nextState.knownTerm?.volume,
+            hiddenTerm: nextState.hiddenTerm?.term,
+            hiddenVol: nextState.hiddenTerm?.volume,
+          });
 
-           // Update game state with prepared next state
-           setGameState(nextState);
+          // Update game state with prepared next state
+          setGameState(nextState);
 
-           // Allow cards to become visible again after brief delay
-           setTimeout(() => {
-             setLastGuessCorrect(null);
-             setIsGuessing(false);
-             setIsTransitioning(false);
-             setIsInTransition(false);
-             console.log(
-               "[handleGuess] Transition complete, new round visible"
-             );
-           }, 50);
-         }, 600);
-       }, 3000);
-     } else {
-       // Wrong guess - game over
-       // Save high score for incorrect guess
-       if (currentPlayer?.score > 0 && gameState.category) {
-         try {
-           const playerToUse =
-             sessionStorage.getItem("mock_user_uid") || userUid;
-           if (playerToUse) {
-             await TrendGuesserService.updateHighScore(
-               playerToUse,
-               gameState.category,
-               currentPlayer.score
-             );
-           }
-         } catch (e) {
-           console.error("Error saving high score during game over:", e);
-         }
-       }
+          // Allow cards to become visible again after brief delay
+          setTimeout(() => {
+            setLastGuessCorrect(null);
+            setIsGuessing(false);
+            setIsTransitioning(false);
+            setIsInTransition(false);
+            console.log("[handleGuess] Transition complete, new round visible");
+          }, 50);
+        }, 600);
+      }, 3000);
+    } else {
+      // Wrong guess - game over
+      // Save high score for incorrect guess
+      if (currentPlayer?.score > 0 && gameState.category) {
+        try {
+          const playerToUse =
+            sessionStorage.getItem("mock_user_uid") || userUid;
+          if (playerToUse) {
+            await TrendGuesserService.updateHighScore(
+              playerToUse,
+              gameState.category,
+              currentPlayer.score
+            );
+          }
+        } catch (e) {
+          console.error("Error saving high score during game over:", e);
+        }
+      }
 
-       // Release the guessing lock after game over delay
-       setTimeout(() => {
-         setIsGuessing(false);
-         setIsTransitioning(false);
-       }, 3000);
-     }
-   } catch (err) {
-     console.error("Error in handleGuess:", err);
-     setError("Error processing guess. Please try again.");
-     setIsGuessing(false);
-     setShowResult(false);
-     setLastGuessCorrect(null);
-     setIsTransitioning(false);
-   }
- };
+      // Release the guessing lock after game over delay
+      setTimeout(() => {
+        setIsGuessing(false);
+        setIsTransitioning(false);
+      }, 3000);
+    }
+  } catch (err) {
+    console.error("Error in handleGuess:", err);
+    setError("Error processing guess. Please try again.");
+    setIsGuessing(false);
+    setShowResult(false);
+    setLastGuessCorrect(null);
+    setIsTransitioning(false);
+  }
+};
 
- function prepareNextRoundStateWithFixedCategory(currentState, fixedCategory) {
-   // Create deep copy of current state to avoid reference issues
-   const updatedState = JSON.parse(JSON.stringify(currentState));
+function prepareNextRoundStateWithFixedCategory(currentState, fixedCategory) {
+  // Create deep copy of current state to avoid reference issues
+  const updatedState = JSON.parse(JSON.stringify(currentState));
 
-   // CRITICAL: Ensure we use the fixed category, not whatever might be in the current state
-   updatedState.category = fixedCategory;
+  // CRITICAL: Ensure we use the fixed category, not whatever might be in the current state
+  updatedState.category = fixedCategory;
 
-   // Only try to get next term if we have terms available
-   if (
-     updatedState.terms &&
-     Array.isArray(updatedState.terms) &&
-     updatedState.terms.length > 0
-   ) {
-     // Filter terms to only use ones matching our fixed category
-     const categoryTerms = updatedState.terms.filter(
-       (term) => term.category === fixedCategory
-     );
+  // Only try to get next term if we have terms available
+  if (
+    updatedState.terms &&
+    Array.isArray(updatedState.terms) &&
+    updatedState.terms.length > 0
+  ) {
+    // Filter terms to only use ones matching our fixed category
+    const categoryTerms = updatedState.terms.filter(
+      (term) => term.category === fixedCategory
+    );
 
-     if (categoryTerms.length > 0) {
-       // Get next term from category-filtered terms array
-       updatedState.hiddenTerm = JSON.parse(JSON.stringify(categoryTerms[0]));
+    if (categoryTerms.length > 0) {
+      // Get next term from category-filtered terms array
+      updatedState.hiddenTerm = JSON.parse(JSON.stringify(categoryTerms[0]));
 
-       // Update terms list to remove the term we just used
-       const termIndex = updatedState.terms.findIndex(
-         (t) => t.id === categoryTerms[0].id
-       );
-       if (termIndex !== -1) {
-         updatedState.terms = [
-           ...updatedState.terms.slice(0, termIndex),
-           ...updatedState.terms.slice(termIndex + 1),
-         ];
-       }
-     } else {
-       // No terms of the right category - create a fallback term
-       updatedState.hiddenTerm = {
-         id: `fallback-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-         term: generateTermName(fixedCategory),
-         volume: generateRandomVolume(updatedState.knownTerm.volume),
-         category: fixedCategory,
-         imageUrl: `https://picsum.photos/seed/${fixedCategory}-${Date.now()}/800/600`,
-       };
+      // Update terms list to remove the term we just used
+      const termIndex = updatedState.terms.findIndex(
+        (t) => t.id === categoryTerms[0].id
+      );
+      if (termIndex !== -1) {
+        updatedState.terms = [
+          ...updatedState.terms.slice(0, termIndex),
+          ...updatedState.terms.slice(termIndex + 1),
+        ];
+      }
+    } else {
+      // No terms of the right category - create a fallback term
+      updatedState.hiddenTerm = {
+        id: `fallback-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+        term: generateTermName(fixedCategory),
+        volume: generateRandomVolume(updatedState.knownTerm.volume),
+        category: fixedCategory,
+        imageUrl: `https://picsum.photos/seed/${fixedCategory}-${Date.now()}/800/600`,
+      };
 
-       // Ensure we have a terms array even if empty
-       updatedState.terms = updatedState.terms.filter(
-         (term) => term.category === fixedCategory
-       );
-     }
+      // Ensure we have a terms array even if empty
+      updatedState.terms = updatedState.terms.filter(
+        (term) => term.category === fixedCategory
+      );
+    }
 
-     // Update used terms list
-     updatedState.usedTerms = Array.isArray(updatedState.usedTerms)
-       ? [...updatedState.usedTerms, updatedState.hiddenTerm.id]
-       : [updatedState.knownTerm.id, updatedState.hiddenTerm.id];
-   } else {
-     // No terms left - we need to create a fallback term in the SAME category
-     console.log(
-       "[handleGuess] No more terms available, creating fallback term in category:",
-       fixedCategory
-     );
+    // Update used terms list
+    updatedState.usedTerms = Array.isArray(updatedState.usedTerms)
+      ? [...updatedState.usedTerms, updatedState.hiddenTerm.id]
+      : [updatedState.knownTerm.id, updatedState.hiddenTerm.id];
+  } else {
+    // No terms left - we need to create a fallback term in the SAME category
+    console.log(
+      "[handleGuess] No more terms available, creating fallback term in category:",
+      fixedCategory
+    );
 
-     updatedState.hiddenTerm = {
-       id: `fallback-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-       term: generateTermName(fixedCategory),
-       volume: generateRandomVolume(updatedState.knownTerm.volume),
-       category: fixedCategory,
-       imageUrl: `https://picsum.photos/seed/${fixedCategory}-${Date.now()}/800/600`,
-     };
+    updatedState.hiddenTerm = {
+      id: `fallback-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      term: generateTermName(fixedCategory),
+      volume: generateRandomVolume(updatedState.knownTerm.volume),
+      category: fixedCategory,
+      imageUrl: `https://picsum.photos/seed/${fixedCategory}-${Date.now()}/800/600`,
+    };
 
-     // Also ensure we have a terms array even if empty
-     updatedState.terms = [];
-     updatedState.usedTerms = updatedState.usedTerms || [];
-     updatedState.usedTerms.push(updatedState.hiddenTerm.id);
-   }
+    // Also ensure we have a terms array even if empty
+    updatedState.terms = [];
+    updatedState.usedTerms = updatedState.usedTerms || [];
+    updatedState.usedTerms.push(updatedState.hiddenTerm.id);
+  }
 
-   console.log("[handleGuess] Prepared next round state:", {
-     category: updatedState.category,
-     round: updatedState.currentRound,
-     knownTerm: updatedState.knownTerm.term,
-     hiddenTerm: updatedState.hiddenTerm.term,
-   });
+  console.log("[handleGuess] Prepared next round state:", {
+    category: updatedState.category,
+    round: updatedState.currentRound,
+    knownTerm: updatedState.knownTerm.term,
+    hiddenTerm: updatedState.hiddenTerm.term,
+  });
 
-   return updatedState;
- }
+  return updatedState;
+}
 
   // Helper function to prepare the next round state safely
   function prepareNextRoundState() {
