@@ -468,6 +468,24 @@ const GamePage = () => {
   if (category === "custom") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)",
+            backgroundSize: "20px 20px",
+          }}
+        ></div>
+
+        {/* Glowing orb effect similar to Balatro */}
+        <div
+          className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full opacity-30"
+          style={{
+            background:
+              "radial-gradient(circle at center, rgba(252, 50, 151, 0.7), transparent 70%)",
+            filter: "blur(100px)",
+          }}
+        ></div>
         <Head>
           <title>TrendGuesser - Custom Term</title>
         </Head>
@@ -492,11 +510,29 @@ const GamePage = () => {
   // Show category selection by default
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
+        }}
+      ></div>
+
+      {/* Glowing orb effect similar to Balatro */}
+      <div
+        className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full opacity-30"
+        style={{
+          background:
+            "radial-gradient(circle at center, rgba(252, 50, 151, 0.7), transparent 70%)",
+          filter: "blur(100px)",
+        }}
+      ></div>
       <Head>
         <title>TrendGuesser - Choose Category</title>
       </Head>
 
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md z-10">
         <div className="mb-6 text-center">
           <Link
             className="text-4xl font-display text-game-neon-yellow tracking-wider mb-2 animate-glow font-display-fallback cursor-pointer"

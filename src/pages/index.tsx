@@ -140,10 +140,10 @@ const HomePage = () => {
 
           <div className="bg-gray-800/20 backdrop-blur-sm rounded-xl p-6 border border-white/5">
             <h3 className="text-game-neon-pink/80 font-bold text-lg mb-3 font-game-fallback">
-              CUSTOM TERMS
+              UPDATED TRENDS
             </h3>
             <p className="text-white/60 font-game-fallback">
-              Enter your own search term and see how it compares.
+              See the latest trending search terms from across the web.
             </p>
           </div>
 

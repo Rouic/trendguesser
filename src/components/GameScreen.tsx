@@ -726,8 +726,26 @@ const GameScreen = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)",
+          backgroundSize: "20px 20px",
+        }}
+      ></div>
+
+      {/* Glowing orb effect similar to Balatro */}
+      <div
+        className="absolute top-1/3 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] rounded-full opacity-30"
+        style={{
+          background:
+            "radial-gradient(circle at center, rgba(252, 50, 151, 0.7), transparent 70%)",
+          filter: "blur(100px)",
+        }}
+      ></div>
       {/* Top bar with score */}
-      <div className="p-4 bg-black/30 backdrop-blur-sm grid grid-cols-3 items-center border-b border-white/10">
+      <div className="p-4 z-10 bg-black/30 backdrop-blur-sm grid grid-cols-3 items-center border-b border-white/10">
         <div className="flex items-center justify-start gap-2 grow lg:shrink">
           <button
             onClick={handleQuit}
@@ -765,7 +783,7 @@ const GameScreen = () => {
       </div>
 
       {/* Main game container - simplified layout */}
-      <div className="flex-1 grid grid-rows-[1fr_auto_1fr] h-[calc(100vh-64px)]">
+      <div className="flex-1 z-10 grid grid-rows-[1fr_auto_1fr] h-[calc(100vh-64px)]">
         {/* Top card (known term) */}
         <div className="flex items-center justify-center p-4">
           <div
