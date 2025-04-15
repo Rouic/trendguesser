@@ -1,0 +1,3 @@
+# Don't ignore any files in this directory - we need them all
+!**/*.json
+!README.md

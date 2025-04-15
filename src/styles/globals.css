@@ -1,0 +1,364 @@
+@import "tailwindcss";
+
+@theme {
+  /* Game Core Colors */
+  --color-game-bg: #121218;        /* from game.bg and game-bg */
+  --color-game-card: #1a1a23;       /* from game.card and game-card */
+  --color-game-felt: #202030;       /* from game.felt */
+  --color-game-accent: #ff5722;     /* from game.accent */
+  --color-game-highlight: #ffc107;  /* from game.highlight */
+  
+  /* Game Neon Colors (nested under game.neon and separate keys) */
+  --color-game-neon-blue: #00DDFF;   /* from game.neon.blue and game-neon-blue */
+  --color-game-neon-red: #FF3366;    /* from game.neon.red and game-neon-red */
+  --color-game-neon-green: #00FF99;  /* from game.neon.green and game-neon-green */
+  --color-game-neon-pink: #FF00CC;   /* from game.neon.pink and game-neon-pink */
+  --color-game-neon-purple: #9932fc; /* from game.neon.purple and game-neon-purple */
+  --color-game-neon-yellow: #FFCC00; /* from game.neon.yellow and game-neon-yellow */
+  --color-game-neon-gold: #FFD700;   /* from game.neon.gold and game-neon-gold */
+  --color-game-neon-silver: #C0C0C0; /* from game.neon.silver and game-neon-silver */
+  --color-game-neon-bronze: #CD7F32; /* from game.neon.bronze and game-neon-bronze */
+}
+
+@theme {
+  /* Core palette */
+  --color-rose-dark: #26101a; /* Balatro-inspired rose dark background */
+  --color-white: #ffffff;
+  
+  /* Neon colors */
+  --color-neon-red: #ff2158;
+  --color-game-neon-red: #ff2158;
+  --color-neon-red-shadow: rgba(255, 33, 88, 0.5);
+  --color-neon-red-lg-shadow: rgba(255, 33, 88, 0.7);
+  --color-neon-red-lg-shadow2: rgba(255, 33, 88, 0.4);
+
+  --color-neon-blue: #3287fc;
+  --color-game-neon-blue: #3287fc;
+  --color-neon-blue-shadow: rgba(50, 135, 252, 0.5);
+  --color-neon-blue-lg-shadow: rgba(50, 135, 252, 0.7);
+  --color-neon-blue-lg-shadow2: rgba(50, 135, 252, 0.4);
+
+  --color-neon-green: #32fc58;
+  --color-game-neon-green: #32fc58;
+  --color-neon-green-shadow: rgba(50, 252, 88, 0.5);
+  --color-neon-green-lg-shadow: rgba(50, 252, 88, 0.7);
+  --color-neon-green-lg-shadow2: rgba(50, 252, 88, 0.4);
+
+  --color-neon-yellow: #fcde32;
+  --color-game-neon-yellow: #fcde32;
+  --color-neon-yellow-shadow: rgba(252, 222, 50, 0.5);
+  --color-neon-yellow-lg-shadow: rgba(252, 222, 50, 0.7);
+  --color-neon-yellow-lg-shadow2: rgba(252, 222, 50, 0.4);
+
+  --color-neon-purple: #9932fc;
+  --color-neon-purple-shadow: rgba(153, 50, 252, 0.5);
+  --color-neon-purple-lg-shadow: rgba(153, 50, 252, 0.7);
+  --color-neon-purple-lg-shadow2: rgba(153, 50, 252, 0.4);
+  --color-game-neon-purple: #9932fc;
+  --color-game-neon-purple-shadow: rgba(153, 50, 252, 0.5);
+  --color-game-neon-purple-lg-shadow: rgba(153, 50, 252, 0.7);
+  --color-game-neon-purple-lg-shadow2: rgba(153, 50, 252, 0.4);
+
+  --color-neon-orange: #ff9933;
+  --color-neon-orange-shadow: rgba(255, 153, 51, 0.5);
+  --color-neon-orange-lg-shadow: rgba(255, 153, 51, 0.7);
+  --color-neon-orange-lg-shadow2: rgba(255, 153, 51, 0.4);
+  --color-game-neon-orange: #ff9933;
+  --color-game-neon-orange-shadow: rgba(255, 153, 51, 0.5);
+  --color-game-neon-orange-lg-shadow: rgba(255, 153, 51, 0.7);
+  --color-game-neon-orange-lg-shadow2: rgba(255, 153, 51, 0.4);
+
+
+}
+/* Card transition enhancements */
+.card-transition {
+  transition: transform 0.8s cubic-bezier(0.2, 0.9, 0.3, 1),
+              opacity 0.5s ease;
+}
+
+/* Smooth fade transitions */
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.fade-out {
+  animation: fadeOut 0.5s ease forwards;
+}
+
+/* Animation keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Ensure proper spacing between cards and control bar */
+.card-spacing-top {
+  padding-bottom: 3rem; /* Space above the control bar */
+}
+
+.card-spacing-bottom {
+  padding-top: 3rem; /* Space below the control bar */
+}
+
+/* Shadow effect for better card depth perception during animation */
+.card-shadow {
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3),
+              0 8px 10px -6px rgba(0, 0, 0, 0.2);
+  transition: box-shadow 0.3s ease;
+}
+
+.card-shadow:hover {
+  box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.4),
+              0 10px 15px -5px rgba(0, 0, 0, 0.3);
+}
+
+/* Fixed middle control bar styling */
+.control-bar {
+  background: linear-gradient(to bottom,
+              rgba(0, 0, 0, 0.8) 0%,
+              rgba(0, 0, 0, 0.7) 100%);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* Custom font-family fallbacks */
+.font-game-fallback {
+  font-family: 'Oswald', 'Arial Black', 'Impact', Arial, sans-serif !important;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.font-display-fallback {
+  font-family: 'Press Start 2P', monospace !important;
+  letter-spacing: 0.1em;
+}
+
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
+    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  background-color: var(--color-slate-950);
+  color: var(--color-white);
+}
+
+
+/* Enhances transition effects between cards */
+.card-transition-wrapper {
+  transition: opacity 0.5s ease-out, transform 0.5s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.card-transition-wrapper.fade-out {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.card-transition-wrapper.fade-in {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Enhanced result notification */
+.result-notification {
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes popIn {
+  0% { 
+    transform: translate(-50%, 20px);
+    opacity: 0;
+  }
+  100% { 
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+}
+
+/* Enhance correct guess notification */
+.correct-guess {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0% {
+    box-shadow: 0 0 5px rgba(0, 255, 153, 0.5), 0 0 10px rgba(0, 255, 153, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 15px rgba(0, 255, 153, 0.8), 0 0 25px rgba(0, 255, 153, 0.5);
+  }
+  100% {
+    box-shadow: 0 0 5px rgba(0, 255, 153, 0.5), 0 0 10px rgba(0, 255, 153, 0.3);
+  }
+}
+
+/* Create sliding transition effect */
+.slide-left-out {
+  animation: slideLeftOut 0.5s forwards;
+}
+
+.slide-right-in {
+  animation: slideRightIn 0.5s forwards;
+}
+
+@keyframes slideLeftOut {
+  0% { 
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% { 
+    transform: translateX(-30px);
+    opacity: 0;
+  }
+}
+
+@keyframes slideRightIn {
+  0% { 
+    transform: translateX(30px);
+    opacity: 0;
+  }
+  100% { 
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Volume reveal animation */
+.volume-reveal {
+  animation: scaleReveal 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  transform-origin: center center;
+}
+
+@keyframes scaleReveal {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Neon button styles */
+.btn-neon {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.btn-neon::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: 0.5s;
+}
+
+.btn-neon:hover::before {
+  left: 100%;
+}
+
+/* Rotation effects */
+.rotate-0\.5 {
+  transform: rotate(0.5deg);
+}
+
+.-rotate-0\.5 {
+  transform: rotate(-0.5deg);
+}
+
+.rotate-1 {
+  transform: rotate(1deg);
+}
+
+.-rotate-1 {
+  transform: rotate(-1deg);
+}
+
+/* Neon color classes */
+/* Text colors */
+
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes floatReverse {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+/* Slow pulse animation */
+.animate-pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Slow float animations */
+.animate-float-slow {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-slow-reverse {
+  animation: floatReverse 7s ease-in-out infinite;
+}
+
+/* Scale utilities */
+.scale-\[1\.02\] {
+  transform: scale(1.02);
+}
+
+/* Blur utilities */
+.blur-xl {
+  filter: blur(24px);
+}
+
+.blur-2xl {
+  filter: blur(40px);
+}
+
+.blur-sm {
+  filter: blur(4px);
+}
+
+.blur-md {
+  filter: blur(12px);
+}
+
