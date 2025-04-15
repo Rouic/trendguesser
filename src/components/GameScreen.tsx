@@ -265,6 +265,9 @@ const handleGuess = async (isHigher: boolean) => {
     // Save these local terms in component state to protect them from external updates
     const localCurrentCategory = gameState.category;
 
+    // CRITICAL FIX: Store the current round number to prevent stale state from being displayed
+    const localCurrentRound = currentRound;
+
     // Make the guess API call
     let result;
     try {
@@ -292,60 +295,6 @@ const handleGuess = async (isHigher: boolean) => {
 
     // LOCAL STATE HANDLING
     if (result) {
-      // Correct guess - CRITICAL FIX: Update score IMMEDIATELY using the functional update form
-      // setCurrentPlayer((prevPlayer) => {
-      //   const prevScore = prevPlayer?.score || 0;
-      //   const newScore = prevScore + 1;
-      //   console.log(
-      //     `[handleGuess] Updating score from ${prevScore} to ${newScore}`
-      //   );
-
-      //   const updatedPlayer = { ...prevPlayer, score: newScore };
-
-      //   // CRITICAL FIX: Ensure localStorage gets the latest score for persistence
-      //   // This ensures the score is available for later high score calculation
-      //   if (typeof window !== "undefined" && userUid) {
-      //     try {
-      //       // Save current score to localStorage for this player
-      //       const playerDataKey = `tg_player_${userUid}`;
-      //       localStorage.setItem(playerDataKey, JSON.stringify(updatedPlayer));
-
-      //       // Also update high scores in localStorage if this is a new high score
-      //       const highScoresKey = `tg_highscores_${userUid}`;
-      //       let existingScores = {};
-
-      //       // Get existing high scores
-      //       const storedScores = localStorage.getItem(highScoresKey);
-      //       if (storedScores) {
-      //         existingScores = JSON.parse(storedScores);
-      //       }
-
-      //       // Only update if new score is higher than current high score
-      //       const currentHighScore = existingScores[localCurrentCategory] || 0;
-      //       if (newScore > currentHighScore) {
-      //         const updatedScores = {
-      //           ...existingScores,
-      //           [localCurrentCategory]: newScore,
-      //         };
-
-      //         localStorage.setItem(
-      //           highScoresKey,
-      //           JSON.stringify(updatedScores)
-      //         );
-      //         console.log(
-      //           `Updated high score for ${localCurrentCategory} to ${newScore}`
-      //         );
-      //       }
-
-      //       // Trigger storage event for other components
-      //       window.dispatchEvent(new Event("storage"));
-      //     } catch (e) {
-      //       console.error("Error saving player data to localStorage:", e);
-      //     }
-      //   }
-      //   return updatedPlayer;
-      // });
-
       // Clear any existing timeout to avoid race conditions
       if (transitionTimeoutRef.current) {
         clearTimeout(transitionTimeoutRef.current);
@@ -363,15 +312,17 @@ const handleGuess = async (isHigher: boolean) => {
           "[handleGuess] Starting transition to next round after showing result"
         );
 
-        // CRITICAL FIX: Set transition flag at the very beginning
+        // CRITICAL FIX: Set transition flags at the very beginning
         // This ensures hidden card volume is NEVER visible during the entire transition
+        // and prevents stale state from being displayed
         setIsInTransition(true);
+        setIsTransitioning(true);
 
         // Immediately hide any volume result for the upcoming transition
         setShowResult(false);
 
-        // Begin fadeout animation
-        setIsTransitioning(true);
+        // CRITICAL FIX: Store transition start time to prevent stale updates
+        const transitionStartTime = Date.now();
 
         // Wait for fadeout to complete (600ms)
         setTimeout(() => {
@@ -379,12 +330,12 @@ const handleGuess = async (isHigher: boolean) => {
           setShowResult(false);
           setLastGuessCorrect(null);
 
-          // CRITICAL FIX: Create a new game state that preserves the correct category
+          // CRITICAL FIX: Create a new game state that preserves the correct category and round number
           // This ensures we don't show terms from the wrong category during transition
           const nextRoundState = {
             ...gameState,
             category: localCurrentCategory, // Preserve the original category
-            currentRound: (gameState.currentRound || 1) + 1,
+            currentRound: localCurrentRound + 1, // Explicitly use local round number + 1
             knownTerm: localHiddenTerm, // Use our local copy of hiddenTerm
           };
 
@@ -397,11 +348,16 @@ const handleGuess = async (isHigher: boolean) => {
           // CRITICAL: Log state details for visibility
           console.log("[handleGuess] Updating to next round with state:", {
             category: nextState.category,
+            round: nextState.currentRound,
             knownTerm: nextState.knownTerm?.term,
             knownVol: nextState.knownTerm?.volume,
             hiddenTerm: nextState.hiddenTerm?.term,
             hiddenVol: nextState.hiddenTerm?.volume,
           });
+
+          // CRITICAL FIX: Add a property to mark this as a transition update
+          // This will help prevent stale updates from overriding this update
+          nextState._transitionTime = transitionStartTime;
 
           // Update game state with prepared next state
           setGameState(nextState);

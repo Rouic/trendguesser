@@ -582,6 +582,20 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
       return;
     }
 
+    // CRITICAL FIX: Check if we already have a state and if the incoming state has a lower round number
+    // This prevents stale state updates from overriding newer states
+    if (
+      gameState &&
+      typeof gameState.currentRound === "number" &&
+      typeof state.currentRound === "number" &&
+      state.currentRound < gameState.currentRound
+    ) {
+      console.warn(
+        `Ignoring stale game state update (round ${state.currentRound} < ${gameState.currentRound})`
+      );
+      return;
+    }
+
     // Ensure terms have valid structure to prevent crashes
     if (!state.knownTerm || typeof state.knownTerm !== "object") {
       console.warn(
