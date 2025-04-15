@@ -102,9 +102,9 @@ const HomePage = () => {
 
         <div className="w-full max-w-3xl mx-auto h-1.5 bg-gradient-to-r from-transparent via-game-neon-yellow to-transparent mb-2 mt-2"></div>
 
-        <p className="text-lg sm:text-2xl md:text-3xl text-white mb-6 sm:mb-12 max-w-3xl mx-auto font-game-fallback tracking-wide text-center w-full leading-relaxed px-6 sm:px-0">
+        <h2 className="text-lg sm:text-2xl md:text-3xl text-white mb-6 sm:mb-12 max-w-3xl mx-auto font-game-fallback tracking-wide text-center w-full leading-relaxed px-6 sm:px-0">
           GUESS WHICH TRENDING TERM HAS MORE SEARCHES!
-        </p>
+        </h2>
 
         {/* Game buttons - UPDATED for more prominent Play Now button */}
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 mb-10 sm:mb-16 justify-center w-full">
@@ -120,27 +120,27 @@ const HomePage = () => {
         {/* Features section - UPDATED to be more subtle/informational */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto mb-12">
           <div className="bg-gray-800/20 backdrop-blur-sm rounded-xl p-6 border border-white/5  hover:shadow-neon-green-sm transition-all duration-300 group">
-            <h2 className="text-game-neon-green/80 font-bold text-lg mb-3 font-game-fallback group-hover:text-game-neon-green transition-colors duration-300">
+            <h3 className="text-game-neon-green/80 font-bold text-lg mb-3 font-game-fallback group-hover:text-game-neon-green transition-colors duration-300">
               INTUITION!
-            </h2>
+            </h3>
             <p className="text-white/60 font-game-fallback group-hover:text-white/80 transition-colors duration-300">
               Test your gut. Guess which trends are hotter.
             </p>
           </div>
 
           <div className="bg-gray-800/20 backdrop-blur-sm rounded-xl p-6 border border-white/5  hover:shadow-neon-blue-sm transition-all duration-300 group">
-            <h2 className="text-game-neon-blue/80 font-bold text-lg mb-3 font-game-fallback group-hover:text-game-neon-blue transition-colors duration-300">
+            <h3 className="text-game-neon-blue/80 font-bold text-lg mb-3 font-game-fallback group-hover:text-game-neon-blue transition-colors duration-300">
               CATEGORIES!
-            </h2>
+            </h3>
             <p className="text-white/60 font-game-fallback group-hover:text-white/80 transition-colors duration-300">
               Celebrity, tech, games, food. Pick your specialty.
             </p>
           </div>
 
           <div className="bg-gray-800/20 backdrop-blur-sm rounded-xl p-6 border border-white/5  hover:shadow-neon-pink-sm transition-all duration-300 group sm:col-span-2 lg:col-span-1">
-            <h2 className="text-game-neon-pink/80 font-bold text-lg mb-3 font-game-fallback group-hover:text-game-neon-pink transition-colors duration-300">
+            <h3 className="text-game-neon-pink/80 font-bold text-lg mb-3 font-game-fallback group-hover:text-game-neon-pink transition-colors duration-300">
               COMPETE!
-            </h2>
+            </h3>
             <p className="text-white/60 font-game-fallback group-hover:text-white/80 transition-colors duration-300">
               Beat your friends. Top the leaderboards.
             </p>
