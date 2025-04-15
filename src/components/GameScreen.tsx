@@ -380,6 +380,41 @@ const handleGuess = async (isHigher: boolean) => {
       }, 2500);
     } else {
       // Wrong guess - game over
+      // Immediately mark the game as finished with current terms preserved
+      try {
+        // Create a clean copy of the current game state with finished flag
+        const gameOverState = {
+          ...gameState,
+          finished: true,
+          // Ensure the current terms are preserved
+          knownTerm: { ...gameState.knownTerm },
+          hiddenTerm: { ...gameState.hiddenTerm },
+        };
+
+        // Update local state immediately
+        setGameState(gameOverState);
+
+        // Also update server state
+        try {
+          const response = await fetch(`/api/games/${gameId}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              status: "finished",
+              "__trendguesser.state": gameOverState,
+            }),
+          });
+          console.log("Game marked as finished with current terms preserved");
+        } catch (err) {
+          console.error("Failed to update server with game over state:", err);
+          // Even if server update fails, local state is already updated
+        }
+      } catch (gameOverErr) {
+        console.error("Error preserving game over state:", gameOverErr);
+      }
+
       // Save high score for incorrect guess
       if (currentPlayer?.score > 0 && gameState.category) {
         try {

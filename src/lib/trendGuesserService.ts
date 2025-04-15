@@ -1,4 +1,4 @@
-// src/lib/trendGuesserService.ts
+//src/lib/trendGuesserService.ts
 
 import { v4 as uuidv4 } from 'uuid';
 import { SearchCategory, SearchTerm, TrendGuesserGameState, TrendGuesserPlayer, GameData } from '@/types';
@@ -353,8 +353,38 @@ static async makeGuess(
         // Save the final score for high score tracking
         const finalScore = player.score || 0;
         
-        // CRITICAL FIX: Make sure to update the high score both locally and on server
+        // CRITICAL FIX: Mark the game as finished and preserve current terms
         try {
+          // First mark the game as finished in the state
+          const gameOverState = {
+            ...gameState,
+            finished: true
+          };
+          
+          // Update server state with finished flag
+          try {
+            const updateResponse = await fetch(`/api/games/${gameId}`, {
+              method: 'PATCH',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                status: 'finished',
+                '__trendguesser.state': gameOverState,
+                [playerUid]: player
+              }),
+            });
+            
+            if (!updateResponse.ok) {
+              console.warn('[TrendGuesserService.makeGuess] Failed to update game as finished on server.');
+            } else {
+              console.log('[TrendGuesserService.makeGuess] Game marked as finished with current terms preserved');
+            }
+          } catch (updateErr) {
+            console.error('[TrendGuesserService.makeGuess] Error updating game as finished:', updateErr);
+          }
+          
+          // Then update high score
           await this.updateHighScore(
             playerUid, 
             gameState.category, 
@@ -362,7 +392,7 @@ static async makeGuess(
           );
           console.log('[TrendGuesserService.makeGuess] Updated high score for game over');
         } catch (highScoreErr) {
-          console.error('[TrendGuesserService.makeGuess] Failed to update high score, but game is still over:', highScoreErr);
+          console.error('[TrendGuesserService.makeGuess] Failed to update game state for game over:', highScoreErr);
         }
         
         // Clear processing flag before returning
