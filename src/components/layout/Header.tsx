@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import Image from "next/image";
 
 const Header: React.FC = () => {
   const router = useRouter();
@@ -20,9 +21,11 @@ const Header: React.FC = () => {
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo and title */}
         <Link href="/" className="flex items-center">
-          <img
+          <Image
             src="/images/icon.png"
             alt="Trend Guesser logo"
+            width={32}
+            height={32}
             className="h-8 mr-3"
           />
           <span className="text-white text-xl font-display tracking-wider animate-glow font-display-fallback">

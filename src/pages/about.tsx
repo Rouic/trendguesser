@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import Head from "next/head";
 import Footer from "@/components/layout/Footer";
+import Image from "next/image";
 
 const AboutPage = () => {
   return (
@@ -74,9 +75,11 @@ const AboutPage = () => {
         <div className="w-full max-w-4xl bg-black/30 backdrop-blur-sm p-4 sm:p-10 rounded-xl border border-game-neon-yellow/20 mb-6 sm:mb-10 transform -rotate-0.5 shadow-neon-yellow-sm mx-4 sm:mx-auto">
           <div className="flex items-center mb-4 sm:mb-6">
             <div className="w-8 h-8 sm:w-12 sm:h-12 mr-3 sm:mr-4 rotate-12 flex-shrink-0">
-              <img
+              <Image
                 src="/images/icon.png"
                 alt="Trend Guesser Logo"
+                width={48}
+                height={48}
                 className="w-full h-full object-contain"
               />
             </div>

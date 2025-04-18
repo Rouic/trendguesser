@@ -145,7 +145,7 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect }) => {
     },
     {
       id: "landmarks",
-      name: "Famous Landmarks",
+      name: "Landmarks",
       description: "Famous places & buildings",
       color: "border-game-neon-purple text-game-neon-purple shadow-neon-purple-sm",
     },
