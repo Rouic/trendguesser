@@ -1,4 +1,3 @@
-import "../../../../apps/mobile/src/polyfills";
 import React, {
   createContext,
   useContext,
@@ -6,7 +5,6 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-import { v4 as uuidv4 } from "uuid";
 import { SearchCategory, SearchTerm, GameState, IPlayer } from "../types";
 import {
   TrendGuesserService,
@@ -72,6 +70,18 @@ export const GameProvider: React.FC<GameProviderProps> = ({
     return "general";
   }
 
+   const genNewPlayerId = () => {
+     let result = "";
+     const characters =
+       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+     for (let i = 0; i < 36; i++) {
+       result += characters.charAt(
+         Math.floor(Math.random() * characters.length)
+       );
+     }
+     return result;
+   };
+
   // Initialize player data on mount
   useEffect(() => {
     const initPlayer = async () => {
@@ -82,7 +92,11 @@ export const GameProvider: React.FC<GameProviderProps> = ({
           setPlayerId(storedPlayerId);
         } else {
           // Create a new player ID if none exists
-          const newPlayerId = uuidv4();
+          //create our own uuid instead of uuidv4
+         
+
+          const newPlayerId = genNewPlayerId();
+
           await storage.setItem("tg_player_id", newPlayerId);
           setPlayerId(newPlayerId);
         }
@@ -95,7 +109,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({
       } catch (err) {
         console.error("Error initializing player data:", err);
         // Use defaults if storage fails
-        setPlayerId(uuidv4());
+        setPlayerId(genNewPlayerId());
         setPlayerName("Player");
       }
     };
