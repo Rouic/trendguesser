@@ -2,7 +2,7 @@
 
 Welcome to **TrendGuesser** – the ultimate higher/lower guessing game where you predict which trending search term has the higher search volume! 🚀 Whether you're a casual player or a tech aficionado, get ready to have fun, challenge your intuition, and climb the leaderboards!
 
-![TrendGuesser Screenshot](/public/images/social-cover.png)
+![TrendGuesser Screenshot](/public/images/social-cover.png) 
 
 ---
 
