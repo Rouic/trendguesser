@@ -1,6 +1,15 @@
+"use client";
+
 //GameContext.tsx
 
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+} from "react";
 import { useRouter } from "next/router";
 import {
   GameData,
@@ -123,39 +132,40 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     setLoading(true);
     setError(null);
 
-    console.log(
-      `Loading game data for game ID: ${gameId}, user: ${userUid}`
-    );
+    console.log(`Loading game data for game ID: ${gameId}, user: ${userUid}`);
 
     // Check for local game state in localStorage
     if (typeof window !== "undefined") {
       try {
         const localStateKey = `tg_local_state_${gameId}`;
         const localStateJson = localStorage.getItem(localStateKey);
-        
+
         if (localStateJson) {
           try {
             const localStateData = JSON.parse(localStateJson);
             if (localStateData.gameState) {
               console.log(`Found local game state for ${gameId}`);
-              
+
               // Set the game state from localStorage
               setGameState(localStateData.gameState);
-              
+
               // Also try to load player data
               const playerDataKey = `tg_player_${userUid}`;
               const storedPlayerData = localStorage.getItem(playerDataKey);
-              
+
               if (storedPlayerData) {
                 try {
                   const playerData = JSON.parse(storedPlayerData);
                   setCurrentPlayer(playerData);
-                  console.log(`Loaded player data for ${userUid}, score:`, playerData.score);
+                  console.log(
+                    `Loaded player data for ${userUid}, score:`,
+                    playerData.score
+                  );
                 } catch (e) {
                   console.error("Error parsing player data:", e);
                 }
               }
-              
+
               setLoading(false);
               return;
             }
@@ -167,14 +177,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
         console.error("Error accessing localStorage:", e);
       }
     }
-    
+
     // If no local state, try to fetch game data once from API
     const fetchGameData = async () => {
       try {
         const response = await fetch(`/api/games/${gameId}`);
         if (response.ok) {
-          const data = await response.json() as GameData;
-          
+          const data = (await response.json()) as GameData;
+
           console.log(
             `Found game data for ${gameId}:`,
             data.status,
@@ -186,9 +196,11 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
 
           // Extract game state if it exists
           if (data["__trendguesser.state"]) {
-            const gameState = data["__trendguesser.state"] as TrendGuesserGameState;
+            const gameState = data[
+              "__trendguesser.state"
+            ] as TrendGuesserGameState;
             setGameState(gameState);
-            
+
             // Save to localStorage for future use
             if (typeof window !== "undefined") {
               try {
@@ -197,7 +209,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
                   JSON.stringify({
                     gameState,
                     lastUpdate: new Date().toISOString(),
-                    pendingUpdates: false
+                    pendingUpdates: false,
                   })
                 );
               } catch (e) {
@@ -209,7 +221,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
           // Extract current player data
           if (data[userUid]) {
             setCurrentPlayer(data[userUid] as TrendGuesserPlayer);
-            
+
             // Save player data to localStorage
             if (typeof window !== "undefined") {
               try {
@@ -221,13 +233,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
                 console.error("Error storing player data to localStorage:", e);
               }
             }
-            
+
             console.log(
               `Found player data for ${userUid}, score:`,
               data[userUid].score
             );
           }
-          
+
           setLoading(false);
         } else {
           console.log("Game data not found or error:", response.status);

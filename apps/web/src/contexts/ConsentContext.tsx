@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+"use client";
+
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 export interface ConsentState {
   analytics: boolean;
@@ -32,28 +34,31 @@ const ConsentContext = createContext<ConsentContextType>(defaultContext);
 
 export const useConsent = () => useContext(ConsentContext);
 
-export const ConsentProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [consent, setConsentState] = useState<ConsentState>(defaultConsentState);
+export const ConsentProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [consent, setConsentState] =
+    useState<ConsentState>(defaultConsentState);
   const [hasSetConsent, setHasSetConsent] = useState<boolean>(false);
 
   // Load consent state from localStorage on mount
   useEffect(() => {
     // Only attempt to read if localStorage is available
-    if (typeof window !== 'undefined') {
-      const storedConsent = localStorage.getItem('consent');
-      const storedHasSetConsent = localStorage.getItem('hasSetConsent');
-      
+    if (typeof window !== "undefined") {
+      const storedConsent = localStorage.getItem("consent");
+      const storedHasSetConsent = localStorage.getItem("hasSetConsent");
+
       if (storedConsent) {
         try {
           const parsedConsent = JSON.parse(storedConsent);
           setConsentState(parsedConsent);
         } catch (error) {
-          console.error('Failed to parse stored consent', error);
+          console.error("Failed to parse stored consent", error);
         }
       }
-      
+
       if (storedHasSetConsent) {
-        setHasSetConsent(storedHasSetConsent === 'true');
+        setHasSetConsent(storedHasSetConsent === "true");
       }
     }
   }, []);
@@ -61,9 +66,9 @@ export const ConsentProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Update localStorage when consent changes
   useEffect(() => {
     // Only save if the user has explicitly set consent
-    if (hasSetConsent && typeof window !== 'undefined') {
-      localStorage.setItem('consent', JSON.stringify(consent));
-      localStorage.setItem('hasSetConsent', hasSetConsent.toString());
+    if (hasSetConsent && typeof window !== "undefined") {
+      localStorage.setItem("consent", JSON.stringify(consent));
+      localStorage.setItem("hasSetConsent", hasSetConsent.toString());
     }
   }, [consent, hasSetConsent]);
 

@@ -1,3 +1,4 @@
+"use client";
 // src/contexts/AuthContext.tsx
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
@@ -207,7 +208,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         updatePlayerName,
       }}
     >
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
