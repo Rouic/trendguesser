@@ -11,7 +11,11 @@
     "paths": {
       "@/*": ["./src/*"],
       "@trendguesser/shared": ["../../packages/shared/src"]
-    }
+    },
+    "typeRoots": [
+      "./node_modules/@types",
+      "../../node_modules/@types"
+    ]
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "next.config.js"],
   "exclude": ["node_modules"]

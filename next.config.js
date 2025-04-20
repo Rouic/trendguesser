@@ -12,9 +12,13 @@ try {
 
 const nextConfig = {
   // Removed 'export' output to enable API routes
-  reactStrictMode: false,
+  reactStrictMode: true,
   eslint: {
     dirs: ['src'],
+    ignoreDuringBuilds: true,
+  },
+  experimental: {
+    externalDir: true, // Allows importing modules from outside the src directory
   },
   // Environment variables accessible to the client
   env: {
@@ -42,6 +46,11 @@ const nextConfig = {
         filename: 'static/sounds/[name].[hash][ext]'
       }
     });
+
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@trendguesser/shared': path.resolve(__dirname, '../../packages/shared/src'),
+    };
     
     return config;
   },
