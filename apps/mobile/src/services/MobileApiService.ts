@@ -4,7 +4,7 @@ import { IApiService, ApiResponse } from '@trendguesser/shared';
 export class MobileApiService implements IApiService {
   private baseUrl: string;
   
-  constructor(baseUrl: string = 'https://api.trendguesser.com') {
+  constructor(baseUrl: string = 'https://trendguesser.com') {
     this.baseUrl = baseUrl;
   }
   
