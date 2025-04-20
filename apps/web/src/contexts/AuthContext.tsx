@@ -208,7 +208,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         updatePlayerName,
       }}
     >
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

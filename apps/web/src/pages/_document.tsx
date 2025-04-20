@@ -1,7 +1,9 @@
+import { Html, Head, Main, NextScript } from "next/document";
+
 export default function Document() {
   return (
-    <html lang="en">
-      <head>
+    <Html lang="en">
+      <Head>
         {/* Load fonts directly */}
         <link
           href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
@@ -48,8 +50,11 @@ export default function Document() {
         />
         <meta name="apple-mobile-web-app-title" content="Trend Guesser" />
         <meta name="mobile-web-app-capable" content="yes" />
-      </head>
-      <body className="antialiased"></body>
-    </html>
+      </Head>
+      <body className="antialiased">
+        <Main />
+        <NextScript />
+      </body>
+    </Html>
   );
 }
