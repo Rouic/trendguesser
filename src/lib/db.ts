@@ -491,98 +491,202 @@ export async function getTerms(): Promise<SearchTerm[]> {
   }
 }
 
-export async function getTermsByCategory(category: SearchCategory): Promise<SearchTerm[]> {
+export async function getTermsByCategory(
+  category: SearchCategory, 
+  batchSize: number = 0, 
+  lastTermId?: string
+): Promise<SearchTerm[]> {
   try {
+    console.log(`Getting terms for category: ${category}, batchSize: ${batchSize}, lastTermId: ${lastTermId || 'none'}`);
+    
     if (!DATABASE_URL) {
       // Return filtered sample data if no database connection
+      let filteredTerms;
+      
       if (category === 'everything') {
-        return sampleSearchTerms;
+        filteredTerms = sampleSearchTerms;
       } else if (category === 'latest') {
-        return [...sampleSearchTerms].sort((a, b) => {
+        filteredTerms = [...sampleSearchTerms].sort((a, b) => {
           const dateA = a.timestamp ? new Date(a.timestamp as string).getTime() : 0;
           const dateB = b.timestamp ? new Date(b.timestamp as string).getTime() : 0;
           return dateB - dateA;
         });
       } else {
-        return sampleSearchTerms.filter(term => term.category === category);
+        filteredTerms = sampleSearchTerms.filter(term => term.category === category);
+      }
+      
+      // Apply cursor-based pagination for batch loading if requested
+      if (batchSize > 0) {
+        if (lastTermId) {
+          // Find the index of the last term
+          const lastIndex = filteredTerms.findIndex(term => term.id === lastTermId);
+          if (lastIndex !== -1 && lastIndex + 1 < filteredTerms.length) {
+            // Return the next batch of terms
+            return filteredTerms.slice(lastIndex + 1, lastIndex + 1 + batchSize);
+          }
+          return []; // No more terms
+        } else {
+          // Return the first batch
+          return filteredTerms.slice(0, batchSize);
+        }
+      }
+      
+      // Return all terms if no batching
+      return filteredTerms;
+    }
+    
+    // Database is available - handle batch loading with pagination
+    let query = '';
+    let params: any[] = [];
+    
+    if (category === 'everything') {
+      if (batchSize > 0) {
+        if (lastTermId) {
+          // Get the next batch after the last term ID
+          query = `
+            SELECT * FROM terms 
+            WHERE id > $1 
+            ORDER BY id ASC 
+            LIMIT $2
+          `;
+          params = [lastTermId, batchSize];
+        } else {
+          // Get the first batch
+          query = `
+            SELECT * FROM terms 
+            ORDER BY id ASC 
+            LIMIT $1
+          `;
+          params = [batchSize];
+        }
+      } else {
+        // Get all terms (original behavior)
+        query = 'SELECT * FROM terms';
+      }
+    } else if (category === 'latest') {
+      if (batchSize > 0) {
+        if (lastTermId) {
+          // Get the next batch after the last term ID, ordered by timestamp
+          query = `
+            SELECT t1.* FROM terms t1
+            JOIN (SELECT timestamp FROM terms WHERE id = $1) t2
+            ON t1.timestamp < t2.timestamp
+            ORDER BY t1.timestamp DESC
+            LIMIT $2
+          `;
+          params = [lastTermId, batchSize];
+        } else {
+          // Get the first batch
+          query = `
+            SELECT * FROM terms 
+            ORDER BY timestamp DESC 
+            LIMIT $1
+          `;
+          params = [batchSize];
+        }
+      } else {
+        // Get all latest terms (up to 100, original behavior)
+        query = 'SELECT * FROM terms ORDER BY timestamp DESC LIMIT 100';
+      }
+    } else {
+      // Specific category
+      if (batchSize > 0) {
+        if (lastTermId) {
+          // Get the next batch of specific category after the last term ID
+          query = `
+            SELECT * FROM terms 
+            WHERE category = $1 AND id > $2 
+            ORDER BY id ASC 
+            LIMIT $3
+          `;
+          params = [category, lastTermId, batchSize];
+        } else {
+          // Get the first batch of specific category
+          query = `
+            SELECT * FROM terms 
+            WHERE category = $1 
+            ORDER BY id ASC 
+            LIMIT $2
+          `;
+          params = [category, batchSize];
+        }
+      } else {
+        // Get all terms for this category (original behavior)
+        query = 'SELECT * FROM terms WHERE category = $1';
+        params = [category];
       }
     }
     
-    if (category === 'everything') {
-      return getTerms();
-    } else if (category === 'latest') {
-      const result = await sql('SELECT * FROM terms ORDER BY timestamp DESC LIMIT 100');
-      
-      // Handle different response formats safely
-      if (!result) {
-        console.log('No result from database for latest terms, using sample data');
-        return [...sampleSearchTerms].sort((a, b) => {
-          const dateA = a.timestamp ? new Date(a.timestamp as string).getTime() : 0;
-          const dateB = b.timestamp ? new Date(b.timestamp as string).getTime() : 0;
-          return dateB - dateA;
-        });
-      }
-      
-      const rows = Array.isArray(result) ? result : (result.rows || []);
-      
-      if (!rows || !rows.length) {
-        console.log('No rows in result for latest terms, using sample data');
-        return [...sampleSearchTerms].sort((a, b) => {
-          const dateA = a.timestamp ? new Date(a.timestamp as string).getTime() : 0;
-          const dateB = b.timestamp ? new Date(b.timestamp as string).getTime() : 0;
-          return dateB - dateA;
-        });
-      }
-      
-      return rows.map((row: any) => ({
-        id: row.id,
-        term: row.term,
-        volume: parseInt(row.volume) || 0,
-        category: row.category || 'unknown',
-        imageUrl: row.imageurl || `/api/image?term=${encodeURIComponent(row.term)}`,
-        timestamp: row.timestamp || new Date().toISOString()
-      }));
-    } else {
-      const result = await sql('SELECT * FROM terms WHERE category = $1', [category]);
-      
-      // Handle different response formats safely
-      if (!result) {
-        console.log(`No result from database for category ${category}, using sample data`);
-        return sampleSearchTerms.filter(term => term.category === category);
-      }
-      
-      const rows = Array.isArray(result) ? result : (result.rows || []);
-      
-      if (!rows || !rows.length) {
-        console.log(`No rows in result for category ${category}, using sample data`);
-        return sampleSearchTerms.filter(term => term.category === category);
-      }
-      
-      return rows.map((row: any) => ({
-        id: row.id,
-        term: row.term,
-        volume: parseInt(row.volume) || 0,
-        category: row.category || 'unknown',
-        imageUrl: row.imageurl || `/api/image?term=${encodeURIComponent(row.term)}`,
-        timestamp: row.timestamp || new Date().toISOString()
-      }));
+    const result = await sql(query, params);
+    
+    // Handle different response formats safely
+    if (!result) {
+      console.log(`No result from database for category ${category}, using sample data`);
+      // Return sample data with the same batch logic as above
+      return getFilteredSampleTerms(category, batchSize, lastTermId);
     }
+    
+    const rows = Array.isArray(result) ? result : (result.rows || []);
+    
+    if (!rows || !rows.length) {
+      console.log(`No rows in result for category ${category} query, using sample data`);
+      return getFilteredSampleTerms(category, batchSize, lastTermId);
+    }
+    
+    return rows.map((row: any) => ({
+      id: row.id,
+      term: row.term,
+      volume: parseInt(row.volume) || 0,
+      category: row.category || 'unknown',
+      imageUrl: row.imageurl || `/api/image?term=${encodeURIComponent(row.term)}`,
+      timestamp: row.timestamp || new Date().toISOString()
+    }));
   } catch (error) {
     console.error(`Error fetching terms by category ${category}:`, error);
     
-    // Fallback to sample data
-    if (category === 'everything') {
-      return sampleSearchTerms;
-    } else if (category === 'latest') {
-      return [...sampleSearchTerms].sort((a, b) => {
-        const dateA = a.timestamp ? new Date(a.timestamp as string).getTime() : 0;
-        const dateB = b.timestamp ? new Date(b.timestamp as string).getTime() : 0;
-        return dateB - dateA;
-      });
+    // Fallback to sample data with batch handling
+    return getFilteredSampleTerms(category, batchSize, lastTermId);
+  }
+}
+
+// Helper function to get filtered sample terms with batching support
+function getFilteredSampleTerms(
+  category: SearchCategory, 
+  batchSize: number = 0, 
+  lastTermId?: string
+): SearchTerm[] {
+  let filteredTerms;
+  
+  if (category === 'everything') {
+    filteredTerms = sampleSearchTerms;
+  } else if (category === 'latest') {
+    filteredTerms = [...sampleSearchTerms].sort((a, b) => {
+      const dateA = a.timestamp ? new Date(a.timestamp as string).getTime() : 0;
+      const dateB = b.timestamp ? new Date(b.timestamp as string).getTime() : 0;
+      return dateB - dateA;
+    });
+  } else {
+    filteredTerms = sampleSearchTerms.filter(term => term.category === category);
+  }
+  
+  // Apply cursor-based pagination for batch loading if requested
+  if (batchSize > 0) {
+    if (lastTermId) {
+      // Find the index of the last term
+      const lastIndex = filteredTerms.findIndex(term => term.id === lastTermId);
+      if (lastIndex !== -1 && lastIndex + 1 < filteredTerms.length) {
+        // Return the next batch of terms
+        return filteredTerms.slice(lastIndex + 1, lastIndex + 1 + batchSize);
+      }
+      return []; // No more terms
     } else {
-      return sampleSearchTerms.filter(term => term.category === category);
+      // Return the first batch
+      return filteredTerms.slice(0, batchSize);
     }
   }
+  
+  // Return all terms if no batching
+  return filteredTerms;
 }
 
 export async function getCustomTermWithRelated(term: string): Promise<SearchTerm[]> {

@@ -96,7 +96,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  // Watch for changes to the game data
+  // Check for game ID and load local data if available
   useEffect(() => {
     if (!userUid) {
       setLoading(false);
@@ -124,85 +124,124 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
     setError(null);
 
     console.log(
-      `Setting up game data watcher for game ID: ${gameId}, user: ${userUid}`
+      `Loading game data for game ID: ${gameId}, user: ${userUid}`
     );
 
-    // Create function to check for game data in sessionStorage
-    const checkGameData = () => {
-      if (typeof window !== "undefined") {
-        // Attempt to fetch game data from API
-        const fetchGameData = async () => {
+    // Check for local game state in localStorage
+    if (typeof window !== "undefined") {
+      try {
+        const localStateKey = `tg_local_state_${gameId}`;
+        const localStateJson = localStorage.getItem(localStateKey);
+        
+        if (localStateJson) {
           try {
-            const response = await fetch(`/api/games/${gameId}`);
-            if (response.ok) {
-              const data = await response.json() as GameData;
+            const localStateData = JSON.parse(localStateJson);
+            if (localStateData.gameState) {
+              console.log(`Found local game state for ${gameId}`);
               
-              // SIMPLE FIX: Add a cache check to prevent unnecessary updates
-              const dataString = JSON.stringify(data);
-              if (dataString === lastGameData.current) {
-                return; // Skip if data hasn't changed
-              }
-              lastGameData.current = dataString; // Update cache
-
-              console.log(
-                `Found game data for ${gameId}:`,
-                data.status,
-                data["__trendguesser.state"] ? "has game state" : "no game state"
-              );
-
-              // Set game data
-              setGameData(data);
-
-              // Extract game state if it exists
-              if (data["__trendguesser.state"]) {
-                const gameState = data["__trendguesser.state"] as TrendGuesserGameState;
-                setGameState(gameState);
-
-                // Check if game has started
-                if (gameState.started) {
-                  console.log(
-                    `Game ${gameId} is active with category:`,
-                    gameState.category
-                  );
+              // Set the game state from localStorage
+              setGameState(localStateData.gameState);
+              
+              // Also try to load player data
+              const playerDataKey = `tg_player_${userUid}`;
+              const storedPlayerData = localStorage.getItem(playerDataKey);
+              
+              if (storedPlayerData) {
+                try {
+                  const playerData = JSON.parse(storedPlayerData);
+                  setCurrentPlayer(playerData);
+                  console.log(`Loaded player data for ${userUid}, score:`, playerData.score);
+                } catch (e) {
+                  console.error("Error parsing player data:", e);
                 }
               }
-
-              // Extract current player data
-              if (data[userUid]) {
-                setCurrentPlayer(data[userUid] as TrendGuesserPlayer);
-                console.log(
-                  `Found player data for ${userUid}, score:`,
-                  data[userUid].score
-                );
-              }
               
               setLoading(false);
-            } else {
-              console.log("Game data not found or error:", response.status);
-              setError("Game data not found");
-              setLoading(false);
+              return;
             }
-          } catch (err) {
-            console.error("Error fetching game data:", err);
-            setError("Error loading game data");
-            setLoading(false);
+          } catch (e) {
+            console.error("Error parsing local game state:", e);
           }
-        };
+        }
+      } catch (e) {
+        console.error("Error accessing localStorage:", e);
+      }
+    }
+    
+    // If no local state, try to fetch game data once from API
+    const fetchGameData = async () => {
+      try {
+        const response = await fetch(`/api/games/${gameId}`);
+        if (response.ok) {
+          const data = await response.json() as GameData;
+          
+          console.log(
+            `Found game data for ${gameId}:`,
+            data.status,
+            data["__trendguesser.state"] ? "has game state" : "no game state"
+          );
 
-        fetchGameData();
+          // Set game data
+          setGameData(data);
+
+          // Extract game state if it exists
+          if (data["__trendguesser.state"]) {
+            const gameState = data["__trendguesser.state"] as TrendGuesserGameState;
+            setGameState(gameState);
+            
+            // Save to localStorage for future use
+            if (typeof window !== "undefined") {
+              try {
+                localStorage.setItem(
+                  `tg_local_state_${gameId}`,
+                  JSON.stringify({
+                    gameState,
+                    lastUpdate: new Date().toISOString(),
+                    pendingUpdates: false
+                  })
+                );
+              } catch (e) {
+                console.error("Error storing game state to localStorage:", e);
+              }
+            }
+          }
+
+          // Extract current player data
+          if (data[userUid]) {
+            setCurrentPlayer(data[userUid] as TrendGuesserPlayer);
+            
+            // Save player data to localStorage
+            if (typeof window !== "undefined") {
+              try {
+                localStorage.setItem(
+                  `tg_player_${userUid}`,
+                  JSON.stringify(data[userUid])
+                );
+              } catch (e) {
+                console.error("Error storing player data to localStorage:", e);
+              }
+            }
+            
+            console.log(
+              `Found player data for ${userUid}, score:`,
+              data[userUid].score
+            );
+          }
+          
+          setLoading(false);
+        } else {
+          console.log("Game data not found or error:", response.status);
+          setError("Game data not found");
+          setLoading(false);
+        }
+      } catch (err) {
+        console.error("Error fetching game data:", err);
+        setError("Error loading game data");
+        setLoading(false);
       }
     };
 
-    // Check immediately
-    checkGameData();
-
-    // Also set up polling interval
-    const intervalId = setInterval(checkGameData, 5000);
-
-    return () => {
-      console.log(`Cleaning up game data watcher for game ID: ${gameId}`);
-      clearInterval(intervalId);
-    };
+    fetchGameData();
   }, [gameId, userUid]);
 
   // Start a new game

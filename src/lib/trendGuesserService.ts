@@ -6,6 +6,9 @@ import { sampleSearchTerms, sampleLeaderboard } from './mockData';
 
 export class TrendGuesserService {
   static isProcessingGuess: boolean = false;
+  static termCache: { [category: string]: SearchTerm[] } = {};
+  static lastTermIds: { [category: string]: string } = {};
+  static hasMoreTerms: { [category: string]: boolean } = {};
 
   // Create a new game session
   static async createGame(createdBy: string, playerName: string): Promise<string> {
@@ -54,7 +57,7 @@ export class TrendGuesserService {
     }
   }
 
-  // Start a new game with selected category
+  // Start a new game with selected category using batch loading
   static async startGame(gameId: string, category: SearchCategory, customTerm?: string): Promise<TrendGuesserGameState | null> {
     try {
       console.log(`TrendGuesserService.startGame: Starting game ${gameId} with category ${category}`);
@@ -66,8 +69,9 @@ export class TrendGuesserService {
         // For custom games, fetch the custom term and related terms
         terms = await this.fetchCustomTermWithRelated(customTerm);
       } else {
-        // For predefined categories, fetch terms from the API
-        terms = await this.fetchTermsByCategory(category);
+        // For predefined categories, fetch terms using our batch loading system
+        // Ensure we have at least 100 terms (or whatever's available)
+        terms = await this.ensureTermsAvailable(category, 100);
       }
       
       if (terms.length < 2) {
@@ -91,6 +95,23 @@ export class TrendGuesserService {
         customTerm: category === 'custom' && customTerm ? customTerm : null
       };
       
+      // Save the initial game state to localStorage for offline capability
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(
+            `tg_local_state_${gameId}`,
+            JSON.stringify({
+              gameState,
+              lastUpdate: new Date().toISOString(),
+              pendingUpdates: false
+            })
+          );
+          console.log(`Stored initial local game state for ${gameId}`);
+        } catch (e) {
+          console.error('Error storing initial game state in localStorage:', e);
+        }
+      }
+      
       // Get current game ID from session storage
       const currentGameId = sessionStorage.getItem('current_game_id');
       if (currentGameId !== gameId) {
@@ -99,25 +120,10 @@ export class TrendGuesserService {
         sessionStorage.setItem('current_game_id', gameId);
       }
       
-      try {
-        // Update game state on the server
-        const response = await fetch(`/api/games/${gameId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            status: 'active',
-            '__trendguesser.state': gameState
-          }),
-        });
-
-        if (!response.ok) {
-          console.warn('Failed to update game state on server. Continuing with local state.');
-        }
-      } catch (err) {
-        console.error('Error updating game state on server:', err);
-      }
+      // In the background, update the server with the initial state
+      this.syncGameStateWithServer(gameId, gameState).catch(err => {
+        console.warn('Background server sync failed for initial game state:', err);
+      });
       
       // Return the created game state for immediate use
       return gameState;
@@ -137,7 +143,51 @@ export class TrendGuesserService {
         customTerm: category === 'custom' && customTerm ? customTerm : null
       };
       
+      // Even for fallback state, try to store in localStorage
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem(
+            `tg_local_state_${gameId}`,
+            JSON.stringify({
+              gameState: fallbackState,
+              lastUpdate: new Date().toISOString(),
+              pendingUpdates: false
+            })
+          );
+        } catch (e) {
+          console.error('Error storing fallback game state in localStorage:', e);
+        }
+      }
+      
       return fallbackState;
+    }
+  }
+  
+  // Helper method to sync game state with server in the background
+  private static async syncGameStateWithServer(gameId: string, gameState: TrendGuesserGameState): Promise<boolean> {
+    try {
+      // Update game state on the server
+      const response = await fetch(`/api/games/${gameId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          status: gameState.finished ? 'finished' : 'active',
+          '__trendguesser.state': gameState
+        }),
+      });
+
+      if (!response.ok) {
+        console.warn(`Failed to sync game state on server. Status: ${response.status}`);
+        return false;
+      }
+      
+      console.log(`Successfully synced game state for ${gameId} with server`);
+      return true;
+    } catch (err) {
+      console.error('Error syncing game state with server:', err);
+      return false;
     }
   }
 
@@ -173,46 +223,112 @@ static async makeGuess(
     }
     
     try {
-      // Fetch current game state from API or use client provided state
+      // GET GAME STATE - PRIORITIZE LOCAL STORAGE for uninterrupted experience
       let gameState: TrendGuesserGameState;
       let player: TrendGuesserPlayer;
+      let needsServerSync = false;
       
-      // CRITICAL FIX: Prioritize client state if available
+      // FIRST: Try to use client-provided state (highest priority for UX consistency)
       if (clientGameState) {
         console.log('[TrendGuesserService.makeGuess] Using client-provided game state for round:', 
           clientGameState.currentRound);
         gameState = clientGameState;
       } else {
+        // SECOND: Try to retrieve from localStorage (for offline capability)
         try {
-          // Fallback to API fetch if no client state
-          const response = await fetch(`/api/games/${gameId}`);
-          if (!response.ok) {
-            throw new Error('Failed to fetch game data');
+          if (typeof window !== "undefined") {
+            const localStateKey = `tg_local_state_${gameId}`;
+            const localStateJson = localStorage.getItem(localStateKey);
+            
+            if (localStateJson) {
+              const localStateData = JSON.parse(localStateJson);
+              if (localStateData.gameState) {
+                console.log('[TrendGuesserService.makeGuess] Using localStorage game state');
+                gameState = localStateData.gameState;
+                
+                // Mark for server sync if there are pending updates or it's been a while
+                const lastUpdate = new Date(localStateData.lastUpdate || 0);
+                const timeSinceUpdate = Date.now() - lastUpdate.getTime();
+                if (localStateData.pendingUpdates || timeSinceUpdate > 30000) { // 30 seconds
+                  needsServerSync = true;
+                }
+              }
+            }
           }
-          const gameData = await response.json();
-          gameState = gameData['__trendguesser.state'] as TrendGuesserGameState;
-        } catch (err) {
-          console.warn('Could not fetch game data from server:', err);
-          throw new Error('No game state available');
+        } catch (localStorageErr) {
+          console.error('[TrendGuesserService.makeGuess] Error accessing localStorage:', localStorageErr);
+        }
+        
+        // THIRD: If no local state, try to fetch from server
+        if (!gameState) {
+          try {
+            console.log('[TrendGuesserService.makeGuess] No local state, fetching from server...');
+            const response = await fetch(`/api/games/${gameId}`);
+            if (!response.ok) {
+              throw new Error('Failed to fetch game data');
+            }
+            const gameData = await response.json();
+            gameState = gameData['__trendguesser.state'] as TrendGuesserGameState;
+            
+            // Since we got state from server, save it locally
+            if (typeof window !== "undefined" && gameState) {
+              try {
+                localStorage.setItem(
+                  `tg_local_state_${gameId}`,
+                  JSON.stringify({
+                    gameState,
+                    lastUpdate: new Date().toISOString(),
+                    pendingUpdates: false
+                  })
+                );
+              } catch (e) {
+                console.error('[TrendGuesserService.makeGuess] Error storing server state to localStorage:', e);
+              }
+            }
+          } catch (serverErr) {
+            console.warn('[TrendGuesserService.makeGuess] Could not fetch game data from server:', serverErr);
+            throw new Error('No game state available from any source');
+          }
         }
       }
       
-      // Get or initialize player
+      // At this point, we must have a valid gameState
+      if (!gameState) {
+        throw new Error('Unable to retrieve game state from any source');
+      }
+      
+      // Get PLAYER data - also prioritize local storage
       try {
-        const response = await fetch(`/api/games/${gameId}`);
-        if (response.ok) {
-          const gameData = await response.json();
-          player = gameData[playerUid] as TrendGuesserPlayer;
-        } else {
-          throw new Error('Failed to fetch player data');
+        if (typeof window !== "undefined") {
+          // First try localStorage
+          const playerDataKey = `tg_player_${playerUid}`;
+          const storedPlayerData = localStorage.getItem(playerDataKey);
+          
+          if (storedPlayerData) {
+            try {
+              player = JSON.parse(storedPlayerData);
+              console.log('[TrendGuesserService.makeGuess] Using player data from localStorage');
+            } catch (e) {
+              console.error('[TrendGuesserService.makeGuess] Error parsing player data from localStorage:', e);
+            }
+          }
         }
-      } catch (err) {
-        console.warn('Could not fetch player data, using default:', err);
-        player = {
-          uid: playerUid,
-          name: 'Player',
-          score: 0
-        };
+        
+        // If no local player data, try server
+        if (!player) {
+          try {
+            const response = await fetch(`/api/games/${gameId}`);
+            if (response.ok) {
+              const gameData = await response.json();
+              player = gameData[playerUid] as TrendGuesserPlayer;
+              console.log('[TrendGuesserService.makeGuess] Using player data from server');
+            }
+          } catch (serverPlayerErr) {
+            console.warn('[TrendGuesserService.makeGuess] Could not fetch player data from server:', serverPlayerErr);
+          }
+        }
+      } catch (playerErr) {
+        console.warn('[TrendGuesserService.makeGuess] Error retrieving player data:', playerErr);
       }
       
       // Initialize player with defaults if missing or incomplete
@@ -222,6 +338,7 @@ static async makeGuess(
           name: 'Player',
           score: 0
         };
+        console.log('[TrendGuesserService.makeGuess] Created default player data');
       } else {
         // Ensure score property exists
         player.score = player.score || 0;
@@ -273,9 +390,47 @@ static async makeGuess(
         });
       }
       
-      // Process the guess result
+      // STORE ROUND STATE IN LOCAL STORAGE
+      if (typeof window !== "undefined") {
+        try {
+          const localStateKey = `tg_local_state_${gameId}`;
+          const localStateJson = localStorage.getItem(localStateKey);
+          let localStateData = { gameState: gameState, lastUpdate: new Date().toISOString(), pendingUpdates: true };
+          
+          if (localStateJson) {
+            try {
+              const parsedData = JSON.parse(localStateJson);
+              localStateData = {
+                ...parsedData,
+                pendingUpdates: true,
+                lastUpdate: new Date().toISOString()
+              };
+            } catch (e) {
+              console.error('[TrendGuesserService.makeGuess] Error parsing existing local state:', e);
+            }
+          }
+          
+          // Add round data
+          const roundKey = `round_${gameState.currentRound}`;
+          localStateData[roundKey] = {
+            knownTerm: gameState.knownTerm,
+            hiddenTerm: gameState.hiddenTerm,
+            isHigherGuess: isHigher,
+            result: isCorrect,
+            timestamp: new Date().toISOString()
+          };
+          
+          // Store updated local state
+          localStorage.setItem(localStateKey, JSON.stringify(localStateData));
+          console.log(`[TrendGuesserService.makeGuess] Stored round ${gameState.currentRound} data in localStorage`);
+        } catch (storageErr) {
+          console.error('[TrendGuesserService.makeGuess] Error storing round data in localStorage:', storageErr);
+        }
+      }
+      
+      // Process the guess result based on CORRECTNESS
       if (isCorrect) {
-        console.log('[TrendGuesserService.makeGuess] Correct guess - preparing next round');
+        console.log('[TrendGuesserService.makeGuess] Correct guess - preparing for next round');
         
         // Update player score
         const newScore = (player.score || 0) + 1;
@@ -283,7 +438,7 @@ static async makeGuess(
         
         console.log('[TrendGuesserService.makeGuess] Updated player score to:', newScore);
         
-        // CRITICAL FIX: Update localStorage with current score immediately
+        // Update localStorage with current score immediately
         try {
           if (typeof window !== "undefined") {
             // Save player with updated score to localStorage
@@ -317,88 +472,134 @@ static async makeGuess(
           console.error("Error saving player data to localStorage:", e);
         }
         
-        // Update the game on the server
-        try {
-          // CRITICAL FIX: Use client state for consistency if available
-          const stateToUpdate = clientGameState || gameState;
-          
-          const updateResponse = await fetch(`/api/games/${gameId}`, {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              status: 'active',
-              '__trendguesser.state': stateToUpdate,
-              [playerUid]: player
-            }),
+        // Check if we need to load more terms
+        const remainingTerms = gameState.terms?.length || 0;
+        if (remainingTerms < 10 && this.hasMoreTerms[gameState.category]) {
+          // Low on terms, fetch more in the background
+          this.loadMoreTermsInBackground(gameState.category, gameId).catch(err => {
+            console.warn('Failed to load additional terms in background:', err);
           });
-          
-          if (!updateResponse.ok) {
-            console.warn('Failed to update game on server. Continuing with local state.');
-          }
-        } catch (err) {
-          console.error('Error updating game on server:', err);
+        }
+        
+        // Sync with server in background if needed
+        if (needsServerSync) {
+          this.syncGameStateWithServer(gameId, gameState).catch(err => {
+            console.warn('Background server sync failed:', err);
+          });
         }
         
         // Clear processing flag before returning
         TrendGuesserService.isProcessingGuess = false;
         
-        // Return success
+        // Return success for UI update
         return true;
       } else {
         // Wrong guess - game over
-        console.log('[TrendGuesserService.makeGuess] Incorrect guess - returning false');
+        console.log('[TrendGuesserService.makeGuess] Incorrect guess - game over');
         
         // Save the final score for high score tracking
         const finalScore = player.score || 0;
         
-        // CRITICAL FIX: Mark the game as finished and preserve current terms
+        // Mark the game as finished locally first
         try {
-          // First mark the game as finished in the state
+          if (typeof window !== "undefined") {
+            // First mark the game as finished in local storage
+            const localStateKey = `tg_local_state_${gameId}`;
+            const localStateJson = localStorage.getItem(localStateKey);
+            let localStateData = { 
+              gameState: { ...gameState, finished: true }, 
+              lastUpdate: new Date().toISOString(), 
+              pendingUpdates: true,
+              gameOver: true
+            };
+            
+            if (localStateJson) {
+              try {
+                const parsedData = JSON.parse(localStateJson);
+                localStateData = {
+                  ...parsedData,
+                  gameState: { ...(parsedData.gameState || gameState), finished: true },
+                  pendingUpdates: true,
+                  gameOver: true,
+                  lastUpdate: new Date().toISOString()
+                };
+              } catch (e) {
+                console.error('[TrendGuesserService.makeGuess] Error parsing existing local state:', e);
+              }
+            }
+            
+            // Store updated local state with game over flag
+            localStorage.setItem(localStateKey, JSON.stringify(localStateData));
+            console.log(`[TrendGuesserService.makeGuess] Marked game as finished in localStorage`);
+          }
+        } catch (storageErr) {
+          console.error('[TrendGuesserService.makeGuess] Error marking game as finished in localStorage:', storageErr);
+        }
+        
+        // Then update high score locally
+        try {
+          if (typeof window !== "undefined") {
+            const highScoresKey = `tg_highscores_${playerUid}`;
+            let existingScores = {};
+            const storedScores = localStorage.getItem(highScoresKey);
+            if (storedScores) {
+              try {
+                existingScores = JSON.parse(storedScores);
+              } catch (e) {
+                console.error('Error parsing stored high scores:', e);
+              }
+            }
+            
+            // Only update if score is higher than existing
+            const currentHighScore = existingScores[gameState.category] || 0;
+            if (finalScore > currentHighScore) {
+              existingScores[gameState.category] = finalScore;
+              localStorage.setItem(highScoresKey, JSON.stringify(existingScores));
+              console.log(`[TrendGuesserService.makeGuess] Updated local high score for ${gameState.category} to ${finalScore}`);
+              
+              // Also update the player's high scores
+              if (player && player.highScores) {
+                player.highScores[gameState.category] = finalScore;
+              } else if (player) {
+                player.highScores = { [gameState.category]: finalScore };
+              }
+              
+              // Save updated player data
+              const playerDataKey = `tg_player_${playerUid}`;
+              localStorage.setItem(playerDataKey, JSON.stringify(player));
+              
+              // Also send a storage event to notify other components
+              window.dispatchEvent(new Event('storage'));
+            }
+          }
+        } catch (highScoreErr) {
+          console.error('[TrendGuesserService.makeGuess] Error updating local high score:', highScoreErr);
+        }
+        
+        // Update server state with finished flag in the background
+        try {
           const gameOverState = {
             ...gameState,
             finished: true
           };
           
-          // Update server state with finished flag
-          try {
-            const updateResponse = await fetch(`/api/games/${gameId}`, {
-              method: 'PATCH',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                status: 'finished',
-                '__trendguesser.state': gameOverState,
-                [playerUid]: player
-              }),
-            });
-            
-            if (!updateResponse.ok) {
-              console.warn('[TrendGuesserService.makeGuess] Failed to update game as finished on server.');
-            } else {
-              console.log('[TrendGuesserService.makeGuess] Game marked as finished with current terms preserved');
-            }
-          } catch (updateErr) {
-            console.error('[TrendGuesserService.makeGuess] Error updating game as finished:', updateErr);
-          }
+          // Sync with server in background - higher priority for game over
+          this.syncGameStateWithServer(gameId, gameOverState).catch(err => {
+            console.warn('[TrendGuesserService.makeGuess] Error syncing game over state with server:', err);
+          });
           
-          // Then update high score
-          await this.updateHighScore(
-            playerUid, 
-            gameState.category, 
-            finalScore
-          );
-          console.log('[TrendGuesserService.makeGuess] Updated high score for game over');
-        } catch (highScoreErr) {
-          console.error('[TrendGuesserService.makeGuess] Failed to update game state for game over:', highScoreErr);
+          // Also update high score on server
+          this.updateHighScore(playerUid, gameState.category, finalScore).catch(err => {
+            console.warn('[TrendGuesserService.makeGuess] Error updating high score on server:', err);
+          });
+        } catch (serverSyncErr) {
+          console.error('[TrendGuesserService.makeGuess] Error during game over server sync:', serverSyncErr);
         }
         
         // Clear processing flag before returning
         TrendGuesserService.isProcessingGuess = false;
         
-        // Return failure
+        // Return failure for UI update
         return false;
       }
     } catch (err) {
@@ -413,8 +614,63 @@ static async makeGuess(
     throw error;
   }
 }
+
+// Load more terms in the background when we're running low
+private static async loadMoreTermsInBackground(category: SearchCategory, gameId: string): Promise<void> {
+  try {
+    console.log(`[TrendGuesserService.loadMoreTermsInBackground] Loading more terms for ${category}`);
+    
+    // Check if we have a lastTermId for pagination
+    const lastTermId = this.lastTermIds[category];
+    
+    if (!lastTermId) {
+      console.warn('[TrendGuesserService.loadMoreTermsInBackground] No lastTermId available for pagination');
+      return;
+    }
+    
+    // Load next batch of terms
+    const { terms, hasMore } = await this.loadNextTermsBatch(category, lastTermId);
+    
+    if (!terms || terms.length === 0) {
+      console.log('[TrendGuesserService.loadMoreTermsInBackground] No additional terms available');
+      return;
+    }
+    
+    console.log(`[TrendGuesserService.loadMoreTermsInBackground] Loaded ${terms.length} additional terms`);
+    
+    // Update the game state in localStorage with the new terms
+    if (typeof window !== "undefined") {
+      try {
+        const localStateKey = `tg_local_state_${gameId}`;
+        const localStateJson = localStorage.getItem(localStateKey);
+        
+        if (localStateJson) {
+          const localStateData = JSON.parse(localStateJson);
+          
+          if (localStateData.gameState) {
+            // Add new terms to the existing terms array
+            const currentTerms = localStateData.gameState.terms || [];
+            const updatedTerms = [...currentTerms, ...terms];
+            
+            // Update the game state
+            localStateData.gameState.terms = updatedTerms;
+            localStateData.termsRefreshed = new Date().toISOString();
+            
+            // Save back to localStorage
+            localStorage.setItem(localStateKey, JSON.stringify(localStateData));
+            console.log(`[TrendGuesserService.loadMoreTermsInBackground] Updated game state with ${terms.length} new terms. Total now: ${updatedTerms.length}`);
+          }
+        }
+      } catch (e) {
+        console.error('[TrendGuesserService.loadMoreTermsInBackground] Error updating localStorage with new terms:', e);
+      }
+    }
+  } catch (error) {
+    console.error('[TrendGuesserService.loadMoreTermsInBackground] Error loading more terms:', error);
+  }
+}
   
-  // End the game and update high scores
+  // End the game and update high scores (now using local-first approach)
   static async endGame(gameId: string, playerUid: string, finalScore: number): Promise<void> {
     try {
       console.log(`[TrendGuesserService.endGame] Ending game ${gameId} for player ${playerUid} with score ${finalScore}`);
@@ -426,57 +682,149 @@ static async makeGuess(
         gameId = currentGameId;
       }
       
-      // Fetch current game data from API
-      let foundCategory: SearchCategory | null = null;
-      try {
-        const response = await fetch(`/api/games/${gameId}`);
-        if (response.ok) {
-          const gameData = await response.json();
-          const gameState = gameData['__trendguesser.state'] as TrendGuesserGameState;
+      // FIRST: Try to get game data from localStorage (priority for consistent UX)
+      let gameState: TrendGuesserGameState | null = null;
+      let category: SearchCategory | null = null;
+      
+      // Get from localStorage if available
+      if (typeof window !== "undefined") {
+        try {
+          const localStateKey = `tg_local_state_${gameId}`;
+          const localStateJson = localStorage.getItem(localStateKey);
           
-          if (gameState) {
-            foundCategory = gameState.category;
-            
-            // Update game status to finished on the server
-            try {
-              const updateResponse = await fetch(`/api/games/${gameId}`, {
-                method: 'PATCH',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  status: 'finished',
-                  '__trendguesser.state': {
-                    ...gameState,
-                    finished: true
-                  }
-                }),
-              });
+          if (localStateJson) {
+            const localStateData = JSON.parse(localStateJson);
+            if (localStateData.gameState) {
+              gameState = localStateData.gameState;
+              category = gameState.category;
               
-              if (!updateResponse.ok) {
-                console.warn('Failed to update game status on server');
-              }
-            } catch (updateErr) {
-              console.error('[TrendGuesserService.endGame] Failed to update game status:', updateErr);
+              // Mark as finished in localStorage
+              gameState.finished = true;
+              localStateData.gameState = gameState;
+              localStateData.gameOver = true;
+              localStateData.endedAt = new Date().toISOString();
+              
+              // Save back to localStorage
+              localStorage.setItem(localStateKey, JSON.stringify(localStateData));
+              console.log('[TrendGuesserService.endGame] Updated local game state as finished');
             }
           }
-        } else {
-          console.error('[TrendGuesserService.endGame] Failed to fetch game data:', await response.text());
+        } catch (localStorageErr) {
+          console.error('[TrendGuesserService.endGame] Error accessing localStorage:', localStorageErr);
         }
-      } catch (err) {
-        console.error('[TrendGuesserService.endGame] Error fetching game data:', err);
       }
       
-      // Update high score if category was found
-      if (foundCategory) {
+      // If not found in localStorage, try to fetch from API
+      if (!gameState) {
         try {
-          await this.updateHighScore(playerUid, foundCategory, finalScore);
-          console.log('[TrendGuesserService.endGame] Successfully updated high score after game end');
+          const response = await fetch(`/api/games/${gameId}`);
+          if (response.ok) {
+            const gameData = await response.json();
+            gameState = gameData['__trendguesser.state'] as TrendGuesserGameState;
+            
+            if (gameState) {
+              category = gameState.category;
+              
+              // Save to localStorage for consistency
+              if (typeof window !== "undefined") {
+                try {
+                  const localStateKey = `tg_local_state_${gameId}`;
+                  localStorage.setItem(
+                    localStateKey,
+                    JSON.stringify({
+                      gameState: {
+                        ...gameState,
+                        finished: true
+                      },
+                      lastUpdate: new Date().toISOString(),
+                      gameOver: true,
+                      endedAt: new Date().toISOString()
+                    })
+                  );
+                } catch (storageErr) {
+                  console.error('[TrendGuesserService.endGame] Error storing server state to localStorage:', storageErr);
+                }
+              }
+            }
+          } else {
+            console.error('[TrendGuesserService.endGame] Failed to fetch game data:', await response.text());
+          }
+        } catch (err) {
+          console.error('[TrendGuesserService.endGame] Error fetching game data:', err);
+        }
+      }
+      
+      // Update server in the background (non-blocking)
+      if (gameState) {
+        this.syncGameStateWithServer(gameId, { ...gameState, finished: true }).catch(err => {
+          console.warn('[TrendGuesserService.endGame] Background server sync failed:', err);
+        });
+      }
+      
+      // Update high score if category was found, priorities:
+      // 1. First update local storage for immediate UI
+      // 2. Then update server in background
+      if (category) {
+        // First update local high score
+        if (typeof window !== "undefined") {
+          try {
+            // Update high scores in localStorage first for immediate UI
+            const highScoresKey = `tg_highscores_${playerUid}`;
+            let existingScores = {};
+            const storedScores = localStorage.getItem(highScoresKey);
+            
+            if (storedScores) {
+              try {
+                existingScores = JSON.parse(storedScores);
+              } catch (e) {
+                console.error('[TrendGuesserService.endGame] Error parsing stored high scores:', e);
+              }
+            }
+            
+            // Only update if new score is higher
+            const currentHighScore = existingScores[category] || 0;
+            if (finalScore > currentHighScore) {
+              existingScores[category] = finalScore;
+              localStorage.setItem(highScoresKey, JSON.stringify(existingScores));
+              console.log(`[TrendGuesserService.endGame] Updated local high score for ${category} to ${finalScore}`);
+              
+              // Trigger storage event for UI updates
+              window.dispatchEvent(new Event('storage'));
+            }
+          } catch (localHighScoreErr) {
+            console.error('[TrendGuesserService.endGame] Error updating local high score:', localHighScoreErr);
+          }
+        }
+        
+        // Then update server in background
+        try {
+          await this.updateHighScore(playerUid, category, finalScore);
+          console.log('[TrendGuesserService.endGame] Successfully updated high score on server');
         } catch (highScoreErr) {
-          console.error('[TrendGuesserService.endGame] Failed to update high score:', highScoreErr);
+          console.error('[TrendGuesserService.endGame] Failed to update high score on server:', highScoreErr);
         }
       } else {
         console.error('[TrendGuesserService.endGame] No category found, cannot update high score');
+      }
+      
+      // Clear local cache for this game (optional, to save space)
+      if (typeof window !== "undefined") {
+        try {
+          // Optionally, clear the cache after some time to save space
+          setTimeout(() => {
+            try {
+              // Don't delete right away, give some time for UI to access the data
+              localStorage.removeItem(`tg_local_state_${gameId}`);
+              console.log(`[TrendGuesserService.endGame] Cleaned up local state for game ${gameId}`);
+            } catch (e) {
+              // Non-critical error, just log
+              console.warn('[TrendGuesserService.endGame] Failed to clean up local state:', e);
+            }
+          }, 60000); // Keep for 1 minute after game end
+        } catch (cleanupErr) {
+          // Non-critical error, just log
+          console.warn('[TrendGuesserService.endGame] Failed to set cleanup timer:', cleanupErr);
+        }
       }
     } catch (error) {
       console.error('[TrendGuesserService.endGame] Unexpected error ending game:', error);
@@ -664,7 +1012,11 @@ static async updateHighScore(
   }
 
   // Helper methods
-  private static async fetchTermsByCategory(category: SearchCategory): Promise<SearchTerm[]> {
+  private static async fetchTermsByCategory(
+    category: SearchCategory,
+    batchSize: number = 0,
+    lastTermId?: string
+  ): Promise<SearchTerm[]> {
     try {
       // Add safety checks for the category parameter
       if (!category) {
@@ -672,37 +1024,238 @@ static async updateHighScore(
         category = 'technology' as SearchCategory;
       }
       
-      console.log(`[TrendGuesserService.fetchTermsByCategory] Fetching terms for category: ${category}`);
+      console.log(`[TrendGuesserService.fetchTermsByCategory] Fetching terms for category: ${category}, batchSize: ${batchSize}, lastTermId: ${lastTermId || 'none'}`);
+      
+      // Build the API URL with pagination parameters if needed
+      let url = `/api/terms?category=${encodeURIComponent(category)}`;
+      
+      if (batchSize > 0) {
+        url += `&batch=true&count=${batchSize}`;
+        if (lastTermId) {
+          url += `&lastId=${encodeURIComponent(lastTermId)}`;
+        }
+      }
       
       // Call the terms API
-      const response = await fetch(`/api/terms?category=${encodeURIComponent(category)}`);
+      const response = await fetch(url);
       
       if (!response.ok) {
         throw new Error(`Failed to fetch terms: ${response.status}`);
       }
       
-      const terms: SearchTerm[] = await response.json();
-      console.log(`[TrendGuesserService.fetchTermsByCategory] Found ${terms.length} terms for category ${category}`);
-      
-      return terms;
+      // Handle different response formats based on whether we're using batching
+      if (batchSize > 0) {
+        const data = await response.json();
+        
+        if (data.terms && Array.isArray(data.terms)) {
+          console.log(`[TrendGuesserService.fetchTermsByCategory] Loaded batch of ${data.terms.length} terms for category ${category}, hasMore: ${data.hasMore}`);
+          
+          // Update cache state
+          this.hasMoreTerms[category] = data.hasMore;
+          if (data.lastId) {
+            this.lastTermIds[category] = data.lastId;
+          }
+          
+          return data.terms;
+        } else {
+          console.error('[TrendGuesserService.fetchTermsByCategory] Invalid batch response format');
+          throw new Error('Invalid batch response format');
+        }
+      } else {
+        // Original format for backward compatibility
+        const terms: SearchTerm[] = await response.json();
+        console.log(`[TrendGuesserService.fetchTermsByCategory] Found ${terms.length} terms for category ${category}`);
+        return terms;
+      }
     } catch (error) {
       console.error('[TrendGuesserService.fetchTermsByCategory] Error fetching terms:', error);
       
       // Fallback to sample data
       console.log('[TrendGuesserService.fetchTermsByCategory] Using fallback terms');
       
+      // Simulate batch behavior with sample data
+      let filteredTerms;
+      
       if (category === 'everything') {
         // Return all sample terms
-        return sampleSearchTerms;
+        filteredTerms = sampleSearchTerms;
       } else if (category === 'latest') {
         // Return terms sorted randomly (simulating recent)
-        return [...sampleSearchTerms].sort(() => Math.random() - 0.5);
+        filteredTerms = [...sampleSearchTerms].sort(() => Math.random() - 0.5);
       } else {
         // Filter by category
-        const filteredTerms = sampleSearchTerms.filter(term => term.category === category);
-        return filteredTerms.length > 0 ? filteredTerms : sampleSearchTerms;
+        filteredTerms = sampleSearchTerms.filter(term => term.category === category);
+        if (filteredTerms.length === 0) {
+          filteredTerms = sampleSearchTerms;
+        }
       }
+      
+      // Apply pagination if batchSize is specified
+      if (batchSize > 0) {
+        if (lastTermId) {
+          // Find the index of the last term
+          const lastIndex = filteredTerms.findIndex(term => term.id === lastTermId);
+          if (lastIndex !== -1 && lastIndex + 1 < filteredTerms.length) {
+            // Return the next batch
+            return filteredTerms.slice(lastIndex + 1, lastIndex + 1 + batchSize);
+          }
+          return []; // No more terms
+        } else {
+          // Return the first batch
+          return filteredTerms.slice(0, batchSize);
+        }
+      }
+      
+      // Return all filtered terms if no batching
+      return filteredTerms;
     }
+  }
+  
+  // Load initial batch of terms for a category
+  static async loadInitialTermsBatch(category: SearchCategory, batchSize: number = 100): Promise<{
+    terms: SearchTerm[],
+    lastTermId: string | null,
+    hasMore: boolean
+  }> {
+    try {
+      // Check if we already have cached terms for this category
+      if (this.termCache[category] && this.termCache[category].length > 0) {
+        console.log(`[TrendGuesserService.loadInitialTermsBatch] Using ${this.termCache[category].length} cached terms for ${category}`);
+        return {
+          terms: this.termCache[category],
+          lastTermId: this.lastTermIds[category] || null,
+          hasMore: this.hasMoreTerms[category] || false
+        };
+      }
+      
+      // Fetch fresh batch from API
+      const termsBatch = await this.fetchTermsByCategory(category, batchSize);
+      
+      if (!termsBatch || termsBatch.length === 0) {
+        return {
+          terms: [],
+          lastTermId: null,
+          hasMore: false
+        };
+      }
+      
+      // Cache this batch of terms
+      this.termCache[category] = termsBatch;
+      
+      // Store the last ID for pagination
+      const lastTermId = termsBatch.length > 0 ? termsBatch[termsBatch.length - 1].id : null;
+      if (lastTermId) {
+        this.lastTermIds[category] = lastTermId;
+      }
+      
+      // Determine if there might be more terms
+      const hasMore = termsBatch.length >= batchSize;
+      this.hasMoreTerms[category] = hasMore;
+      
+      return {
+        terms: termsBatch,
+        lastTermId,
+        hasMore
+      };
+    } catch (error) {
+      console.error('[TrendGuesserService.loadInitialTermsBatch] Error:', error);
+      return {
+        terms: [],
+        lastTermId: null,
+        hasMore: false
+      };
+    }
+  }
+  
+  // Load next batch of terms for a category
+  static async loadNextTermsBatch(category: SearchCategory, lastTermId: string, batchSize: number = 100): Promise<{
+    terms: SearchTerm[],
+    lastTermId: string | null,
+    hasMore: boolean
+  }> {
+    try {
+      // Only fetch if we believe there are more terms
+      if (!this.hasMoreTerms[category]) {
+        console.log(`[TrendGuesserService.loadNextTermsBatch] No more terms available for ${category}`);
+        return {
+          terms: [],
+          lastTermId: null,
+          hasMore: false
+        };
+      }
+      
+      // Fetch next batch from API
+      const nextBatch = await this.fetchTermsByCategory(category, batchSize, lastTermId);
+      
+      if (!nextBatch || nextBatch.length === 0) {
+        // Mark that there are no more terms for this category
+        this.hasMoreTerms[category] = false;
+        return {
+          terms: [],
+          lastTermId: null,
+          hasMore: false
+        };
+      }
+      
+      // Add new terms to the cache
+      if (!this.termCache[category]) {
+        this.termCache[category] = nextBatch;
+      } else {
+        this.termCache[category] = [...this.termCache[category], ...nextBatch];
+      }
+      
+      // Update the last ID for pagination
+      const newLastTermId = nextBatch.length > 0 ? nextBatch[nextBatch.length - 1].id : null;
+      if (newLastTermId) {
+        this.lastTermIds[category] = newLastTermId;
+      }
+      
+      // Determine if there might be more terms
+      const hasMore = nextBatch.length >= batchSize;
+      this.hasMoreTerms[category] = hasMore;
+      
+      return {
+        terms: nextBatch,
+        lastTermId: newLastTermId,
+        hasMore
+      };
+    } catch (error) {
+      console.error('[TrendGuesserService.loadNextTermsBatch] Error:', error);
+      return {
+        terms: [],
+        lastTermId: null,
+        hasMore: false
+      };
+    }
+  }
+  
+  // Get all cached terms for a category, fetching more if needed
+  static async ensureTermsAvailable(category: SearchCategory, minRequiredTerms: number = 10): Promise<SearchTerm[]> {
+    // Check if we have enough terms in the cache already
+    if (this.termCache[category] && this.termCache[category].length >= minRequiredTerms) {
+      return this.termCache[category];
+    }
+    
+    // Not enough terms in cache, fetch initial batch if cache is empty
+    if (!this.termCache[category] || this.termCache[category].length === 0) {
+      const { terms } = await this.loadInitialTermsBatch(category, Math.max(100, minRequiredTerms));
+      return terms;
+    }
+    
+    // We have some terms but not enough, and we know there are more available
+    if (this.hasMoreTerms[category] && this.lastTermIds[category]) {
+      // Calculate how many more terms we need
+      const neededTerms = minRequiredTerms - this.termCache[category].length;
+      const batchSize = Math.max(100, neededTerms); // Always fetch at least 100 for efficiency
+      
+      const { terms } = await this.loadNextTermsBatch(category, this.lastTermIds[category], batchSize);
+      
+      // Return combined terms
+      return this.termCache[category];
+    }
+    
+    // Return whatever we have if we can't get more
+    return this.termCache[category] || [];
   }
   
   private static async fetchCustomTermWithRelated(customTerm: string): Promise<SearchTerm[]> {
