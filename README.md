@@ -14,6 +14,7 @@ Welcome to **TrendGuesser** – the ultimate higher/lower guessing game where yo
 - [Getting Started](#getting-started)
 - [Development](#development)
 - [API Routes](#api-routes)
+- [Mobile Apps](#mobile-apps)
 - [Deployment](#deployment)
 - [License & Acknowledgements](#license--acknowledgements)
 
@@ -50,26 +51,27 @@ Welcome to **TrendGuesser** – the ultimate higher/lower guessing game where yo
   - **Fallback Mechanism**: Development mode uses mock data when no database is configured.
   - Note: Search volume data is simulated.
 
+- **Cross-Platform Support** 📱:
+  - **Web**: Play in any modern browser.
+  - **iOS**: Native iPhone and iPad app.
+  - **Android**: Native Android app.
+  - **macOS**: Native Mac desktop app.
+  - **Apple TV**: tvOS app for big screen gaming.
+
 ---
 
 ## Project Structure
 
-The project is structured as a Next.js application with both frontend and backend components:
+The project is structured as a monorepo with shared code across platforms:
 
-- **`src/pages/`**  
-  React components for the game screens and UI.
+- **`apps/web/`**  
+  Next.js web application.
 
-- **`src/contexts/`**  
-  React context providers for global state management.
+- **`apps/mobile/`**  
+  React Native mobile application using Expo.
 
-- **`src/components/`**  
-  Reusable UI components.
-
-- **`src/pages/api/`**  
-  Next.js API routes for backend functionality.
-
-- **`src/lib/`**  
-  Utilities and service classes.
+- **`packages/shared/`**  
+  Shared TypeScript code used by both web and mobile apps.
 
 - **`data/`**  
   JSON files for data persistence.
@@ -82,6 +84,7 @@ The project is structured as a Next.js application with both frontend and backen
 
 - **Node.js**: v18+
 - **npm** or **yarn**
+- **Expo Go app** (for mobile development)
 
 ### Installation
 
@@ -96,7 +99,7 @@ The project is structured as a Next.js application with both frontend and backen
    npm install
    ```
 
-3. Start the development server
+3. Start the web development server
    ```bash
    npm run dev
    ```
@@ -121,7 +124,7 @@ The project is structured as a Next.js application with both frontend and backen
 
 ### Available Scripts
 
-- **dev**: Run the development server with environment setup
+- **dev**: Run the web development server with environment setup
   ```bash
   npm run dev
   ```
@@ -131,12 +134,12 @@ The project is structured as a Next.js application with both frontend and backen
   npm run dev:plain
   ```
 
-- **build**: Build the project for production
+- **build**: Build the web project for production
   ```bash
   npm run build
   ```
 
-- **start**: Start the production server
+- **start**: Start the web production server
   ```bash
   npm run start
   ```
@@ -169,6 +172,41 @@ The project is structured as a Next.js application with both frontend and backen
 - **clean**: Clean build artifacts and dependencies
   ```bash
   npm run clean
+  ```
+
+- **expo:start**: Start the Expo development server for mobile apps
+  ```bash
+  npm run expo:start
+  ```
+
+- **expo:ios**: Start iOS simulator
+  ```bash
+  npm run expo:ios
+  ```
+
+- **expo:android**: Start Android emulator
+  ```bash
+  npm run expo:android
+  ```
+
+- **expo:web**: Start web version of Expo app
+  ```bash
+  npm run expo:web
+  ```
+
+- **prebuild**: Generate native projects for iOS/Android
+  ```bash
+  npm run prebuild
+  ```
+
+- **build:ios**: Build iOS app
+  ```bash
+  npm run build:ios
+  ```
+
+- **build:android**: Build Android app
+  ```bash
+  npm run build:android
   ```
 
 ### Data Structure
@@ -204,11 +242,69 @@ TrendGuesser uses Next.js API routes for server functionality:
 
 ---
 
+## Mobile Apps
+
+TrendGuesser is available as native mobile apps for iOS and Android, as well as macOS, iPad, and Apple TV.
+
+### Mobile Development
+
+1. Start the Expo development server:
+   ```bash
+   npm run expo:start
+   ```
+
+2. Run on iOS simulator:
+   ```bash
+   npm run expo:ios
+   ```
+
+3. Run on Android emulator:
+   ```bash
+   npm run expo:android
+   ```
+
+4. Run in web browser:
+   ```bash
+   npm run expo:web
+   ```
+
+### Building Mobile Apps
+
+1. Generate native projects:
+   ```bash
+   npm run prebuild
+   ```
+
+2. Build for iOS:
+   ```bash
+   npm run build:ios        # Production build
+   npm run build:preview:ios # Preview build
+   npm run build:dev:ios    # Development build
+   ```
+
+3. Build for Android:
+   ```bash
+   npm run build:android        # Production build
+   npm run build:preview:android # Preview build
+   npm run build:dev:android    # Development build
+   ```
+
+### Architecture
+
+The mobile apps use:
+- **React Native**: Core framework
+- **Expo**: Development platform and build tools
+- **Shared Code**: Core game logic shared with web version
+- **AsyncStorage**: Local storage for offline capabilities
+- **React Navigation**: Navigation between screens
+
+---
+
 ## Deployment
 
-### Vercel Deployment
+### Vercel Deployment (Web)
 
-The project is configured for deployment on Vercel with Neon PostgreSQL:
+The web project is configured for deployment on Vercel with Neon PostgreSQL:
 
 ```bash
 npm run deploy
@@ -219,6 +315,15 @@ This script guides you through:
 2. Configuring environment variables
 3. Deploying to Vercel
 4. Initializing the database schema
+
+### Mobile App Deployment
+
+The mobile apps can be deployed to app stores using EAS (Expo Application Services):
+
+```bash
+npm run build:ios    # Build iOS app for App Store
+npm run build:android # Build Android app for Google Play
+```
 
 ### Environment Variables
 
@@ -249,3 +354,13 @@ For local development, sample data is used when no database connection is availa
 - Images are generated via placeholder services for demonstration purposes.
 - Game data is simulated and does not reflect actual search volumes.
 - Inspired by higher/lower style games and Balatro's aesthetic.
+
+## Mobile Development Details
+
+For detailed information about the mobile apps:
+
+- [Mobile Development Guide](./docs/MOBILE_DEV.md) - Guide for mobile app development
+- [Mobile Build Guide](./docs/MOBILE_BUILD.md) - Instructions for building and publishing mobile apps
+
+## License
+MIT

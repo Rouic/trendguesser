@@ -68,4 +68,4 @@ fi
 echo -e "${GREEN}Starting Next.js dev server...${NC}"
 echo -e "${BLUE}Web server starting at http://localhost:3000${NC}"
 
-next dev
+cd apps/web && next dev

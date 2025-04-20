@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "jsx": "react-native",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@trendguesser/shared": ["../../packages/shared/src"]
+    }
+  },
+  "include": ["src", "index.tsx", "app.json", "metro.config.js"],
+  "exclude": ["node_modules"]
+}

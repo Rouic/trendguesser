@@ -1,0 +1,4146 @@
+[
+  {
+    "id": "youtube",
+    "term": "YouTube",
+    "volume": 1200000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=YouTube",
+    "timestamp": "2025-04-14T15:46:09.149Z"
+  },
+  {
+    "id": "facebook",
+    "term": "Facebook",
+    "volume": 724500000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Facebook",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "whatsapp-web",
+    "term": "WhatsApp Web",
+    "volume": 521000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=WhatsApp%20Web",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "translate",
+    "term": "Translate",
+    "volume": 460800000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Translate",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "google",
+    "term": "Google",
+    "volume": 405300000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Google",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "instagram",
+    "term": "Instagram",
+    "volume": 403200000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Instagram",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "amazon",
+    "term": "Amazon",
+    "volume": 393100000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Amazon",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "gmail",
+    "term": "Gmail",
+    "volume": 392300000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Gmail",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "google-translate",
+    "term": "Google Translate",
+    "volume": 325900000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Google%20Translate",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "twitter",
+    "term": "Twitter",
+    "volume": 148500000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Twitter",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "google-maps",
+    "term": "Google Maps",
+    "volume": 142400000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Google%20Maps",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "chatgpt",
+    "term": "ChatGPT",
+    "volume": 128300000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=ChatGPT",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "yahoo",
+    "term": "Yahoo",
+    "volume": 121500000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Yahoo",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "whatsapp",
+    "term": "WhatsApp",
+    "volume": 120600000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=WhatsApp",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "canva",
+    "term": "Canva",
+    "volume": 117400000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Canva",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "hotmail",
+    "term": "Hotmail",
+    "volume": 117200000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Hotmail",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "netflix",
+    "term": "Netflix",
+    "volume": 105300000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Netflix",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "wordle",
+    "term": "Wordle",
+    "volume": 101500000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Wordle",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "yahoo-mail",
+    "term": "Yahoo Mail",
+    "volume": 99100000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Yahoo%20Mail",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pinterest",
+    "term": "Pinterest",
+    "volume": 88300000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Pinterest",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "speed-test",
+    "term": "Speed Test",
+    "volume": 84400000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Speed%20Test",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "roblox",
+    "term": "Roblox",
+    "volume": 80100000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Roblox",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "yandex",
+    "term": "Yandex",
+    "volume": 77400000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Yandex",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tiktok",
+    "term": "TikTok",
+    "volume": 76200000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=TikTok",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "flipkart",
+    "term": "Flipkart",
+    "volume": 69200000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Flipkart",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ebay",
+    "term": "Ebay",
+    "volume": 68800000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Ebay",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "outlook",
+    "term": "Outlook",
+    "volume": 66700000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Outlook",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "facebook-login",
+    "term": "Facebook Login",
+    "volume": 56200000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Facebook%20Login",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "linkedin",
+    "term": "LinkedIn",
+    "volume": 55300000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=LinkedIn",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "spotify",
+    "term": "Spotify",
+    "volume": 53300000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Spotify",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "indeed",
+    "term": "Indeed",
+    "volume": 51900000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Indeed",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "calculator",
+    "term": "Calculator",
+    "volume": 49300000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Calculator",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "twitch",
+    "term": "Twitch",
+    "volume": 47400000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Twitch",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "amazon-prime",
+    "term": "Amazon Prime",
+    "volume": 43600000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Amazon%20Prime",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "airbnb",
+    "term": "Airbnb",
+    "volume": 42100000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Airbnb",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "apple",
+    "term": "Apple",
+    "volume": 30000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Apple",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "iphone",
+    "term": "iPhone",
+    "volume": 25000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=iPhone",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "paypal",
+    "term": "PayPal",
+    "volume": 20000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=PayPal",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "discord",
+    "term": "Discord",
+    "volume": 20000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Discord",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "google-drive",
+    "term": "Google Drive",
+    "volume": 15000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Google%20Drive",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "openai",
+    "term": "OpenAI",
+    "volume": 10000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=OpenAI",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "reddit",
+    "term": "Reddit",
+    "volume": 10000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Reddit",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "bing",
+    "term": "Bing",
+    "volume": 8000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Bing",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "uber",
+    "term": "Uber",
+    "volume": 8000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Uber",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "microsoft",
+    "term": "Microsoft",
+    "volume": 8000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Microsoft",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "zoom",
+    "term": "Zoom",
+    "volume": 7000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Zoom",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "disney-plus",
+    "term": "Disney Plus",
+    "volume": 7000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Disney%20Plus",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "telegram",
+    "term": "Telegram",
+    "volume": 7000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Telegram",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "github",
+    "term": "GitHub",
+    "volume": 6000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=GitHub",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "bitcoin",
+    "term": "Bitcoin",
+    "volume": 25000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Bitcoin",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ethereum",
+    "term": "Ethereum",
+    "volume": 8000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Ethereum",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ai",
+    "term": "AI",
+    "volume": 5000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=AI",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "windows-10",
+    "term": "Windows 10",
+    "volume": 5000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Windows%2010",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "windows-11",
+    "term": "Windows 11",
+    "volume": 5000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Windows%2011",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "android",
+    "term": "Android",
+    "volume": 5000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Android",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tesla",
+    "term": "Tesla",
+    "volume": 5000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Tesla",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "spacex",
+    "term": "SpaceX",
+    "volume": 3000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=SpaceX",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "nasa",
+    "term": "NASA",
+    "volume": 3000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=NASA",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "chrome",
+    "term": "Chrome",
+    "volume": 5000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Chrome",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "firefox",
+    "term": "Firefox",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Firefox",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "adobe-photoshop",
+    "term": "Adobe Photoshop",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Adobe%20Photoshop",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "dell",
+    "term": "Dell",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Dell",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "hp",
+    "term": "HP",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=HP",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "lenovo",
+    "term": "Lenovo",
+    "volume": 800000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Lenovo",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "asus",
+    "term": "Asus",
+    "volume": 800000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Asus",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "acer",
+    "term": "Acer",
+    "volume": 500000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Acer",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "nvidia",
+    "term": "Nvidia",
+    "volume": 2000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Nvidia",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "intel",
+    "term": "Intel",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Intel",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "amd",
+    "term": "AMD",
+    "volume": 800000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=AMD",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "playstation",
+    "term": "PlayStation",
+    "volume": 5000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=PlayStation",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "xbox",
+    "term": "Xbox",
+    "volume": 3000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Xbox",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "nintendo-switch",
+    "term": "Nintendo Switch",
+    "volume": 2000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Nintendo%20Switch",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "steam",
+    "term": "Steam",
+    "volume": 2000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Steam",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "aliexpress",
+    "term": "AliExpress",
+    "volume": 2000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=AliExpress",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "shopee",
+    "term": "Shopee",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Shopee",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "shazam",
+    "term": "Shazam",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Shazam",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "quora",
+    "term": "Quora",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Quora",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "messenger",
+    "term": "Messenger",
+    "volume": 1500000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Messenger",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "google-docs",
+    "term": "Google Docs",
+    "volume": 13600000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Google%20Docs",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "google-earth",
+    "term": "Google Earth",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Google%20Earth",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "google-classroom",
+    "term": "Google Classroom",
+    "volume": 6000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Google%20Classroom",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "google-meet",
+    "term": "Google Meet",
+    "volume": 5000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Google%20Meet",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "google-play",
+    "term": "Google Play",
+    "volume": 10000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Google%20Play",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "facebook-messenger",
+    "term": "Facebook Messenger",
+    "volume": 5000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Facebook%20Messenger",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "stack-overflow",
+    "term": "Stack Overflow",
+    "volume": 2000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Stack%20Overflow",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "dall-e",
+    "term": "DALL-E",
+    "volume": 500000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=DALL-E",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "gitlab",
+    "term": "GitLab",
+    "volume": 300000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=GitLab",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "docker",
+    "term": "Docker",
+    "volume": 400000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Docker",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ios",
+    "term": "iOS",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=iOS",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "visual-studio-code",
+    "term": "Visual Studio Code",
+    "volume": 800000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Visual%20Studio%20Code",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "gpt-4",
+    "term": "GPT-4",
+    "volume": 300000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=GPT-4",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "minecraft",
+    "term": "Minecraft",
+    "volume": 40000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Minecraft",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "fortnite",
+    "term": "Fortnite",
+    "volume": 20000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Fortnite",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pubg",
+    "term": "PUBG",
+    "volume": 10000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=PUBG",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "slack",
+    "term": "Slack",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Slack",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "microsoft-excel",
+    "term": "Microsoft Excel",
+    "volume": 3000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Microsoft%20Excel",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "microsoft-word",
+    "term": "Microsoft Word",
+    "volume": 2000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Microsoft%20Word",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "dropbox",
+    "term": "Dropbox",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Dropbox",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "wechat",
+    "term": "WeChat",
+    "volume": 500000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=WeChat",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "google-chrome",
+    "term": "Google Chrome",
+    "volume": 10000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Google%20Chrome",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "safari",
+    "term": "Safari",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Safari",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "whatsapp-messenger",
+    "term": "WhatsApp Messenger",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=WhatsApp%20Messenger",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "kindle",
+    "term": "Kindle",
+    "volume": 500000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Kindle",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "garena-free-fire",
+    "term": "Garena Free Fire",
+    "volume": 5000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Garena%20Free%20Fire",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tiktok-download",
+    "term": "TikTok Download",
+    "volume": 5000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=TikTok%20Download",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "uc-browser",
+    "term": "UC Browser",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=UC%20Browser",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "icloud",
+    "term": "iCloud",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=iCloud",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "youtube",
+    "term": "YouTube",
+    "volume": 1200000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=YouTube",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "snapchat",
+    "term": "Snapchat",
+    "volume": 25000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Snapchat",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "huawei",
+    "term": "Huawei",
+    "volume": 2000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Huawei",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "xiaomi",
+    "term": "Xiaomi",
+    "volume": 1500000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Xiaomi",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "oppo",
+    "term": "Oppo",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Oppo",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "vivo",
+    "term": "Vivo",
+    "volume": 800000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Vivo",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ps5",
+    "term": "PS5",
+    "volume": 2000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=PS5",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "xbox-series-x",
+    "term": "Xbox Series X",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Xbox%20Series%20X",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "nintendo",
+    "term": "Nintendo",
+    "volume": 1000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Nintendo",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "samsung-galaxy",
+    "term": "Samsung Galaxy",
+    "volume": 2000000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Samsung%20Galaxy",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "signal",
+    "term": "Signal",
+    "volume": 500000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Signal",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "viber",
+    "term": "Viber",
+    "volume": 400000,
+    "category": "technology",
+    "imageUrl": "/api/image?term=Viber",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "venus-williams",
+    "term": "Venus Williams",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Venus%20Williams",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "naomi-osaka",
+    "term": "Naomi Osaka",
+    "volume": 800000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Naomi%20Osaka",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "andy-murray",
+    "term": "Andy Murray",
+    "volume": 600000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Andy%20Murray",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "erling-haaland",
+    "term": "Erling Haaland",
+    "volume": 10000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Erling%20Haaland",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "zlatan-ibrahimovic",
+    "term": "Zlatan Ibrahimovic",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Zlatan%20Ibrahimovic",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "diego-maradona",
+    "term": "Diego Maradona",
+    "volume": 800000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Diego%20Maradona",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ronaldinho",
+    "term": "Ronaldinho",
+    "volume": 800000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Ronaldinho",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pel-",
+    "term": "Pelé",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Pel%C3%A9",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "shaquille-o-neal",
+    "term": "Shaquille O'Neal",
+    "volume": 700000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Shaquille%20O'Neal",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "magic-johnson",
+    "term": "Magic Johnson",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Magic%20Johnson",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "floyd-mayweather",
+    "term": "Floyd Mayweather",
+    "volume": 1500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Floyd%20Mayweather",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "manny-pacquiao",
+    "term": "Manny Pacquiao",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Manny%20Pacquiao",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "khabib-nurmagomedov",
+    "term": "Khabib Nurmagomedov",
+    "volume": 800000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Khabib%20Nurmagomedov",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "jon-jones",
+    "term": "Jon Jones",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Jon%20Jones",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "wayne-gretzky",
+    "term": "Wayne Gretzky",
+    "volume": 300000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Wayne%20Gretzky",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "rohit-sharma",
+    "term": "Rohit Sharma",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Rohit%20Sharma",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "babar-azam",
+    "term": "Babar Azam",
+    "volume": 400000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Babar%20Azam",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tyson-fury",
+    "term": "Tyson Fury",
+    "volume": 600000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Tyson%20Fury",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "canelo-alvarez",
+    "term": "Canelo Alvarez",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Canelo%20Alvarez",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "anthony-joshua",
+    "term": "Anthony Joshua",
+    "volume": 400000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Anthony%20Joshua",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "john-cena",
+    "term": "John Cena",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=John%20Cena",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "boston-red-sox",
+    "term": "Boston Red Sox",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Boston%20Red%20Sox",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "los-angeles-dodgers",
+    "term": "Los Angeles Dodgers",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Los%20Angeles%20Dodgers",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "chicago-cubs",
+    "term": "Chicago Cubs",
+    "volume": 800000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Chicago%20Cubs",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "houston-astros",
+    "term": "Houston Astros",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Houston%20Astros",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "montreal-canadiens",
+    "term": "Montreal Canadiens",
+    "volume": 300000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Montreal%20Canadiens",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "toronto-maple-leafs",
+    "term": "Toronto Maple Leafs",
+    "volume": 300000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Toronto%20Maple%20Leafs",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "patrick-mahomes",
+    "term": "Patrick Mahomes",
+    "volume": 800948,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Patrick%20Mahomes",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "aaron-rodgers",
+    "term": "Aaron Rodgers",
+    "volume": 600000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Aaron%20Rodgers",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "alex-morgan",
+    "term": "Alex Morgan",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Alex%20Morgan",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "mohamed-salah",
+    "term": "Mohamed Salah",
+    "volume": 1500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Mohamed%20Salah",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "gareth-bale",
+    "term": "Gareth Bale",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Gareth%20Bale",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "luis-suarez",
+    "term": "Luis Suarez",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Luis%20Suarez",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "zinedine-zidane",
+    "term": "Zinedine Zidane",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Zinedine%20Zidane",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "karim-benzema",
+    "term": "Karim Benzema",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Karim%20Benzema",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "andres-iniesta",
+    "term": "Andres Iniesta",
+    "volume": 300000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Andres%20Iniesta",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "xavi-hernandez",
+    "term": "Xavi Hernandez",
+    "volume": 200000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Xavi%20Hernandez",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "luka-modric",
+    "term": "Luka Modric",
+    "volume": 300000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Luka%20Modric",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "antoine-griezmann",
+    "term": "Antoine Griezmann",
+    "volume": 300000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Antoine%20Griezmann",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "harry-kane",
+    "term": "Harry Kane",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Harry%20Kane",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "football",
+    "term": "Football",
+    "volume": 50000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Football",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "soccer",
+    "term": "Soccer",
+    "volume": 30000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Soccer",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cricket",
+    "term": "Cricket",
+    "volume": 64200000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Cricket",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "basketball",
+    "term": "Basketball",
+    "volume": 20000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Basketball",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tennis",
+    "term": "Tennis",
+    "volume": 10000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Tennis",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "baseball",
+    "term": "Baseball",
+    "volume": 8000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Baseball",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "golf",
+    "term": "Golf",
+    "volume": 5000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Golf",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "boxing",
+    "term": "Boxing",
+    "volume": 5000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Boxing",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "mma",
+    "term": "MMA",
+    "volume": 4000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=MMA",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "formula-1",
+    "term": "Formula 1",
+    "volume": 10000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Formula%201",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "f1",
+    "term": "F1",
+    "volume": 9000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=F1",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "rugby",
+    "term": "Rugby",
+    "volume": 3000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Rugby",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ice-hockey",
+    "term": "Ice Hockey",
+    "volume": 2000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Ice%20Hockey",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "volleyball",
+    "term": "Volleyball",
+    "volume": 2000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Volleyball",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "table-tennis",
+    "term": "Table Tennis",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Table%20Tennis",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "badminton",
+    "term": "Badminton",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Badminton",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cycling",
+    "term": "Cycling",
+    "volume": 1500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Cycling",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "track-and-field",
+    "term": "Track and Field",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Track%20and%20Field",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "swimming",
+    "term": "Swimming",
+    "volume": 1500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Swimming",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "olympics",
+    "term": "Olympics",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Olympics",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "fifa-world-cup",
+    "term": "FIFA World Cup",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=FIFA%20World%20Cup",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "super-bowl",
+    "term": "Super Bowl",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Super%20Bowl",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "uefa-champions-league",
+    "term": "UEFA Champions League",
+    "volume": 3000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=UEFA%20Champions%20League",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "uefa-euro",
+    "term": "UEFA Euro",
+    "volume": 200000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=UEFA%20Euro",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "copa-america",
+    "term": "Copa America",
+    "volume": 100000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Copa%20America",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tour-de-france",
+    "term": "Tour de France",
+    "volume": 300000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Tour%20de%20France",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "wimbledon",
+    "term": "Wimbledon",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Wimbledon",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "nba",
+    "term": "NBA",
+    "volume": 90200000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=NBA",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "nfl",
+    "term": "NFL",
+    "volume": 52300000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=NFL",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ipl",
+    "term": "IPL",
+    "volume": 81300000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=IPL",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "premier-league",
+    "term": "Premier League",
+    "volume": 69600000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Premier%20League",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "la-liga",
+    "term": "La Liga",
+    "volume": 30000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=La%20Liga",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "serie-a",
+    "term": "Serie A",
+    "volume": 47100000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Serie%20A",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "bundesliga",
+    "term": "Bundesliga",
+    "volume": 10000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Bundesliga",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ligue-1",
+    "term": "Ligue 1",
+    "volume": 5000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Ligue%201",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "europa-league",
+    "term": "Europa League",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Europa%20League",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "mls",
+    "term": "MLS",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=MLS",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ufc",
+    "term": "UFC",
+    "volume": 4000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=UFC",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "wwe",
+    "term": "WWE",
+    "volume": 5000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=WWE",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "real-madrid",
+    "term": "Real Madrid",
+    "volume": 57100000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Real%20Madrid",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "fc-barcelona",
+    "term": "FC Barcelona",
+    "volume": 50000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=FC%20Barcelona",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "manchester-united",
+    "term": "Manchester United",
+    "volume": 30000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Manchester%20United",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "paris-saint-germain",
+    "term": "Paris Saint-Germain",
+    "volume": 20000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Paris%20Saint-Germain",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "liverpool",
+    "term": "Liverpool",
+    "volume": 20000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Liverpool",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "manchester-city",
+    "term": "Manchester City",
+    "volume": 15000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Manchester%20City",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "juventus",
+    "term": "Juventus",
+    "volume": 15000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Juventus",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "bayern-munich",
+    "term": "Bayern Munich",
+    "volume": 15000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Bayern%20Munich",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "chelsea",
+    "term": "Chelsea",
+    "volume": 10000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Chelsea",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "arsenal",
+    "term": "Arsenal",
+    "volume": 10000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Arsenal",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ac-milan",
+    "term": "AC Milan",
+    "volume": 5000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=AC%20Milan",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "inter-milan",
+    "term": "Inter Milan",
+    "volume": 5000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Inter%20Milan",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "borussia-dortmund",
+    "term": "Borussia Dortmund",
+    "volume": 5000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Borussia%20Dortmund",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ajax",
+    "term": "Ajax",
+    "volume": 3000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Ajax",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "los-angeles-lakers",
+    "term": "Los Angeles Lakers",
+    "volume": 5000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Los%20Angeles%20Lakers",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "golden-state-warriors",
+    "term": "Golden State Warriors",
+    "volume": 5000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Golden%20State%20Warriors",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "chicago-bulls",
+    "term": "Chicago Bulls",
+    "volume": 3000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Chicago%20Bulls",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "boston-celtics",
+    "term": "Boston Celtics",
+    "volume": 2000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Boston%20Celtics",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "new-york-yankees",
+    "term": "New York Yankees",
+    "volume": 2000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=New%20York%20Yankees",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "dallas-cowboys",
+    "term": "Dallas Cowboys",
+    "volume": 2000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Dallas%20Cowboys",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "green-bay-packers",
+    "term": "Green Bay Packers",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Green%20Bay%20Packers",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "new-england-patriots",
+    "term": "New England Patriots",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=New%20England%20Patriots",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "australia-cricket-team",
+    "term": "Australia cricket team",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Australia%20cricket%20team",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "india-cricket-team",
+    "term": "India cricket team",
+    "volume": 2000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=India%20cricket%20team",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "england-cricket-team",
+    "term": "England cricket team",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=England%20cricket%20team",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "lebron-james",
+    "term": "LeBron James",
+    "volume": 9150711,
+    "category": "sports",
+    "imageUrl": "/api/image?term=LeBron%20James",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "lionel-messi",
+    "term": "Lionel Messi",
+    "volume": 7000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Lionel%20Messi",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cristiano-ronaldo",
+    "term": "Cristiano Ronaldo",
+    "volume": 7491012,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Cristiano%20Ronaldo",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "neymar",
+    "term": "Neymar",
+    "volume": 6000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Neymar",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "kylian-mbapp-",
+    "term": "Kylian Mbappé",
+    "volume": 5000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Kylian%20Mbapp%C3%A9",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "david-beckham",
+    "term": "David Beckham",
+    "volume": 2000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=David%20Beckham",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "roger-federer",
+    "term": "Roger Federer",
+    "volume": 447176,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Roger%20Federer",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "rafael-nadal",
+    "term": "Rafael Nadal",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Rafael%20Nadal",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "novak-djokovic",
+    "term": "Novak Djokovic",
+    "volume": 3500675,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Novak%20Djokovic",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "serena-williams",
+    "term": "Serena Williams",
+    "volume": 1351049,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Serena%20Williams",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tiger-woods",
+    "term": "Tiger Woods",
+    "volume": 3480913,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Tiger%20Woods",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "conor-mcgregor",
+    "term": "Conor McGregor",
+    "volume": 3000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Conor%20McGregor",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "mike-tyson",
+    "term": "Mike Tyson",
+    "volume": 2240000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Mike%20Tyson",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "muhammad-ali",
+    "term": "Muhammad Ali",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Muhammad%20Ali",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "michael-jordan",
+    "term": "Michael Jordan",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Michael%20Jordan",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "kobe-bryant",
+    "term": "Kobe Bryant",
+    "volume": 800000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Kobe%20Bryant",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tom-brady",
+    "term": "Tom Brady",
+    "volume": 1000000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Tom%20Brady",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "usain-bolt",
+    "term": "Usain Bolt",
+    "volume": 800000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Usain%20Bolt",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "virat-kohli",
+    "term": "Virat Kohli",
+    "volume": 1500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Virat%20Kohli",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "sachin-tendulkar",
+    "term": "Sachin Tendulkar",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Sachin%20Tendulkar",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ms-dhoni",
+    "term": "MS Dhoni",
+    "volume": 400000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=MS%20Dhoni",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "jake-paul",
+    "term": "Jake Paul",
+    "volume": 1750000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Jake%20Paul",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "logan-paul",
+    "term": "Logan Paul",
+    "volume": 1700000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Logan%20Paul",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "simone-biles",
+    "term": "Simone Biles",
+    "volume": 962886,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Simone%20Biles",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "lewis-hamilton",
+    "term": "Lewis Hamilton",
+    "volume": 3739211,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Lewis%20Hamilton",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "max-verstappen",
+    "term": "Max Verstappen",
+    "volume": 2996542,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Max%20Verstappen",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "michael-schumacher",
+    "term": "Michael Schumacher",
+    "volume": 500000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Michael%20Schumacher",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ayrton-senna",
+    "term": "Ayrton Senna",
+    "volume": 200000,
+    "category": "sports",
+    "imageUrl": "/api/image?term=Ayrton%20Senna",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "central-park",
+    "term": "Central Park",
+    "volume": 200000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Central%20Park",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "white-house",
+    "term": "White House",
+    "volume": 300000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=White%20House",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "arc-de-triomphe",
+    "term": "Arc de Triomphe",
+    "volume": 200000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Arc%20de%20Triomphe",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "berlin-wall",
+    "term": "Berlin Wall",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Berlin%20Wall",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cologne-cathedral",
+    "term": "Cologne Cathedral",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Cologne%20Cathedral",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "prague-castle",
+    "term": "Prague Castle",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Prague%20Castle",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "charles-bridge",
+    "term": "Charles Bridge",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Charles%20Bridge",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "budapest-parliament",
+    "term": "Budapest Parliament",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Budapest%20Parliament",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "terracotta-army",
+    "term": "Terracotta Army",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Terracotta%20Army",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "potala-palace",
+    "term": "Potala Palace",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Potala%20Palace",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "himeji-castle",
+    "term": "Himeji Castle",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Himeji%20Castle",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "merlion-statue",
+    "term": "Merlion Statue",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Merlion%20Statue",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "gardens-by-the-bay",
+    "term": "Gardens by the Bay",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Gardens%20by%20the%20Bay",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "western-wall",
+    "term": "Western Wall",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Western%20Wall",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "luxor-temple",
+    "term": "Luxor Temple",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Luxor%20Temple",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "abu-simbel",
+    "term": "Abu Simbel",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Abu%20Simbel",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "valley-of-the-kings",
+    "term": "Valley of the Kings",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Valley%20of%20the%20Kings",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "gal-pagos-islands",
+    "term": "Galápagos Islands",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Gal%C3%A1pagos%20Islands",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "great-sphinx-of-giza",
+    "term": "Great Sphinx of Giza",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Great%20Sphinx%20of%20Giza",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "mount-kilimanjaro",
+    "term": "Mount Kilimanjaro",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Mount%20Kilimanjaro",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "denali--mount-mckinley-",
+    "term": "Denali (Mount McKinley)",
+    "volume": 30000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Denali%20(Mount%20McKinley)",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "capitol-hill--us-capitol-",
+    "term": "Capitol Hill (US Capitol)",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Capitol%20Hill%20(US%20Capitol)",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "hollywood-walk-of-fame",
+    "term": "Hollywood Walk of Fame",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Hollywood%20Walk%20of%20Fame",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "metropolitan-museum-of-art",
+    "term": "Metropolitan Museum of Art",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Metropolitan%20Museum%20of%20Art",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "british-museum",
+    "term": "British Museum",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=British%20Museum",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "vatican-museums",
+    "term": "Vatican Museums",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Vatican%20Museums",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "salzburg-old-town",
+    "term": "Salzburg Old Town",
+    "volume": 30000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Salzburg%20Old%20Town",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cinque-terre",
+    "term": "Cinque Terre",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Cinque%20Terre",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "santorini",
+    "term": "Santorini",
+    "volume": 80000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Santorini",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "matterhorn",
+    "term": "Matterhorn",
+    "volume": 80000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Matterhorn",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "moai--easter-island-",
+    "term": "Moai (Easter Island)",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Moai%20(Easter%20Island)",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "manneken-pis",
+    "term": "Manneken Pis",
+    "volume": 30000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Manneken%20Pis",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "angkor-thom",
+    "term": "Angkor Thom",
+    "volume": 30000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Angkor%20Thom",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "sistine-chapel",
+    "term": "Sistine Chapel",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Sistine%20Chapel",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "great-ocean-road",
+    "term": "Great Ocean Road",
+    "volume": 30000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Great%20Ocean%20Road",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "banff-national-park",
+    "term": "Banff National Park",
+    "volume": 30000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Banff%20National%20Park",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "zion-national-park",
+    "term": "Zion National Park",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Zion%20National%20Park",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "glacier-national-park",
+    "term": "Glacier National Park",
+    "volume": 30000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Glacier%20National%20Park",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "mount-fuji",
+    "term": "Mount Fuji",
+    "volume": 200000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Mount%20Fuji",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "red-square",
+    "term": "Red Square",
+    "volume": 150000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Red%20Square",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "kremlin",
+    "term": "Kremlin",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Kremlin",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "blue-lagoon",
+    "term": "Blue Lagoon",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Blue%20Lagoon",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cliffs-of-moher",
+    "term": "Cliffs of Moher",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Cliffs%20of%20Moher",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "plitvice-lakes",
+    "term": "Plitvice Lakes",
+    "volume": 30000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Plitvice%20Lakes",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "meteora",
+    "term": "Meteora",
+    "volume": 30000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Meteora",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "acropolis-museum",
+    "term": "Acropolis Museum",
+    "volume": 30000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Acropolis%20Museum",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "oxford-university",
+    "term": "Oxford University",
+    "volume": 30000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Oxford%20University",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cambridge-university",
+    "term": "Cambridge University",
+    "volume": 20000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Cambridge%20University",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tower-bridge",
+    "term": "Tower Bridge",
+    "volume": 150000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Tower%20Bridge",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tower-of-london",
+    "term": "Tower of London",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Tower%20of%20London",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "mezquita-of-cordoba",
+    "term": "Mezquita of Cordoba",
+    "volume": 30000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Mezquita%20of%20Cordoba",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "sch-nbrunn-palace",
+    "term": "Schönbrunn Palace",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Sch%C3%B6nbrunn%20Palace",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "auschwitz-concentration-camp",
+    "term": "Auschwitz Concentration Camp",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Auschwitz%20Concentration%20Camp",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "saint-basil-s-cathedral",
+    "term": "Saint Basil's Cathedral",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Saint%20Basil's%20Cathedral",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "palm-jumeirah",
+    "term": "Palm Jumeirah",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Palm%20Jumeirah",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "las-vegas-strip",
+    "term": "Las Vegas Strip",
+    "volume": 300000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Las%20Vegas%20Strip",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "hoover-dam",
+    "term": "Hoover Dam",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Hoover%20Dam",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "fushimi-inari-shrine",
+    "term": "Fushimi Inari Shrine",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Fushimi%20Inari%20Shrine",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "hiroshima-peace-memorial",
+    "term": "Hiroshima Peace Memorial",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Hiroshima%20Peace%20Memorial",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "sydney-harbour-bridge",
+    "term": "Sydney Harbour Bridge",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Sydney%20Harbour%20Bridge",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "milford-sound",
+    "term": "Milford Sound",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Milford%20Sound",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "grand-palace-bangkok",
+    "term": "Grand Palace Bangkok",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Grand%20Palace%20Bangkok",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "phi-phi-islands",
+    "term": "Phi Phi Islands",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Phi%20Phi%20Islands",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "shwedagon-pagoda",
+    "term": "Shwedagon Pagoda",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Shwedagon%20Pagoda",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tanah-lot-temple",
+    "term": "Tanah Lot Temple",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Tanah%20Lot%20Temple",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "disneyland-paris",
+    "term": "Disneyland Paris",
+    "volume": 3350000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Disneyland%20Paris",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "eiffel-tower",
+    "term": "Eiffel Tower",
+    "volume": 2500000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Eiffel%20Tower",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "sagrada-familia",
+    "term": "Sagrada Familia",
+    "volume": 2400000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Sagrada%20Familia",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "times-square",
+    "term": "Times Square",
+    "volume": 2300000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Times%20Square",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "disneyland-california",
+    "term": "Disneyland California",
+    "volume": 2300000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Disneyland%20California",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "taj-mahal",
+    "term": "Taj Mahal",
+    "volume": 2000000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Taj%20Mahal",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "walt-disney-world",
+    "term": "Walt Disney World",
+    "volume": 2000000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Walt%20Disney%20World",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "machu-picchu",
+    "term": "Machu Picchu",
+    "volume": 1260000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Machu%20Picchu",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "burj-khalifa",
+    "term": "Burj Khalifa",
+    "volume": 1100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Burj%20Khalifa",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pantheon",
+    "term": "Pantheon",
+    "volume": 900000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Pantheon",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "niagara-falls",
+    "term": "Niagara Falls",
+    "volume": 945000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Niagara%20Falls",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "statue-of-liberty",
+    "term": "Statue of Liberty",
+    "volume": 800000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Statue%20of%20Liberty",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "great-wall-of-china",
+    "term": "Great Wall of China",
+    "volume": 600000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Great%20Wall%20of%20China",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pyramids-of-giza",
+    "term": "Pyramids of Giza",
+    "volume": 600000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Pyramids%20of%20Giza",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "colosseum",
+    "term": "Colosseum",
+    "volume": 600000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Colosseum",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "sydney-opera-house",
+    "term": "Sydney Opera House",
+    "volume": 500000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Sydney%20Opera%20House",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "christ-the-redeemer",
+    "term": "Christ the Redeemer",
+    "volume": 500000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Christ%20the%20Redeemer",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "chichen-itza",
+    "term": "Chichen Itza",
+    "volume": 500000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Chichen%20Itza",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "petra",
+    "term": "Petra",
+    "volume": 400000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Petra",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "angkor-wat",
+    "term": "Angkor Wat",
+    "volume": 400000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Angkor%20Wat",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "big-ben",
+    "term": "Big Ben",
+    "volume": 540000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Big%20Ben",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "london-eye",
+    "term": "London Eye",
+    "volume": 540000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=London%20Eye",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "buckingham-palace",
+    "term": "Buckingham Palace",
+    "volume": 400000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Buckingham%20Palace",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "louvre-museum",
+    "term": "Louvre Museum",
+    "volume": 300000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Louvre%20Museum",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "notre-dame-cathedral",
+    "term": "Notre Dame Cathedral",
+    "volume": 300000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Notre%20Dame%20Cathedral",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "acropolis-of-athens",
+    "term": "Acropolis of Athens",
+    "volume": 300000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Acropolis%20of%20Athens",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "mount-everest",
+    "term": "Mount Everest",
+    "volume": 300000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Mount%20Everest",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "grand-canyon",
+    "term": "Grand Canyon",
+    "volume": 500000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Grand%20Canyon",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "yellowstone-national-park",
+    "term": "Yellowstone National Park",
+    "volume": 300000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Yellowstone%20National%20Park",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "yosemite-national-park",
+    "term": "Yosemite National Park",
+    "volume": 200000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Yosemite%20National%20Park",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "golden-gate-bridge",
+    "term": "Golden Gate Bridge",
+    "volume": 400000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Golden%20Gate%20Bridge",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "hollywood-sign",
+    "term": "Hollywood Sign",
+    "volume": 300000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Hollywood%20Sign",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "mount-rushmore",
+    "term": "Mount Rushmore",
+    "volume": 200000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Mount%20Rushmore",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "stonehenge",
+    "term": "Stonehenge",
+    "volume": 200000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Stonehenge",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "neuschwanstein-castle",
+    "term": "Neuschwanstein Castle",
+    "volume": 150000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Neuschwanstein%20Castle",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "brandenburg-gate",
+    "term": "Brandenburg Gate",
+    "volume": 150000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Brandenburg%20Gate",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "hagia-sophia",
+    "term": "Hagia Sophia",
+    "volume": 200000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Hagia%20Sophia",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "blue-mosque",
+    "term": "Blue Mosque",
+    "volume": 150000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Blue%20Mosque",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "forbidden-city",
+    "term": "Forbidden City",
+    "volume": 250000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Forbidden%20City",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "palace-of-versailles",
+    "term": "Palace of Versailles",
+    "volume": 250000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Palace%20of%20Versailles",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "st--peter-s-basilica",
+    "term": "St. Peter's Basilica",
+    "volume": 150000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=St.%20Peter's%20Basilica",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "empire-state-building",
+    "term": "Empire State Building",
+    "volume": 400000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Empire%20State%20Building",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "brooklyn-bridge",
+    "term": "Brooklyn Bridge",
+    "volume": 150000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Brooklyn%20Bridge",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "marina-bay-sands",
+    "term": "Marina Bay Sands",
+    "volume": 300000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Marina%20Bay%20Sands",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tokyo-disneyland",
+    "term": "Tokyo Disneyland",
+    "volume": 500000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Tokyo%20Disneyland",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "universal-studios-orlando",
+    "term": "Universal Studios Orlando",
+    "volume": 300000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Universal%20Studios%20Orlando",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "universal-studios-hollywood",
+    "term": "Universal Studios Hollywood",
+    "volume": 200000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Universal%20Studios%20Hollywood",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tokyo-tower",
+    "term": "Tokyo Tower",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Tokyo%20Tower",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tokyo-skytree",
+    "term": "Tokyo Skytree",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Tokyo%20Skytree",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cn-tower",
+    "term": "CN Tower",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=CN%20Tower",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "space-needle",
+    "term": "Space Needle",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Space%20Needle",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "gateway-arch",
+    "term": "Gateway Arch",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Gateway%20Arch",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "iguazu-falls",
+    "term": "Iguazu Falls",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Iguazu%20Falls",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "uluru--ayers-rock-",
+    "term": "Uluru (Ayers Rock)",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Uluru%20(Ayers%20Rock)",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "victoria-falls",
+    "term": "Victoria Falls",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Victoria%20Falls",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "petronas-towers",
+    "term": "Petronas Towers",
+    "volume": 300000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Petronas%20Towers",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "burj-al-arab",
+    "term": "Burj Al Arab",
+    "volume": 200000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Burj%20Al%20Arab",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "great-barrier-reef",
+    "term": "Great Barrier Reef",
+    "volume": 200000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Great%20Barrier%20Reef",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "table-mountain",
+    "term": "Table Mountain",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Table%20Mountain",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "leaning-tower-of-pisa",
+    "term": "Leaning Tower of Pisa",
+    "volume": 300000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Leaning%20Tower%20of%20Pisa",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "florence-cathedral",
+    "term": "Florence Cathedral",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Florence%20Cathedral",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "mont-saint-michel",
+    "term": "Mont Saint-Michel",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Mont%20Saint-Michel",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "trevi-fountain",
+    "term": "Trevi Fountain",
+    "volume": 100000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Trevi%20Fountain",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "alhambra",
+    "term": "Alhambra",
+    "volume": 150000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Alhambra",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "borobudur",
+    "term": "Borobudur",
+    "volume": 80000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Borobudur",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cappadocia",
+    "term": "Cappadocia",
+    "volume": 80000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Cappadocia",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "halong-bay",
+    "term": "Halong Bay",
+    "volume": 50000,
+    "category": "landmarks",
+    "imageUrl": "/api/image?term=Halong%20Bay",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "walkers-crisps",
+    "term": "Walkers Crisps",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Walkers%20Crisps",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "mooncake",
+    "term": "Mooncake",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Mooncake",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "takoyaki",
+    "term": "Takoyaki",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Takoyaki",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "onigiri",
+    "term": "Onigiri",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Onigiri",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "dango",
+    "term": "Dango",
+    "volume": 20000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Dango",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "granola",
+    "term": "Granola",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Granola",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cashew-nuts",
+    "term": "Cashew nuts",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Cashew%20nuts",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pistachios",
+    "term": "Pistachios",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Pistachios",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "energy-bar",
+    "term": "Energy bar",
+    "volume": 60000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Energy%20bar",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "white-rabbit-candy",
+    "term": "White Rabbit Candy",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=White%20Rabbit%20Candy",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "honey-butter-chips",
+    "term": "Honey Butter Chips",
+    "volume": 20000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Honey%20Butter%20Chips",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "totino-s-pizza-rolls",
+    "term": "Totino's Pizza Rolls",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Totino's%20Pizza%20Rolls",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "bagel-bites",
+    "term": "Bagel Bites",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Bagel%20Bites",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "combos-snacks",
+    "term": "Combos Snacks",
+    "volume": 20000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Combos%20Snacks",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pez-candy",
+    "term": "Pez Candy",
+    "volume": 10000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Pez%20Candy",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "jolly-rancher",
+    "term": "Jolly Rancher",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Jolly%20Rancher",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "gummy-bears",
+    "term": "Gummy Bears",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Gummy%20Bears",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "jelly-beans",
+    "term": "Jelly Beans",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Jelly%20Beans",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "lollipop",
+    "term": "Lollipop",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Lollipop",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ice-cream-sandwich",
+    "term": "Ice Cream Sandwich",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Ice%20Cream%20Sandwich",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "peanut-butter-cups",
+    "term": "Peanut Butter Cups",
+    "volume": 80000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Peanut%20Butter%20Cups",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "caramel-popcorn",
+    "term": "Caramel Popcorn",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Caramel%20Popcorn",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "praline",
+    "term": "Praline",
+    "volume": 10000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Praline",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "gelato",
+    "term": "Gelato",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Gelato",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "fruit-snacks",
+    "term": "Fruit Snacks",
+    "volume": 60000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Fruit%20Snacks",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "haribo-gummies",
+    "term": "Haribo Gummies",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Haribo%20Gummies",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "yogurt-pretzels",
+    "term": "Yogurt Pretzels",
+    "volume": 10000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Yogurt%20Pretzels",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pita-chips",
+    "term": "Pita Chips",
+    "volume": 20000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Pita%20Chips",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "bbq-chips",
+    "term": "BBQ Chips",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=BBQ%20Chips",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cinnamon-roll",
+    "term": "Cinnamon Roll",
+    "volume": 70000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Cinnamon%20Roll",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "muffin",
+    "term": "Muffin",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Muffin",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cupcake",
+    "term": "Cupcake",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Cupcake",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "danish-pastry",
+    "term": "Danish pastry",
+    "volume": 20000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Danish%20pastry",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pretzel-chips",
+    "term": "Pretzel Chips",
+    "volume": 15000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Pretzel%20Chips",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "seaweed-snacks",
+    "term": "Seaweed Snacks",
+    "volume": 10000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Seaweed%20Snacks",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pork-rinds",
+    "term": "Pork Rinds",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Pork%20Rinds",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "corn-nuts",
+    "term": "Corn Nuts",
+    "volume": 20000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Corn%20Nuts",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "popcorn-shrimp",
+    "term": "Popcorn Shrimp",
+    "volume": 15000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Popcorn%20Shrimp",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "fudge",
+    "term": "Fudge",
+    "volume": 20000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Fudge",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "mixed-nuts",
+    "term": "Mixed Nuts",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Mixed%20Nuts",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "graham-crackers",
+    "term": "Graham Crackers",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Graham%20Crackers",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "animal-crackers",
+    "term": "Animal Crackers",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Animal%20Crackers",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "popsicle",
+    "term": "Popsicle",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Popsicle",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "corn-dog",
+    "term": "Corn Dog",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Corn%20Dog",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "doritos-nacho-cheese",
+    "term": "Doritos Nacho Cheese",
+    "volume": 74000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Doritos%20Nacho%20Cheese",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "doritos-cool-ranch",
+    "term": "Doritos Cool Ranch",
+    "volume": 60000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Doritos%20Cool%20Ranch",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "lay-s-classic",
+    "term": "Lay's Classic",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Lay's%20Classic",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "lay-s-sour-cream---onion",
+    "term": "Lay's Sour Cream & Onion",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Lay's%20Sour%20Cream%20%26%20Onion",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "lay-s-barbecue",
+    "term": "Lay's Barbecue",
+    "volume": 45000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Lay's%20Barbecue",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pringles-original",
+    "term": "Pringles Original",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Pringles%20Original",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pringles-sour-cream---onion",
+    "term": "Pringles Sour Cream & Onion",
+    "volume": 25000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Pringles%20Sour%20Cream%20%26%20Onion",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pringles-bbq",
+    "term": "Pringles BBQ",
+    "volume": 20000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Pringles%20BBQ",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "oreo",
+    "term": "Oreo",
+    "volume": 500000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Oreo",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "oreo-chocolate",
+    "term": "Oreo Chocolate",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Oreo%20Chocolate",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "oreo-vanilla",
+    "term": "Oreo Vanilla",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Oreo%20Vanilla",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "skittles-original",
+    "term": "Skittles Original",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Skittles%20Original",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "skittles-sour",
+    "term": "Skittles Sour",
+    "volume": 20000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Skittles%20Sour",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "m-m-s-peanut",
+    "term": "M&M's Peanut",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=M%26M's%20Peanut",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "m-m-s-plain",
+    "term": "M&M's Plain",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=M%26M's%20Plain",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "reese-s-cups",
+    "term": "Reese's Cups",
+    "volume": 80000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Reese's%20Cups",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "kitkat-green-tea",
+    "term": "KitKat Green Tea",
+    "volume": 20000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=KitKat%20Green%20Tea",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "hershey-kisses",
+    "term": "Hershey Kisses",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Hershey%20Kisses",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "kinder-surprise",
+    "term": "Kinder Surprise",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Kinder%20Surprise",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "kinder-bueno",
+    "term": "Kinder Bueno",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Kinder%20Bueno",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "milka-chocolate",
+    "term": "Milka Chocolate",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Milka%20Chocolate",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ferrero-rocher",
+    "term": "Ferrero Rocher",
+    "volume": 60000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Ferrero%20Rocher",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "doritos",
+    "term": "Doritos",
+    "volume": 165000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Doritos",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "lay-s",
+    "term": "Lay's",
+    "volume": 200000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Lay's",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pringles",
+    "term": "Pringles",
+    "volume": 150000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Pringles",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cheetos",
+    "term": "Cheetos",
+    "volume": 165000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Cheetos",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "takis",
+    "term": "Takis",
+    "volume": 301000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Takis",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "fritos",
+    "term": "Fritos",
+    "volume": 80000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Fritos",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tostitos",
+    "term": "Tostitos",
+    "volume": 80000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Tostitos",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ruffles",
+    "term": "Ruffles",
+    "volume": 60000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Ruffles",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pop-tarts",
+    "term": "Pop-Tarts",
+    "volume": 165000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Pop-Tarts",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "oreo",
+    "term": "Oreo",
+    "volume": 500000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Oreo",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "chips-ahoy",
+    "term": "Chips Ahoy",
+    "volume": 100000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Chips%20Ahoy",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "digestive-biscuits",
+    "term": "Digestive Biscuits",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Digestive%20Biscuits",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tim-tams",
+    "term": "Tim Tams",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Tim%20Tams",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "twinkies",
+    "term": "Twinkies",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Twinkies",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "moon-pie",
+    "term": "Moon Pie",
+    "volume": 20000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Moon%20Pie",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cheez-its",
+    "term": "Cheez-Its",
+    "volume": 100000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Cheez-Its",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "goldfish-crackers",
+    "term": "Goldfish Crackers",
+    "volume": 80000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Goldfish%20Crackers",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "trail-mix",
+    "term": "Trail mix",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Trail%20mix",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "beef-jerky",
+    "term": "Beef Jerky",
+    "volume": 80000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Beef%20Jerky",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "granola-bar",
+    "term": "Granola bar",
+    "volume": 60000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Granola%20bar",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "nature-valley",
+    "term": "Nature Valley",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Nature%20Valley",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "snickers",
+    "term": "Snickers",
+    "volume": 301000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Snickers",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "kitkat",
+    "term": "KitKat",
+    "volume": 165000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=KitKat",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "twix",
+    "term": "Twix",
+    "volume": 100000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Twix",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "mars-bar",
+    "term": "Mars Bar",
+    "volume": 80000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Mars%20Bar",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "milky-way-bar",
+    "term": "Milky Way bar",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Milky%20Way%20bar",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "m-ms",
+    "term": "M&Ms",
+    "volume": 165000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=M%26Ms",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "skittles",
+    "term": "Skittles",
+    "volume": 100000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Skittles",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "hershey-s-chocolate",
+    "term": "Hershey's Chocolate",
+    "volume": 80000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Hershey's%20Chocolate",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "reese-s-peanut-butter-cups",
+    "term": "Reese's Peanut Butter Cups",
+    "volume": 80000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Reese's%20Peanut%20Butter%20Cups",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cadbury-dairy-milk",
+    "term": "Cadbury Dairy Milk",
+    "volume": 100000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Cadbury%20Dairy%20Milk",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "butterfinger",
+    "term": "Butterfinger",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Butterfinger",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "3-musketeers",
+    "term": "3 Musketeers",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=3%20Musketeers",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "ritz-crackers",
+    "term": "Ritz Crackers",
+    "volume": 70000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Ritz%20Crackers",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "planters-peanuts",
+    "term": "Planters Peanuts",
+    "volume": 60000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Planters%20Peanuts",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "macaron",
+    "term": "Macaron",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Macaron",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "brownie",
+    "term": "Brownie",
+    "volume": 80000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Brownie",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "doughnut",
+    "term": "Doughnut",
+    "volume": 100000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Doughnut",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pretzels",
+    "term": "Pretzels",
+    "volume": 165000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Pretzels",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "popcorn",
+    "term": "Popcorn",
+    "volume": 100000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Popcorn",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "cotton-candy",
+    "term": "Cotton Candy",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Cotton%20Candy",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "samosa",
+    "term": "Samosa",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Samosa",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pakora",
+    "term": "Pakora",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Pakora",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pani-puri",
+    "term": "Pani Puri",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Pani%20Puri",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "chaat",
+    "term": "Chaat",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Chaat",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "bhel-puri",
+    "term": "Bhel Puri",
+    "volume": 20000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Bhel%20Puri",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "kurkure",
+    "term": "Kurkure",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Kurkure",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "haldiram-s",
+    "term": "Haldiram's",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Haldiram's",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "parle-g",
+    "term": "Parle-G",
+    "volume": 60000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Parle-G",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "maggi",
+    "term": "Maggi",
+    "volume": 1000000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Maggi",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "mochi",
+    "term": "Mochi",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Mochi",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "pocky",
+    "term": "Pocky",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Pocky",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "baklava",
+    "term": "Baklava",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Baklava",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "turkish-delight",
+    "term": "Turkish Delight",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Turkish%20Delight",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "halva",
+    "term": "Halva",
+    "volume": 20000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Halva",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "tteokbokki",
+    "term": "Tteokbokki",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Tteokbokki",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "biltong",
+    "term": "Biltong",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Biltong",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "plantain-chips",
+    "term": "Plantain chips",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Plantain%20chips",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "churros",
+    "term": "Churros",
+    "volume": 60000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Churros",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "falafel",
+    "term": "Falafel",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Falafel",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "spring-rolls",
+    "term": "Spring Rolls",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Spring%20Rolls",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "empanada",
+    "term": "Empanada",
+    "volume": 50000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Empanada",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "arepa",
+    "term": "Arepa",
+    "volume": 30000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Arepa",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "jalebi",
+    "term": "Jalebi",
+    "volume": 40000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Jalebi",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "nachos",
+    "term": "Nachos",
+    "volume": 80000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Nachos",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "hot-dog",
+    "term": "Hot Dog",
+    "volume": 100000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Hot%20Dog",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "burger",
+    "term": "Burger",
+    "volume": 200000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Burger",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "french-fries",
+    "term": "French Fries",
+    "volume": 150000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=French%20Fries",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  },
+  {
+    "id": "chicken-nuggets",
+    "term": "Chicken Nuggets",
+    "volume": 100000,
+    "category": "snacks",
+    "imageUrl": "/api/image?term=Chicken%20Nuggets",
+    "timestamp": "2025-04-14T15:46:09.150Z"
+  }
+]

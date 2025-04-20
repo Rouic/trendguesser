@@ -1,0 +1,96 @@
+{
+  "cli": {
+    "version": ">= 5.9.1",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "channel": "development",
+      "env": {
+        "APP_ENV": "development",
+        "API_URL": "https://api.trendguesser.com/dev"
+      },
+      "ios": {
+        "simulator": true,
+        "image": "latest"
+      },
+      "android": {
+        "buildType": "apk",
+        "image": "latest"
+      },
+      "cache": {
+        "key": "eas-dev-{{ os }}-{{ arch }}"
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "channel": "preview",
+      "env": {
+        "APP_ENV": "staging",
+        "API_URL": "https://api.trendguesser.com/staging"
+      },
+      "ios": {
+        "simulator": true,
+        "image": "latest"
+      },
+      "android": {
+        "buildType": "apk",
+        "image": "latest"
+      },
+      "cache": {
+        "key": "eas-preview-{{ os }}-{{ arch }}"
+      }
+    },
+    "production": {
+      "autoIncrement": true,
+      "channel": "production",
+      "env": {
+        "APP_ENV": "production",
+        "API_URL": "https://api.trendguesser.com"
+      },
+      "cache": {
+        "key": "eas-prod-{{ os }}-{{ arch }}"
+      }
+    },
+    "ios": {
+      "simulator": true,
+      "extends": "production",
+      "credentialsSource": "remote",
+      "image": "latest"
+    },
+    "android": {
+      "extends": "production",
+      "credentialsSource": "remote",
+      "buildType": "app-bundle",
+      "image": "latest"
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appName": "TrendGuesser",
+        "ascAppId": "YOUR_ASC_APP_ID",
+        "appleTeamId": "YOUR_APPLE_TEAM_ID",
+        "companyName": "TrendGuesser",
+        "language": "en-US"
+      },
+      "android": {
+        "serviceAccountKeyPath": "path/to/service-account.json",
+        "track": "production",
+        "releaseStatus": "completed"
+      }
+    },
+    "preview": {
+      "extends": "production",
+      "android": {
+        "track": "internal"
+      }
+    }
+  },
+  "updates": {
+    "url": "https://u.expo.dev/YOUR_PROJECT_ID",
+    "fallbackToCacheTimeout": 0
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "name": "@trendguesser/web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "dev:plain": "next dev",
+    "build": "next build",
+    "start": "next dev",
+    "lint": "next lint",
+    "clean": "rm -rf .next node_modules out",
+    "db:init:standalone": "node src/scripts/standalone-init.js",
+    "db:check": "node src/scripts/check-db-connection.js"
+  },
+  "dependencies": {
+    "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.2.0",
+    "@neondatabase/serverless": "^0.8.1",
+    "@next/bundle-analyzer": "^15.2.4",
+    "@tailwindcss/postcss": "^4.1.1",
+    "@trendguesser/shared": "*",
+    "@vercel/analytics": "^1.5.0",
+    "autoprefixer": "^10.4.21",
+    "framer-motion": "^12.6.3",
+    "next": "15.2.4",
+    "postcss": "^8.5.3",
+    "postcss-import": "^16.1.0",
+    "react": "18.2.0",
+    "react-cookie-consent": "^9.0.0",
+    "react-dom": "18.2.0",
+    "seedrandom": "^3.0.5",
+    "swr": "^2.3.3",
+    "tailwindcss": "^4.1.1",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^20",
+    "@types/react": "~18.2.14",
+    "@types/react-dom": "~18.2.14",
+    "eslint": "^9",
+    "eslint-config-next": "15.2.4",
+    "typescript": "^5.8.3"
+  }
+}
