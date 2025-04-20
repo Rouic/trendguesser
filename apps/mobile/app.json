@@ -11,10 +11,6 @@
       "resizeMode": "contain",
       "backgroundColor": "#3b82f6"
     },
-    "updates": {
-       "enabled": false,
-       "fallbackToCacheTimeout": 0
-    },
     "runtimeVersion": {
       "policy": "sdkVersion"
     },
