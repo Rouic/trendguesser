@@ -40,8 +40,7 @@
     "build:dev:ios": "npm run build:dev:ios -w apps/mobile",
     "build:dev:android": "npm run build:dev:android -w apps/mobile",
     "submit:ios": "npm run submit:ios -w apps/mobile",
-    "submit:android": "npm run submit:android -w apps/mobile",
-    "postinstall": "expo-yarn-workspaces postinstall"
+    "submit:android": "npm run submit:android -w apps/mobile"
   },
   "dependencies": {
     "eas-cli": "^5.9.3",

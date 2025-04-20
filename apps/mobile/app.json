@@ -12,8 +12,8 @@
       "backgroundColor": "#3b82f6"
     },
     "updates": {
-      "fallbackToCacheTimeout": 0,
-      "url": "https://u.expo.dev/b713d115-0642-482b-a6ae-1e2b50ba5ed6"
+       "enabled": false,
+       "fallbackToCacheTimeout": 0
     },
     "runtimeVersion": {
       "policy": "sdkVersion"
