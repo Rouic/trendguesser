@@ -1,6 +1,6 @@
 {
   "cli": {
-    "version": ">= 5.9.1",
+    "version": "7.8.5",
     "appVersionSource": "remote"
   },
   "build": {
@@ -12,13 +12,11 @@
         "APP_ENV": "development",
         "API_URL": "https://api.trendguesser.com/dev"
       },
-      "ios": {
-        "simulator": true,
-        "image": "latest"
-      },
       "android": {
-        "buildType": "apk",
-        "image": "latest"
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
       },
       "cache": {
         "key": "eas-dev-{{ os }}-{{ arch }}"
@@ -31,13 +29,11 @@
         "APP_ENV": "staging",
         "API_URL": "https://api.trendguesser.com/staging"
       },
-      "ios": {
-        "simulator": true,
-        "image": "latest"
-      },
       "android": {
-        "buildType": "apk",
-        "image": "latest"
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
       },
       "cache": {
         "key": "eas-preview-{{ os }}-{{ arch }}"
@@ -50,21 +46,12 @@
         "APP_ENV": "production",
         "API_URL": "https://api.trendguesser.com"
       },
+      "android": {
+        "buildType": "app-bundle"
+      },
       "cache": {
         "key": "eas-prod-{{ os }}-{{ arch }}"
       }
-    },
-    "ios": {
-      "simulator": true,
-      "extends": "production",
-      "credentialsSource": "remote",
-      "image": "latest"
-    },
-    "android": {
-      "extends": "production",
-      "credentialsSource": "remote",
-      "buildType": "app-bundle",
-      "image": "latest"
     }
   },
   "submit": {
@@ -88,9 +75,5 @@
         "track": "internal"
       }
     }
-  },
-  "updates": {
-    "url": "https://u.expo.dev/YOUR_PROJECT_ID",
-    "fallbackToCacheTimeout": 0
   }
 }
