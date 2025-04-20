@@ -10,4 +10,5 @@ if (__DEV__) {
   activateKeepAwakeAsync();
 }
 
+// Register the root component using Expo's preferred method
 registerRootComponent(App);

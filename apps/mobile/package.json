@@ -2,7 +2,7 @@
   "name": "@trendguesser/mobile",
   "version": "1.0.0",
   "private": true,
-  "main": "src/index.tsx",
+  "main": "index.js",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",

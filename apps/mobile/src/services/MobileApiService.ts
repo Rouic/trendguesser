@@ -1,16 +1,25 @@
 import { IApiService, ApiResponse } from '@trendguesser/shared';
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
 export class MobileApiService implements IApiService {
   private baseUrl: string;
   
-  constructor(baseUrl: string = 'https://trendguesser.com') {
-    this.baseUrl = baseUrl;
+  constructor(baseUrl?: string) {
+    // Get the API URL from the environment variables or use a default
+    const envApiUrl = Constants.expoConfig?.extra?.apiUrl || process.env.API_URL;
+    
+    // Use provided baseUrl, environment variable, or default to production URL
+    this.baseUrl = baseUrl || envApiUrl || 'https://trendguesser.com';
+    
+    console.log(`MobileApiService initialized with base URL: ${this.baseUrl}`);
   }
   
   async get<T>(url: string): Promise<ApiResponse<T>> {
     try {
       const fullUrl = this.normalizeUrl(url);
+      
+      console.log(`GET request to: ${fullUrl}`);
       
       // Add timeout and more comprehensive error handling
       const controller = new AbortController();
@@ -77,6 +86,8 @@ export class MobileApiService implements IApiService {
     try {
       const fullUrl = this.normalizeUrl(url);
       
+      console.log(`POST request to: ${fullUrl}`);
+      
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
       
@@ -139,6 +150,8 @@ export class MobileApiService implements IApiService {
   async patch<T>(url: string, data: any): Promise<ApiResponse<T>> {
     try {
       const fullUrl = this.normalizeUrl(url);
+      
+      console.log(`PATCH request to: ${fullUrl}`);
       
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000);
@@ -212,8 +225,8 @@ export class MobileApiService implements IApiService {
   private getHeaders(): Record<string, string> {
     return {
       'Content-Type': 'application/json',
-      // Add any additional headers like authentication tokens
-      // 'Authorization': `Bearer ${this.getAuthToken()}`,
+      'Accept': 'application/json',
+      // You can add authentication headers here if needed
     };
   }
   
@@ -234,16 +247,16 @@ export class MobileApiService implements IApiService {
   private getDiagnosticNetworkErrorMessage(): string {
     // Provide more context about potential network issues
     return Platform.select({
-      ios: 'iOS network request failed. Check: \n' +
-           '- Network connectivity\n' +
-           '- Airplane mode\n' +
-           '- VPN or proxy settings\n' +
-           '- SSL certificate issues',
-      android: 'Android network request failed. Check: \n' +
-               '- Network connectivity\n' +
-               '- Mobile data or WiFi\n' +
-               '- Firewall or security settings\n' +
-               '- SSL certificate issues',
+      ios: 'Network request failed. Please check:\n' +
+           '- Your internet connection\n' +
+           '- That the API server is running and accessible\n' +
+           '- Server URL configuration is correct\n' +
+           '- App has proper network permissions',
+      android: 'Network request failed. Please check:\n' +
+               '- Your internet connection\n' +
+               '- That the API server is running and accessible\n' +
+               '- Server URL configuration is correct\n' +
+               '- App has proper network permissions',
       default: 'Network request failed. Check network connectivity.'
     });
   }

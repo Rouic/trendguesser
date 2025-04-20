@@ -21,7 +21,7 @@ export default function LeaderboardScreen() {
     
     try {
       const data = await trendGuesserService.getLeaderboard(category);
-      setLeaderboard(data);
+      setLeaderboard(data as Array<{ id: string; name: string; score: number; date: string }>);
     } catch (err) {
       console.error('Error fetching leaderboard:', err);
       setError('Failed to load leaderboard data');
@@ -35,7 +35,7 @@ export default function LeaderboardScreen() {
   };
 
   const renderItem = ({ item, index }: { item: any; index: number }) => (
-    <View style={styles.leaderboardItem}>
+    <View style={styles.leaderboardItem} key={item.id}>
       <Text style={styles.rank}>{index + 1}</Text>
       <Text style={styles.name}>{item.name}</Text>
       <Text style={styles.score}>{item.score}</Text>

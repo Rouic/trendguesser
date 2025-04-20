@@ -314,7 +314,7 @@ export default () => ({
   expo: {
     // ... other app.json properties
     extra: {
-      apiUrl: process.env.API_URL || 'https://api.trendguesser.com',
+      apiUrl: process.env.API_URL || 'https://trendguesser.com',
       appEnv: process.env.APP_ENV || 'development',
       debug: process.env.DEBUG === 'true'
     }

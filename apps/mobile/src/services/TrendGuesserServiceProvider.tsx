@@ -27,7 +27,7 @@ const sampleLeaderboard = [
 
 // Create the service instance
 const storageService = new MobileStorageService();
-const apiService = new MobileApiService('https://api.trendguesser.com');
+const apiService = new MobileApiService('https://trendguesser.com');
 
 const trendGuesserService = TrendGuesserService.getInstance(
   storageService,

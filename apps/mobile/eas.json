@@ -11,7 +11,7 @@
       "channel": "development",
       "env": {
         "APP_ENV": "development",
-        "API_URL": "https://api.trendguesser.com/dev"
+        "API_URL": "https://trendguesser.com"
       },
       "android": {
         "buildType": "apk"
@@ -28,7 +28,7 @@
       "channel": "preview",
       "env": {
         "APP_ENV": "staging",
-        "API_URL": "https://api.trendguesser.com/staging"
+        "API_URL": "https://trendguesser.com"
       },
       "android": {
         "buildType": "apk"
@@ -45,7 +45,7 @@
       "channel": "production",
       "env": {
         "APP_ENV": "production",
-        "API_URL": "https://api.trendguesser.com"
+        "API_URL": "https://trendguesser.com"
       },
       "android": {
         "buildType": "app-bundle"
@@ -59,9 +59,9 @@
     "production": {
       "ios": {
         "appName": "TrendGuesser",
-        "ascAppId": "YOUR_ASC_APP_ID",
+        "ascAppId": "6744863831",
         "appleTeamId": "VZFVXABCBH",
-        "companyName": "TrendGuesser",
+        "companyName": "Rouic",
         "language": "en-US"
       },
       "android": {
