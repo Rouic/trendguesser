@@ -29,7 +29,7 @@
     "@react-navigation/native": "^6.1.17",
     "@react-navigation/native-stack": "^6.9.26",
     "@trendguesser/shared": "*",
-    "expo": "^50.0.11",
+    "expo": "^52.0.46",
     "expo-build-properties": "^0.13.2",
     "expo-constants": "~15.4.5",
     "expo-dev-client": "~3.3.9",
@@ -53,7 +53,7 @@
     "@babel/core": "^7.24.1",
     "@types/react": "~18.2.14",
     "babel-plugin-module-resolver": "^5.0.0",
-    "eas-cli": "^7.5.0",
+    "eas-cli": "^16.3.2",
     "eslint": "^9",
     "tailwindcss": "^4.1.1",
     "typescript": "^5.8.3"
