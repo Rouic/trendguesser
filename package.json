@@ -45,6 +45,7 @@
   "dependencies": {
     "@types/react": "^19.1.2",
     "eas-cli": "^5.9.3",
+    "expo-linear-gradient": "~12.7.2",
     "expo-yarn-workspaces": "^2.3.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
