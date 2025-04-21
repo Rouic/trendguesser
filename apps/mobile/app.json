@@ -11,9 +11,6 @@
       "resizeMode": "contain",
       "backgroundColor": "#3b82f6"
     },
-    "plugins": [
-      "expo-linear-gradient"
-    ],
     "runtimeVersion": {
       "policy": "sdkVersion"
     },
