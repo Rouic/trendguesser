@@ -33,9 +33,11 @@
     "expo-build-properties": "^0.13.2",
     "expo-constants": "~15.4.5",
     "expo-dev-client": "~3.3.9",
+    "expo-linear-gradient": "^14.0.2",
     "expo-localization": "^16.0.1",
     "expo-secure-store": "^14.0.1",
     "expo-status-bar": "~1.11.1",
+    "expo-updates": "~0.24.13",
     "nativewind": "^2.0.11",
     "react": "18.2.0",
     "react-native": "0.73.4",
@@ -45,8 +47,7 @@
     "react-native-screens": "~3.29.0",
     "seedrandom": "^3.0.5",
     "swr": "^2.3.3",
-    "uuid": "^11.1.0",
-    "expo-updates": "~0.24.13"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.24.1",
