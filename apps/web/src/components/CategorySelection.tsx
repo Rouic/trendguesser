@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { SearchCategory } from "@/types";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  getEnabledCategories,
+  getWebCategoryClasses,
+  CategoryConfig,
+} from "@trendguesser/shared";
 
 interface CategorySelectionProps {
   onSelect: (category: SearchCategory) => void;
@@ -129,90 +134,18 @@ const CategorySelection: React.FC<CategorySelectionProps> = ({ onSelect }) => {
     };
   }, [userUid, loadHighScores]);
 
-  // Add playCount with each category to track which ones have been played
-  const categories: {
-    id: SearchCategory;
-    name: string;
-    description: string;
-    color: string;
-  }[] = [
-    {
-      id: "snacks",
-      name: "Snacks",
-      description: "Chips, crisps, and sweets",
-      color:
-        "border-game-neon-yellow text-game-neon-yellow shadow-neon-yellow-sm",
-    },
-    {
-      id: "landmarks",
-      name: "Landmarks",
-      description: "Famous places & buildings",
-      color: "border-game-neon-purple text-game-neon-purple shadow-neon-purple-sm",
-    },
-    // {
-    //   id: "fashion",
-    //   name: "Fashion",
-    //   description: "Trends & styles",
-    //   color: "border-game-neon-red text-game-neon-red shadow-neon-red-sm",
-    // },
-    // {
-    //   id: "cars",
-    //   name: "Car Brands",
-    //   description: "Cars & vehicles",
-    //   color: "border-game-neon-blue text-game-neon-blue shadow-neon-blue-sm",
-    // },
-    // {
-    //   id: "celebrities",
-    //   name: "Celebrities",
-    //   description: "Famous people & influencers",
-    //   color: "border-game-neon-green text-game-neon-green shadow-neon-green-sm",
-
-    // },
-    // {
-    //   id: "pets",
-    //   name: "Pets",
-    //   description: "Cats, dogs, and more",
-    //   color: "border-game-neon-yellow text-game-neon-yellow shadow-neon-yellow-sm",
-    // },
-    {
-      id: "technology",
-      name: "Technology",
-      description: "Tech & gadgets",
-      color: "border-blue-400 text-blue-400 shadow-blue-sm",
-    },
-    {
-      id: "sports",
-      name: "Sports",
-      description: "Athletes & championships",
-      color: "border-green-400 text-green-400 shadow-green-sm",
-    },
-    {
-      id: "everything",
-      name: "Everything",
-      description: "Mix of all categories",
-      color: "border-purple-400 text-purple-400 shadow-purple-sm",
-    },
-    // {
-    //   id: "latest",
-    //   name: "Latest",
-    //   description: "Recent trending topics",
-    //   color: "border-yellow-400 text-yellow-400 shadow-yellow-sm",
-    // },
-    // {
-    //   id: "custom",
-    //   name: "Custom",
-    //   description: "Choose your own term",
-    //   color: "border-game-neon-blue text-game-neon-blue shadow-neon-blue-sm",
-    // },
-  ];
+  // Get categories from the shared configuration
+  const categoryConfigs = getEnabledCategories();
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {categories.map((category) => (
+      {categoryConfigs.map((category) => (
         <button
           key={category.id}
-          onClick={() => onSelect(category.id)}
-          className={`p-4 bg-black/40 backdrop-blur-sm rounded-xl border ${category.color} hover:bg-black/60 hover:scale-105 transition-all duration-300 flex flex-col items-center justify-center text-center h-32 relative`}
+          onClick={() => onSelect(category.id as SearchCategory)}
+          className={`p-4 bg-black/40 backdrop-blur-sm rounded-xl border ${getWebCategoryClasses(
+            category
+          )} hover:bg-black/60 hover:scale-105 transition-all duration-300 flex flex-col items-center justify-center text-center h-32 relative`}
         >
           <h3 className="text-xl font-bold mb-1">{category.name}</h3>
           <p className="text-sm opacity-80">{category.description}</p>

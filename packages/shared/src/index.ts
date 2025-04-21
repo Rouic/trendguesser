@@ -1,3 +1,4 @@
+
 // Export components
 export * from './components';
 
@@ -12,3 +13,6 @@ export * from './types';
 
 // Export utilities
 export * from './utils';
+
+// Export configuration
+export * from './config';
