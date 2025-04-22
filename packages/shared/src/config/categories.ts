@@ -43,9 +43,9 @@ export const categories: CategoryConfig[] = [
     name: "Landmarks",
     description: "Famous places & buildings",
     webStyles: {
-      color: "text-game-neon-purple",
-      borderColor: "border-game-neon-purple",
-      shadowColor: "shadow-neon-purple-sm",
+      color: "text-game-neon-red",
+      borderColor: "border-game-neon-red",
+      shadowColor: "shadow-neon-red-sm",
     },
     mobileStyles: {
       backgroundColor: "#9932fc",
@@ -88,6 +88,23 @@ export const categories: CategoryConfig[] = [
     },
     enabled: true,
     order: 4
+  },
+   {
+    id: "hands",
+    name: "Health & Safety",
+    description: "Test your knowledge on health and safety",
+    webStyles: {
+      color: "text-indigo-400",
+      borderColor: "border-indigo-400",
+      shadowColor: "shadow-indigo-sm",
+    },
+    mobileStyles: {
+      backgroundColor: "#4ade80",
+      textColor: "#FFFFFF",
+      borderColor: "#4ade80",
+    },
+    enabled: true,
+    order: 5
   },
   {
     id: "entertainment",

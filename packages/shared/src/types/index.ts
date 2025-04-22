@@ -27,7 +27,8 @@ export type SearchCategory =
   | 'fashion'
   | 'questions' 
   | 'custom'
-  | 'general';
+  | 'general'
+  | 'hands'
 
 export interface GameState {
   gameId: string;
