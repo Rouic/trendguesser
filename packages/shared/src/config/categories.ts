@@ -103,7 +103,7 @@ export const categories: CategoryConfig[] = [
       textColor: "#FFFFFF",
       borderColor: "#4ade80",
     },
-    enabled: true,
+    enabled: false,
     order: 5
   },
   {
