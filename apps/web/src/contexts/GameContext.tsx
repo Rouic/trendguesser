@@ -470,6 +470,47 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({
                   playerDataKey,
                   JSON.stringify(updatedPlayer)
                 );
+                
+                // CRITICAL FIX: Also update the score directly in the gameState
+                // This ensures consistency between player.score and gameState.score
+                if (localGameStateCopy) {
+                  localGameStateCopy.score = newScore;
+                  
+                  // Save this score in the game state to ensure it's preserved
+                  // on the transition to game over
+                  const gameId = sessionStorage.getItem('current_game_id');
+                  if (gameId) {
+                    try {
+                      const localStateKey = `tg_local_state_${gameId}`;
+                      const localStateJson = localStorage.getItem(localStateKey);
+                      let localStateData = { 
+                        gameState: { ...localGameStateCopy, score: newScore }, 
+                        lastUpdate: new Date().toISOString()
+                      };
+                      
+                      if (localStateJson) {
+                        try {
+                          const parsedData = JSON.parse(localStateJson);
+                          localStateData = {
+                            ...parsedData,
+                            gameState: { 
+                              ...(parsedData.gameState || localGameStateCopy), 
+                              score: newScore
+                            },
+                            lastUpdate: new Date().toISOString()
+                          };
+                        } catch (e) {
+                          console.error('[makeGuess] Error parsing existing local state:', e);
+                        }
+                      }
+                      
+                      localStorage.setItem(localStateKey, JSON.stringify(localStateData));
+                      console.log(`[makeGuess] Updated score in localGameState to ${newScore}`);
+                    } catch (e) {
+                      console.error('[makeGuess] Error updating score in localGameState:', e);
+                    }
+                  }
+                }
               }
               return updatedPlayer;
             });

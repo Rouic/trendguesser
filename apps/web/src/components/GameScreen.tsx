@@ -287,7 +287,38 @@ const GameScreen = () => {
           document.body.classList.remove("showing-correct");
           document.body.classList.remove("showing-equal");
           
-          // Show game over screen
+          // Explicitly ensure the game is properly ended with current score preserved
+          // This needs to happen BEFORE showing the game over screen
+          if (gameState) {
+            // Make a copy of the game state and mark it as finished
+            const finalGameState = {
+              ...gameState,
+              finished: true
+            };
+            
+            // Save this final state to ensure the GameOver component has access to it
+            if (typeof window !== 'undefined') {
+              try {
+                const gameId = sessionStorage.getItem('current_game_id');
+                if (gameId) {
+                  localStorage.setItem(
+                    `tg_local_state_${gameId}`,
+                    JSON.stringify({
+                      gameState: finalGameState,
+                      lastUpdate: new Date().toISOString(),
+                      gameOver: true,
+                      endedAt: new Date().toISOString()
+                    })
+                  );
+                  console.log("Preserved final game state before showing game over screen");
+                }
+              } catch (e) {
+                console.error("Error preserving final game state:", e);
+              }
+            }
+          }
+          
+          // Show game over screen AFTER preserving state
           setShowGameOver(true);
           setIsGuessing(false);
           setResultAnimationComplete(true);

@@ -20,29 +20,64 @@ const GameOver: React.FC<GameOverProps> = ({ onClose }) => {
 
   const hasLoadedHighScores = useRef(false);
 
-  // Load high scores
+  // Load high scores and ensure we have the most accurate game state
   useEffect(() => {
     if (gameState && userUid && !hasLoadedHighScores.current) {
       // Only try to load once
       hasLoadedHighScores.current = true;
-      console.log("GameOver: Loading high scores");
+      console.log("GameOver: Loading high scores and current player data");
 
-      // Get player data from localStorage
+      // IMPORTANT: First try to get the most up-to-date game state from localStorage
+      // This ensures we have the correct final score
       if (typeof window !== 'undefined') {
+        try {
+          // Get current game ID from session storage
+          const gameId = sessionStorage.getItem('current_game_id');
+          if (gameId) {
+            const localStateKey = `tg_local_state_${gameId}`;
+            const localStateJson = localStorage.getItem(localStateKey);
+            
+            if (localStateJson) {
+              const localStateData = JSON.parse(localStateJson);
+              if (localStateData.gameState && localStateData.gameOver) {
+                console.log("GameOver: Found preserved final game state in localStorage");
+                
+                // Use this game state's score for the current player if available
+                const finalGameState = localStateData.gameState;
+                if (finalGameState.score !== undefined) {
+                  // Create a player object with this score
+                  const playerWithFinalScore = {
+                    uid: userUid,
+                    name: sessionStorage.getItem('player_name') || 'Player',
+                    score: finalGameState.score,
+                    highScores: {}
+                  };
+                  setCurrentPlayer(playerWithFinalScore);
+                  console.log("GameOver: Using final score from preserved game state:", finalGameState.score);
+                }
+              }
+            }
+          }
+        } catch (e) {
+          console.error("GameOver: Error accessing preserved game state:", e);
+        }
+        
+        // As a fallback, still try to get player data from localStorage
         const playerDataKey = `tg_player_${userUid}`;
         const storedPlayerData = localStorage.getItem(playerDataKey);
         
-        if (storedPlayerData) {
+        if (storedPlayerData && !currentPlayer) {
           try {
             const playerData = JSON.parse(storedPlayerData);
             setCurrentPlayer(playerData);
+            console.log("GameOver: Using player data from localStorage:", playerData.score);
           } catch (e) {
-            console.error("Error parsing player data:", e);
+            console.error("GameOver: Error parsing player data:", e);
           }
         }
       }
     }
-  }, [gameState, userUid]);
+  }, [gameState, userUid, currentPlayer]);
 
   // Set local high score state based on currentPlayer high scores
   useEffect(() => {
