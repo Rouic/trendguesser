@@ -30,50 +30,102 @@ const GameOver: React.FC<GameOverProps> = ({ onClose }) => {
       // IMPORTANT: First try to get the most up-to-date game state from localStorage
       // This ensures we have the correct final score
       if (typeof window !== 'undefined') {
+        let finalScore = null;
+        
         try {
-          // Get current game ID from session storage
-          const gameId = sessionStorage.getItem('current_game_id');
-          if (gameId) {
-            const localStateKey = `tg_local_state_${gameId}`;
-            const localStateJson = localStorage.getItem(localStateKey);
-            
-            if (localStateJson) {
-              const localStateData = JSON.parse(localStateJson);
-              if (localStateData.gameState && localStateData.gameOver) {
-                console.log("GameOver: Found preserved final game state in localStorage");
-                
-                // Use this game state's score for the current player if available
-                const finalGameState = localStateData.gameState;
-                if (finalGameState.score !== undefined) {
-                  // Create a player object with this score
-                  const playerWithFinalScore = {
-                    uid: userUid,
-                    name: sessionStorage.getItem('player_name') || 'Player',
-                    score: finalGameState.score,
-                    highScores: {}
-                  };
-                  setCurrentPlayer(playerWithFinalScore);
-                  console.log("GameOver: Using final score from preserved game state:", finalGameState.score);
+          // STEP 1: First, try to get score directly from game state context
+          // This is the most reliable source if available
+          if (gameState && typeof gameState.score === 'number') {
+            finalScore = gameState.score;
+            console.log("GameOver: Using score directly from game state context:", finalScore);
+          }
+          
+          // STEP 2: Next, try to get the preserved game state from localStorage
+          if (finalScore === null) {
+            // Get current game ID from session storage
+            const gameId = sessionStorage.getItem('current_game_id');
+            if (gameId) {
+              const localStateKey = `tg_local_state_${gameId}`;
+              const localStateJson = localStorage.getItem(localStateKey);
+              
+              if (localStateJson) {
+                const localStateData = JSON.parse(localStateJson);
+                if (localStateData.gameState && localStateData.gameOver) {
+                  console.log("GameOver: Found preserved final game state in localStorage");
+                  
+                  // Use this game state's score for the current player if available
+                  const finalGameState = localStateData.gameState;
+                  if (finalGameState.score !== undefined) {
+                    finalScore = finalGameState.score;
+                    console.log("GameOver: Using final score from preserved game state:", finalScore);
+                  }
                 }
               }
             }
           }
-        } catch (e) {
-          console.error("GameOver: Error accessing preserved game state:", e);
-        }
-        
-        // As a fallback, still try to get player data from localStorage
-        const playerDataKey = `tg_player_${userUid}`;
-        const storedPlayerData = localStorage.getItem(playerDataKey);
-        
-        if (storedPlayerData && !currentPlayer) {
-          try {
-            const playerData = JSON.parse(storedPlayerData);
-            setCurrentPlayer(playerData);
-            console.log("GameOver: Using player data from localStorage:", playerData.score);
-          } catch (e) {
-            console.error("GameOver: Error parsing player data:", e);
+          
+          // STEP 3: As a fallback, try to get player data from localStorage
+          if (finalScore === null) {
+            const playerDataKey = `tg_player_${userUid}`;
+            const storedPlayerData = localStorage.getItem(playerDataKey);
+            
+            if (storedPlayerData) {
+              try {
+                const playerData = JSON.parse(storedPlayerData);
+                if (typeof playerData.score === 'number') {
+                  finalScore = playerData.score;
+                  console.log("GameOver: Using player data score from localStorage:", finalScore);
+                }
+              } catch (e) {
+                console.error("GameOver: Error parsing player data:", e);
+              }
+            }
           }
+          
+          // Create a player object with the final score
+          if (finalScore !== null) {
+            const playerName = sessionStorage.getItem('player_name') || 'Player';
+            // Create full player object with the score we found
+            const playerWithFinalScore = {
+              uid: userUid,
+              name: playerName,
+              score: finalScore,
+              highScores: {}
+            };
+            
+            // STEP 4: Try to get high scores data if available
+            try {
+              const highScoresKey = `tg_highscores_${userUid}`;
+              const storedScores = localStorage.getItem(highScoresKey);
+              if (storedScores) {
+                const highScores = JSON.parse(storedScores);
+                playerWithFinalScore.highScores = highScores;
+              }
+            } catch (e) {
+              console.error("GameOver: Error getting high scores:", e);
+            }
+            
+            setCurrentPlayer(playerWithFinalScore);
+            console.log("GameOver: Set current player with final score:", finalScore);
+          } else {
+            console.warn("GameOver: Could not determine final score from any source");
+            // Set a default player with score from game state as last resort
+            setCurrentPlayer({
+              uid: userUid,
+              name: sessionStorage.getItem('player_name') || 'Player',
+              score: gameState.score || 0,
+              highScores: {}
+            });
+          }
+        } catch (e) {
+          console.error("GameOver: Error getting final score:", e);
+          // Even after error, still try to set a reasonable value
+          setCurrentPlayer({
+            uid: userUid,
+            name: sessionStorage.getItem('player_name') || 'Player',
+            score: gameState.score || 0,
+            highScores: {}
+          });
         }
       }
     }

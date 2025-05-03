@@ -279,6 +279,59 @@ const GameScreen = () => {
       } else {
         // Wrong guess - game over
         // Wait a moment to let user see the result, then show game over
+        
+        // IMMEDIATE PRESERVATION: Explicitly ensure the game is properly ended with current score preserved
+        // This needs to happen BEFORE the timeout to avoid any race conditions
+        if (gameState) {
+          // Make a copy of the game state and mark it as finished
+          const finalGameState = {
+            ...gameState,
+            finished: true
+          };
+          
+          // Immediately save this final state to ensure the GameOver component has access to it
+          if (typeof window !== 'undefined') {
+            try {
+              const gameId = sessionStorage.getItem('current_game_id');
+              if (gameId) {
+                // First, also ensure player data is saved with correct score
+                const playerUid = userUid;
+                if (playerUid) {
+                  const playerDataKey = `tg_player_${playerUid}`;
+                  try {
+                    // Get existing player data, if any
+                    const storedPlayerData = localStorage.getItem(playerDataKey);
+                    let playerData = storedPlayerData ? JSON.parse(storedPlayerData) : { uid: playerUid, name: 'Player', score: 0 };
+                    
+                    // Ensure player data has correct score from current game state
+                    playerData.score = gameState.score || 0;
+                    
+                    // Save updated player data to localStorage
+                    localStorage.setItem(playerDataKey, JSON.stringify(playerData));
+                    console.log("Preserved player score data:", playerData.score);
+                  } catch (e) {
+                    console.error("Error preserving player data:", e);
+                  }
+                }
+                
+                // Then save the game state
+                localStorage.setItem(
+                  `tg_local_state_${gameId}`,
+                  JSON.stringify({
+                    gameState: finalGameState,
+                    lastUpdate: new Date().toISOString(),
+                    gameOver: true,
+                    endedAt: new Date().toISOString()
+                  })
+                );
+                console.log("Preserved final game state before showing game over screen");
+              }
+            } catch (e) {
+              console.error("Error preserving final game state:", e);
+            }
+          }
+        }
+        
         setTimeout(() => {
           console.log("Game over - showing game over screen");
           
@@ -287,33 +340,26 @@ const GameScreen = () => {
           document.body.classList.remove("showing-correct");
           document.body.classList.remove("showing-equal");
           
-          // Explicitly ensure the game is properly ended with current score preserved
-          // This needs to happen BEFORE showing the game over screen
-          if (gameState) {
-            // Make a copy of the game state and mark it as finished
-            const finalGameState = {
-              ...gameState,
-              finished: true
-            };
-            
-            // Save this final state to ensure the GameOver component has access to it
-            if (typeof window !== 'undefined') {
-              try {
-                const gameId = sessionStorage.getItem('current_game_id');
-                if (gameId) {
-                  localStorage.setItem(
-                    `tg_local_state_${gameId}`,
-                    JSON.stringify({
-                      gameState: finalGameState,
-                      lastUpdate: new Date().toISOString(),
-                      gameOver: true,
-                      endedAt: new Date().toISOString()
-                    })
-                  );
-                  console.log("Preserved final game state before showing game over screen");
-                }
-              } catch (e) {
-                console.error("Error preserving final game state:", e);
+          // Double-check preservation of game state - redundant but safe
+          if (gameState && typeof window !== 'undefined') {
+            const gameId = sessionStorage.getItem('current_game_id');
+            if (gameId) {
+              // Check if we already have the state preserved
+              const localStateKey = `tg_local_state_${gameId}`;
+              const existingStateData = localStorage.getItem(localStateKey);
+              
+              // Only overwrite if missing or not marked as game over
+              if (!existingStateData || !existingStateData.includes('"gameOver":true')) {
+                console.log("Re-saving final game state as backup");
+                localStorage.setItem(
+                  localStateKey,
+                  JSON.stringify({
+                    gameState: { ...gameState, finished: true },
+                    lastUpdate: new Date().toISOString(),
+                    gameOver: true,
+                    endedAt: new Date().toISOString()
+                  })
+                );
               }
             }
           }
