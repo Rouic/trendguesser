@@ -1,11 +1,16 @@
 {
-  "name": "trendguesser",
   "expo": {
+    "name": "TrendGuesser",
+    "slug": "trendguesser",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": ["**/*"],
+    "owner": "rouic",
     "extra": {
       "eas": {
         "projectId": "b713d115-0642-482b-a6ae-1e2b50ba5ed6"
       }
-    },
-    "owner": "rouic"
+    }
   }
 }
